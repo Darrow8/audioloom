@@ -1,19 +1,32 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "canvas.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "nodemon server.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.606.0",
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
     "fs": "^0.0.1-security",
+    "google-auth-library": "^9.11.0",
     "http": "^0.0.1-security",
-    "openai": "^4.52.2"
+    "mongodb": "^6.8.0",
+    "mongoose": "^8.4.5",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.4",
+    "openai": "^4.52.2",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
   }
 }

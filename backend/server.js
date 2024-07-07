@@ -1,12 +1,44 @@
-import http from "http";
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import logger from 'morgan';
+import cookieParser from 'cookie-parser';
+import createError from 'http-errors';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import * as mongo from './mongo.js';
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("Hello World\n");
+
+const app = express();
+const port = 5000
+// Middleware to parse JSON bodies
+app.use(bodyParser.json());
+app.use(cors());
+
+// Callback route
+app.get('/callback', (req, res) => {
+    const data = req.body;
+
+    // Handle the data from the callback
+    console.log('Received callback data:', data);
+
+    // Respond to the callback request
+    res.status(200).json({ message: 'Callback received successfully' });
 });
 
-const PORT = 3000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.get('/api/auth', (req, res) => {
+    res.send({"data" : "wowza!"});
+})
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });
+
+// mongo.main().catch((err)=>{
+//     console.error(err);
+// })
