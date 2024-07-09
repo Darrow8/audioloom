@@ -38,7 +38,7 @@ export async function getFileFromS3(fileName) {
 
         const fileContent = await streamToString(Body);
 
-        console.log("File content:", fileContent);
+        // console.log("File content:", fileContent);
 
         return fileContent;
     } catch (err) {
