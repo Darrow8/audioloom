@@ -4,7 +4,7 @@ import { Readable } from "stream";
 
 dotenv.config();
 const s3 = new S3Client(
-    { region: "us-east-2",
+    { region: "us-west-1",
         credentials: {
             accessKeyId: process.env['AWS_ACCESS_KEY'],
             secretAccessKey: process.env['AWS_SECRET_KEY']
@@ -16,10 +16,10 @@ const s3 = new S3Client(
  * @param {string} fileName - The key (path) of the file in the S3 bucket
  * @returns {Promise<Buffer>} - A promise that resolves to the file data
  */
-export async function getFileFromS3(fileName) {
+export async function getFileFromS3(fileName) : Promise<string> {
     // Create a command to retrieve the object
     const command = new GetObjectCommand({
-        Bucket: 'podcast-pro',
+        Bucket: 'main-server',
         Key: fileName,
     });
 
@@ -38,9 +38,7 @@ export async function getFileFromS3(fileName) {
 
         const fileContent = await streamToString(Body);
 
-        // console.log("File content:", fileContent);
-
-        return fileContent;
+        return fileContent as string;
     } catch (err) {
         console.error("Error getting file from S3:", err);
         throw err;

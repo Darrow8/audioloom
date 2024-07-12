@@ -7,10 +7,13 @@ import createError from 'http-errors';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import * as mongo from './mongo.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 
 const app = express();
-const port = 5000
+const port = process.env.PORT;
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
 app.use(cors());
@@ -38,7 +41,3 @@ app.get('/api/auth', (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
-
-// mongo.main().catch((err)=>{
-//     console.error(err);
-// })
