@@ -42,10 +42,10 @@ export default function HomeScreen() {
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
       </ThemedView>
-      <Text>{userInfo.user?.name}</Text>
+      {/* <Text>{userInfo.user?.name}</Text>
       <Text>{userInfo.user?.email}</Text>
       <Logout />
-      <Text>{JSON.stringify(data)}</Text>
+      <Text>{JSON.stringify(data)}</Text> */}
     </ParallaxScrollView>
   );
 }

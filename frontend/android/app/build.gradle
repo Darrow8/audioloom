@@ -85,6 +85,9 @@ android {
 
     namespace 'com.anonymous.frontend'
     defaultConfig {
+// @generated begin react-native-auth0-manifest-placeholder - expo prebuild (DO NOT MODIFY) sync-451eeec7870bd033b9ac312f1307e1c87ff96cc3
+manifestPlaceholders = [auth0Domain: "dev-r0ex85m18bf4us41.us.auth0.com", auth0Scheme: "com.anonymous.frontend.auth0"]
+// @generated end react-native-auth0-manifest-placeholder
         applicationId 'com.anonymous.frontend'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
