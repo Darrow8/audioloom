@@ -18,10 +18,12 @@ const openai = new OpenAI({
  * Uses OpenAI API to generate script for podcast
  * 
  */
-export async function scriptwriter() {
+export async function scriptwriter(article : string) {
   try{
-    const fileContents = fs.readFileSync("../test_result/article.txt").toString()
-    const completion = await openai.chat.completions.create({
+
+    // const fileContents = fs.readFileSync("../test_result/article.txt").toString()
+    const fileContents = await aws.getFileFromS3(`articles/${article}.txt`);
+    const completion : any = await openai.chat.completions.create({
       messages: [{ role: "system", 
       content: 
       `
@@ -51,7 +53,7 @@ export async function scriptwriter() {
     console.log(completion.choices[0]);
     
     const uploadDetails = {
-      key: 'pod-scripts/russia_script3.txt',
+      key: `pod-scripts/${article}_script.txt`,
       body: completion.choices[0].message.content,
       contentType: 'text/plain'
     };

@@ -1,4 +1,8 @@
 import express from 'express';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 import path from 'path';
 import { fileURLToPath } from 'url';
 import logger from 'morgan';
@@ -6,10 +10,11 @@ import cookieParser from 'cookie-parser';
 import createError from 'http-errors';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import * as mongo from './mongo.js';
-import dotenv from 'dotenv';
+import records from "./routes/record.js";
+import * as jwt from 'express-jwt';
+import * as jwksRsa from 'jwks-rsa';
 
-dotenv.config();
+
 
 
 const app = express();
@@ -17,25 +22,23 @@ const port = process.env.PORT;
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
 app.use(cors());
+app.use("/record", records);
 
-// Callback route
-app.get('/callback', (req, res) => {
-    const data = req.body;
 
-    // Handle the data from the callback
-    console.log('Received callback data:', data);
+// const checkJwt = jwt.expressjwt({
+//     secret: jwksRsa.expressJwtSecret({
+//     cache: true,
+//     rateLimit: true,
+//     jwksRequestsPerMinute: 5,
+//     jwksUri: 'https://YOUR_DOMAIN/.well-known/jwks.json'
+//   }) as jwt.GetVerificationKey,
+//   audience: 'YOUR_API_IDENTIFIER',
+//   issuer: 'https://YOUR_DOMAIN/',
+//   algorithms: ['RS256']
+// });
+  
+//   app.use(checkJwt);
 
-    // Respond to the callback request
-    res.status(200).json({ message: 'Callback received successfully' });
-});
-
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
-app.get('/api/auth', (req, res) => {
-    res.send({"data" : "wowza!"});
-})
 
 // Start the server
 app.listen(port, () => {

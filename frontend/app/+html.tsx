@@ -1,5 +1,7 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import { type PropsWithChildren } from 'react';
+import {useAuth0, Auth0Provider} from 'react-native-auth0';
+import * as config from "../auth0_config";
 
 /**
  * This file is web-only and used to configure the root HTML for every web page during static rendering.
@@ -7,6 +9,7 @@ import { type PropsWithChildren } from 'react';
  */
 export default function Root({ children }: PropsWithChildren) {
   return (
+    <Auth0Provider domain={config.default.domain} clientId={config.default.clientId}>
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
@@ -25,6 +28,7 @@ export default function Root({ children }: PropsWithChildren) {
       </head>
       <body>{children}</body>
     </html>
+    </Auth0Provider>
   );
 }
 

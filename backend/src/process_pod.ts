@@ -3,6 +3,7 @@ import * as aws from './aws.js';
 import * as eleven from './elevenlabs.js'
 import * as aud from './audio_processer.js';
 import fs from 'fs';
+import path from 'path';
 import { CharLine, MusicLine, Script,  } from './pod.js';
 import { Readable } from 'stream';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,19 +15,32 @@ import { v4 as uuidv4 } from 'uuid';
  */
 async function proccess_pod(scriptName:string){
     let script = await getScript(scriptName);
-    // console.log(script);
 
-    // process char lines
-    let char_lines = script.getCharLines();
-    let char_audio = await processCharacterLines(char_lines);
-    try {
-        let output = `${uuidv4()}.mp3`;
+    // // process char lines
+    // let char_lines = script.getCharLines();
+    // let char_audio = await processCharacterLines(char_lines);
+    // try {
+    //     let output = `${uuidv4()}.mp3`;
         
-        await aud.spliceAudioFiles(char_audio,`${output}`);
-        console.log(`finished with ${output}`);
-    } catch (err) {
-        console.error('Error concatenating audio streams:', err);
-    }
+    //     await aud.spliceAudioFiles(char_audio,`${output}`, './result');
+    //     console.log(`finished with ${output}`);
+    //     // upload to S3
+    //     const uploadDetails = {
+    //         key: `pod-audio/${output}`,
+    //         body: `./result/${output}`,
+    //         ContentType: 'audio/mpeg'
+    //     };
+    //     await aws.uploadFileToS3(uploadDetails);
+    //     // delete temp files
+    //     deleteAllFilesInFolder('./temp');
+    //     // deleteAllFilesInFolder('./result');
+    // } catch (err) {
+    //     console.error('Error concatenating audio streams:', err);
+    // }
+
+    let output = "c4aa59a4-0b69-4bdc-8813-2a074d029d37.mp3";
+    let music_lines = script.getMusicLines();
+    
       
 
 }
@@ -83,7 +97,7 @@ async function processCharacterLines(lines: CharLine[]): Promise<string[]>{
     // loop through lines
     // lines.length
     // getting first 2 lines for now
-    for(let i = 0; i < 2; i++){
+    for(let i = 0; i < lines.length; i++){
         // get prev and next line
         let prev_line = null;
         let next_line = null;
@@ -136,7 +150,7 @@ async function processCharacterLine(line:CharLine, prev_line: CharLine | null, n
     }else{
         use_voice=male_voice;
     }
-    
+
     dialogue = dialogue.trim();
     
     return await eleven.textToSpeech(use_voice,dialogue,prev_dialogue,next_dialogue);
@@ -151,6 +165,26 @@ async function processCharacterLine(line:CharLine, prev_line: CharLine | null, n
 async function processMusicLine(line){
 
 }
+
+function deleteAllFilesInFolder(folderPath) {
+    fs.readdir(folderPath, (err, files) => {
+      if (err) {
+        console.error(`Unable to scan directory: ${err}`);
+        return;
+      }
+  
+      files.forEach((file) => {
+        const filePath = path.join(folderPath, file);
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error(`Error deleting file ${filePath}: ${err}`);
+          } else {
+          }
+        });
+      });
+      console.log(`Deleted files in ${folderPath}`);
+    });
+  }
 
 
 proccess_pod("russia_script3");

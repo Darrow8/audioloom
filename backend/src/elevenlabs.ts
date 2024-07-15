@@ -29,7 +29,6 @@ export async function textToSpeech(voice : string, text : string, prev_text : st
             next_text: next_text != "" ? next_text : null,
           }).then((audio)=>{
             resolve(audio);
-
           }).catch((err)=>{
             console.error(err);
             reject();

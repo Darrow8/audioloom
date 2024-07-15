@@ -61,12 +61,12 @@ export async function overlayAudioFiles(backgroundFile: string, overlayFile: str
  *   .then(() => console.log('Audio files spliced successfully'))
  *   .catch(err => console.error('Error splicing audio files:', err));
  */
-export async function spliceAudioFiles(inputFiles, outputFile) {
+export async function spliceAudioFiles(inputFiles, outputFile, path) {
   return new Promise<void>(async (resolve, reject) => {
         // Create a file list for the concat filter
         
     try {
-      let writer = fs.createWriteStream(outputFile);
+      // let writer = fs.createWriteStream(`${path}/${outputFile}`);
       const ffmpegCommand = ffmpeg();
 
       inputFiles.forEach(async file => {
@@ -75,7 +75,7 @@ export async function spliceAudioFiles(inputFiles, outputFile) {
       });
 
       ffmpegCommand
-      .mergeToFile(outputFile, './result')
+      .mergeToFile(`${path}/${outputFile}`, './temp')
         .on('end', () => {
           resolve();
         })

@@ -12,6 +12,5 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "store.ts"  ]
+    "expo-env.d.ts"]
 }

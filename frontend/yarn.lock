@@ -1258,169 +1258,6 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@descope/access-key-management-widget@0.1.109":
-  version "0.1.109"
-  resolved "https://registry.npmjs.org/@descope/access-key-management-widget/-/access-key-management-widget-0.1.109.tgz"
-  integrity sha512-cDZJvenAS0/jkRxAmBQOApjzV96xgOAOMsjAbdURtLExNfLQwDGBfFwh8p5QuZRPYjYBegIBG0Un/ySAqDljNQ==
-  dependencies:
-    "@descope/sdk-component-drivers" "0.2.35"
-    "@descope/sdk-helpers" "0.1.54"
-    "@descope/sdk-mixins" "0.2.39"
-    "@descope/web-js-sdk" "1.15.4"
-    "@reduxjs/toolkit" "^2.0.1"
-    immer "^10.0.3"
-    redux "5.0.1"
-    redux-thunk "3.1.0"
-    reselect "5.1.1"
-    tslib "2.6.3"
-
-"@descope/audit-management-widget@0.1.72":
-  version "0.1.72"
-  resolved "https://registry.npmjs.org/@descope/audit-management-widget/-/audit-management-widget-0.1.72.tgz"
-  integrity sha512-tizcK88fZAD8nogHmmDN3h/NAohJeS+AK5KMYQj/ma+YxGoaLuUgIr9D7TcsbmHyvJv96FZ+nCB/x0XlEMYm7g==
-  dependencies:
-    "@descope/sdk-component-drivers" "0.2.35"
-    "@descope/sdk-helpers" "0.1.54"
-    "@descope/sdk-mixins" "0.2.39"
-    "@descope/web-js-sdk" "1.15.4"
-    "@reduxjs/toolkit" "^2.0.1"
-    immer "^10.0.3"
-    redux "5.0.1"
-    redux-thunk "3.1.0"
-    reselect "5.1.1"
-    tslib "2.6.3"
-
-"@descope/core-js-sdk@2.20.4":
-  version "2.20.4"
-  resolved "https://registry.npmjs.org/@descope/core-js-sdk/-/core-js-sdk-2.20.4.tgz"
-  integrity sha512-tib9cI4HorZUyVOqA9DPss7TzVebXCvQrExjRu7f4kMkWkfLmMJgqUuwuCqAnkHCoLrN4EEYeP7MZ6RK/UZ14Q==
-  dependencies:
-    jwt-decode "3.1.2"
-
-"@descope/core-js-sdk@2.23.2":
-  version "2.23.2"
-  resolved "https://registry.npmjs.org/@descope/core-js-sdk/-/core-js-sdk-2.23.2.tgz"
-  integrity sha512-znUM6StqSauS/vx9/uA8nBKX+HJwvwivfmJETjrucag8j4n+t1P1DvyFy4U1F+SCGjpDEiCRj2dZBdbR2Vxu7w==
-  dependencies:
-    jwt-decode "3.1.2"
-
-"@descope/react-native-sdk@^0.6.2":
-  version "0.6.2"
-  resolved "https://registry.npmjs.org/@descope/react-native-sdk/-/react-native-sdk-0.6.2.tgz"
-  integrity sha512-Z2jwuyDYynDHHOmn928rwgMpQdRTDXmrzMC/hxj2BzA+tSyDOWQncOvRL29mSHhc5IFoRPvvPQ3csWJ8fGR/pA==
-  dependencies:
-    "@descope/core-js-sdk" "2.20.4"
-    base-64 "^1.0.0"
-
-"@descope/react-sdk@^2.0.49":
-  version "2.0.49"
-  resolved "https://registry.npmjs.org/@descope/react-sdk/-/react-sdk-2.0.49.tgz"
-  integrity sha512-8zPaDIuCkBhUYVdCEGIJYDf8qB21suA3Dg+jKJm+AnRJJCCbuizWo0+eJUE6vKIcw1aSiylZJQTGaFO7HY2ezQ==
-  dependencies:
-    "@descope/access-key-management-widget" "0.1.109"
-    "@descope/audit-management-widget" "0.1.72"
-    "@descope/core-js-sdk" "2.23.2"
-    "@descope/role-management-widget" "0.1.107"
-    "@descope/user-management-widget" "0.4.110"
-    "@descope/user-profile-widget" "0.0.83"
-    "@descope/web-component" "3.19.5"
-    "@descope/web-js-sdk" "1.15.4"
-
-"@descope/role-management-widget@0.1.107":
-  version "0.1.107"
-  resolved "https://registry.npmjs.org/@descope/role-management-widget/-/role-management-widget-0.1.107.tgz"
-  integrity sha512-aV9qVj26ZPNqyXD/GdGNMy9BSMSq+dIGCa7mIl6P7+Dx0AbMgJY4+vwGZSY3s2tZBraUecGeqlPfdsngVz+++Q==
-  dependencies:
-    "@descope/sdk-component-drivers" "0.2.35"
-    "@descope/sdk-helpers" "0.1.54"
-    "@descope/sdk-mixins" "0.2.39"
-    "@descope/web-js-sdk" "1.15.4"
-    "@reduxjs/toolkit" "^2.0.1"
-    immer "^10.0.3"
-    redux "5.0.1"
-    redux-thunk "3.1.0"
-    reselect "5.1.1"
-    tslib "2.6.3"
-
-"@descope/sdk-component-drivers@0.2.35":
-  version "0.2.35"
-  resolved "https://registry.npmjs.org/@descope/sdk-component-drivers/-/sdk-component-drivers-0.2.35.tgz"
-  integrity sha512-BHkcxUmybP4VtchKqTt4uyY5FYeocqh/efGZ1Z850B4vZkyOaa2qo7B1Ssvvzopj54k9VvaARtm1jLdKgQIupQ==
-  dependencies:
-    "@descope/sdk-helpers" "0.1.54"
-    tslib "2.6.3"
-
-"@descope/sdk-helpers@0.1.54":
-  version "0.1.54"
-  resolved "https://registry.npmjs.org/@descope/sdk-helpers/-/sdk-helpers-0.1.54.tgz"
-  integrity sha512-gj8xKhAxA2GvECM2wdX/FZJYZqVx7AAeF3sRSDdepOYwRHYJZPpA8eXHxkZnL44/v5YTLvXaqkP7QSAHUiRnfA==
-  dependencies:
-    tslib "2.6.3"
-
-"@descope/sdk-mixins@0.2.39":
-  version "0.2.39"
-  resolved "https://registry.npmjs.org/@descope/sdk-mixins/-/sdk-mixins-0.2.39.tgz"
-  integrity sha512-df5fiKweDnQ/D203Gukuro4JZci6OVo69YrmlZSy7X0dyQJLrB9zXxlmHBn5WMrCwcbKD0d/p7zvjxxgg9APPw==
-  dependencies:
-    "@descope/sdk-component-drivers" "0.2.35"
-    "@descope/sdk-helpers" "0.1.54"
-    tslib "2.6.3"
-
-"@descope/user-management-widget@0.4.110":
-  version "0.4.110"
-  resolved "https://registry.npmjs.org/@descope/user-management-widget/-/user-management-widget-0.4.110.tgz"
-  integrity sha512-Jg46kMVCmJRjz1dLhX5nhkX5n1AAQ3a4K+1NRxQ6i8ygjKf8knUl/OiU5bF2O3E2BUEQ8jpg1IVEGBJbb+Gr8A==
-  dependencies:
-    "@descope/sdk-component-drivers" "0.2.35"
-    "@descope/sdk-helpers" "0.1.54"
-    "@descope/sdk-mixins" "0.2.39"
-    "@descope/web-js-sdk" "1.15.4"
-    "@reduxjs/toolkit" "^2.0.1"
-    immer "^10.0.3"
-    libphonenumber-js "1.11.4"
-    redux "5.0.1"
-    redux-thunk "3.1.0"
-    reselect "5.1.1"
-    tslib "2.6.3"
-
-"@descope/user-profile-widget@0.0.83":
-  version "0.0.83"
-  resolved "https://registry.npmjs.org/@descope/user-profile-widget/-/user-profile-widget-0.0.83.tgz"
-  integrity sha512-BPsrL2D/27eBytfarrEATaK0+RcZm+cJtTte0YB09i+ubFl8VP3WLnMCvEePnNaW3y6ozVKf/N1MMQex+goLbw==
-  dependencies:
-    "@descope/sdk-component-drivers" "0.2.35"
-    "@descope/sdk-helpers" "0.1.54"
-    "@descope/sdk-mixins" "0.2.39"
-    "@descope/web-component" "3.19.5"
-    "@descope/web-js-sdk" "1.15.4"
-    "@reduxjs/toolkit" "^2.0.1"
-    immer "^10.0.3"
-    redux "5.0.1"
-    redux-thunk "3.1.0"
-    reselect "5.1.1"
-    tslib "2.6.3"
-  optionalDependencies:
-    "@descope/core-js-sdk" "2.23.2"
-
-"@descope/web-component@3.19.5":
-  version "3.19.5"
-  resolved "https://registry.npmjs.org/@descope/web-component/-/web-component-3.19.5.tgz"
-  integrity sha512-tqA4LIHRD170gzApJlHnL4namb2Na/uqrezLDe4+HTZ6NE4ID3B0E9U/ajqV2CGR1HAGx1cmlxuL2huaafuu6A==
-  dependencies:
-    "@descope/web-js-sdk" "1.15.4"
-    tslib "2.6.3"
-
-"@descope/web-js-sdk@1.15.4":
-  version "1.15.4"
-  resolved "https://registry.npmjs.org/@descope/web-js-sdk/-/web-js-sdk-1.15.4.tgz"
-  integrity sha512-TEzGdY437TAWoZctsuUlynqnPvRbmIfPUyQUSP9rErJ4NI0t4in5KVoVoqzjkHNmuB3NHfeZdBX7FEj5pmuvUQ==
-  dependencies:
-    "@descope/core-js-sdk" "2.23.2"
-    "@fingerprintjs/fingerprintjs-pro" "3.9.8"
-    js-cookie "3.0.5"
-    jwt-decode "3.1.2"
-    tslib "2.6.3"
-
 "@egjs/hammerjs@^2.0.17":
   version "2.0.17"
   resolved "https://registry.npmjs.org/@egjs/hammerjs/-/hammerjs-2.0.17.tgz"
@@ -1776,13 +1613,6 @@
     chalk "^4.1.0"
     find-up "^5.0.0"
     js-yaml "^4.1.0"
-
-"@fingerprintjs/fingerprintjs-pro@3.9.8":
-  version "3.9.8"
-  resolved "https://registry.npmjs.org/@fingerprintjs/fingerprintjs-pro/-/fingerprintjs-pro-3.9.8.tgz"
-  integrity sha512-5FXxHbyp1KIGh3Kv0hpU/6DuQ0D4tlJZRIVuHduke2IEHbzhgTR3oGMg5J+nwDsVFl60YkZKuDyaZ74d4wvFtg==
-  dependencies:
-    tslib "^2.4.1"
 
 "@graphql-typed-document-node/core@^3.1.0":
   version "3.2.0"
@@ -2303,11 +2133,6 @@
     prompts "^2.4.2"
     semver "^7.5.2"
 
-"@react-native-google-signin/google-signin@^12.2.1":
-  version "12.2.1"
-  resolved "https://registry.npmjs.org/@react-native-google-signin/google-signin/-/google-signin-12.2.1.tgz"
-  integrity sha512-qt2Cb+bN2NS8BBT06M3UbLVS1gaSYTenNh4uZtPNmyJC23xZAynLkuhvsC6gmeEnxcj0wLVUn1Es+LSHw0OhVQ==
-
 "@react-native/assets-registry@0.74.85":
   version "0.74.85"
   resolved "https://registry.npmjs.org/@react-native/assets-registry/-/assets-registry-0.74.85.tgz"
@@ -2513,11 +2338,6 @@
   dependencies:
     nanoid "^3.1.23"
 
-"@react-oauth/google@^0.12.1":
-  version "0.12.1"
-  resolved "https://registry.npmjs.org/@react-oauth/google/-/google-0.12.1.tgz"
-  integrity sha512-qagsy22t+7UdkYAiT5ZhfM4StXi9PPNvw0zuwNmabrWyMKddczMtBIOARflbaIj+wHiQjnMAsZmzsUYuXeyoSg==
-
 "@redux-devtools/extension@^3.3.0":
   version "3.3.0"
   resolved "https://registry.npmjs.org/@redux-devtools/extension/-/extension-3.3.0.tgz"
@@ -2526,7 +2346,7 @@
     "@babel/runtime" "^7.23.2"
     immutable "^4.3.4"
 
-"@reduxjs/toolkit@^2.0.1", "@reduxjs/toolkit@^2.2.6":
+"@reduxjs/toolkit@^2.2.6":
   version "2.2.6"
   resolved "https://registry.npmjs.org/@reduxjs/toolkit/-/toolkit-2.2.6.tgz"
   integrity sha512-kH0r495c5z1t0g796eDQAkYbEQ3a1OLYN9o8jQQVZyKyw367pfRGS+qZLkHYvFHiUUdafpoSlQ2QYObIApjPWA==
@@ -2796,7 +2616,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*", "@types/react@^18.2.25", "@types/react@^18.2.6", "@types/react@>=16.8", "@types/react@>=17", "@types/react@~18.2.45":
+"@types/react@*", "@types/react@^18.2.25", "@types/react@^18.2.6", "@types/react@>=16.8", "@types/react@~18.2.45":
   version "18.2.79"
   resolved "https://registry.npmjs.org/@types/react/-/react-18.2.79.tgz"
   integrity sha512-RwGAGXPl9kSXwdNTafkOEuFrTBD5SA2B3iEB96xi8+xu5ddUa/cpvyVCSNn+asgLCTHkb5ZxN8gbuibYJi4s1w==
@@ -3294,11 +3114,6 @@ base-64@^0.1.0:
   version "0.1.0"
   resolved "https://registry.npmjs.org/base-64/-/base-64-0.1.0.tgz"
   integrity sha512-Y5gU45svrR5tI2Vt/X9GPd3L0HNIKzGu202EjxrXMpuc2V2CiKgemAbUUsqYmZJvPtCXoUKjNZwBJzsNScUbXA==
-
-base-64@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/base-64/-/base-64-1.0.0.tgz"
-  integrity sha512-kwDPIFCGx0NZHog36dj+tHiwP4QMzsZ3AgMViUBKI0+V5n4U0ufTCUMhnQ04diaRI8EX/QcPfql7zlhZ7j4zgg==
 
 base64-js@^1.2.3, base64-js@^1.3.0, base64-js@^1.3.1, base64-js@^1.5.1:
   version "1.5.1"
@@ -4675,7 +4490,7 @@ expo-web-browser@~13.0.0, expo-web-browser@~13.0.3:
   resolved "https://registry.npmjs.org/expo-web-browser/-/expo-web-browser-13.0.3.tgz"
   integrity sha512-HXb7y82ApVJtqk8tManyudtTrCtx8xcUnVzmJECeHCB0SsWSQ+penVLZxJkcyATWoJOsFMnfVSVdrTcpKKGszQ==
 
-expo@*, expo@>=48.0.0, expo@>=50.0.0, expo@~51.0.17:
+expo@*, expo@>=48.0.0, expo@~51.0.17:
   version "51.0.20"
   resolved "https://registry.npmjs.org/expo/-/expo-51.0.20.tgz"
   integrity sha512-EmNZel6j7pU4YF1QcIcgpVdYsA1lASQcEw9PPSevjreNT6nlge2CNHB6mAphAKGz5PdgcWYBn/v4qQj1/FJuZQ==
@@ -6212,11 +6027,6 @@ join-component@^1.1.0:
   resolved "https://registry.npmjs.org/join-component/-/join-component-1.1.0.tgz"
   integrity sha512-bF7vcQxbODoGK1imE2P9GS9aw4zD0Sd+Hni68IMZLj7zRnquH7dXUmMw9hDI5S/Jzt7q+IyTXN0rSg2GI0IKhQ==
 
-js-cookie@3.0.5:
-  version "3.0.5"
-  resolved "https://registry.npmjs.org/js-cookie/-/js-cookie-3.0.5.tgz"
-  integrity sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==
-
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz"
@@ -6364,7 +6174,7 @@ jsonfile@^6.0.1:
   optionalDependencies:
     graceful-fs "^4.1.6"
 
-jwt-decode@^3.1.2, jwt-decode@3.1.2:
+jwt-decode@^3.1.2:
   version "3.1.2"
   resolved "https://registry.npmjs.org/jwt-decode/-/jwt-decode-3.1.2.tgz"
   integrity sha512-UfpWE/VZn0iP50d8cz9NrZLM9lSWhcJ+0Gt/nm4by88UL+J1SiKN8/5dkjMmbEzwL2CAe+67GsegCbIKtbp75A==
@@ -6383,11 +6193,6 @@ leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.npmjs.org/leven/-/leven-3.1.0.tgz"
   integrity sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==
-
-libphonenumber-js@1.11.4:
-  version "1.11.4"
-  resolved "https://registry.npmjs.org/libphonenumber-js/-/libphonenumber-js-1.11.4.tgz"
-  integrity sha512-F/R50HQuWWYcmU/esP5jrH5LiWYaN7DpN0a/99U8+mnGGtnx8kmRE+649dQh3v+CowXXZc8vpkf5AmYkO0AQ7Q==
 
 lighthouse-logger@^1.0.0:
   version "1.4.2"
@@ -7756,7 +7561,7 @@ react-devtools-core@^5.0.0:
     shell-quote "^1.6.1"
     ws "^7"
 
-react-dom@*, react-dom@^18.0.0, react-dom@>=16.8.0, react-dom@18.2.0:
+react-dom@^18.0.0, react-dom@18.2.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz"
   integrity sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==
@@ -7944,7 +7749,7 @@ react-test-renderer@18.2.0:
     react-shallow-renderer "^16.15.0"
     scheduler "^0.23.0"
 
-react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.11.0 || ^17 || ^18", "react@^16.6.0 || ^17.0.0 || ^18.0.0", "react@^16.8 || ^17.0 || ^18.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.9.0 || ^17.0.0 || ^18", react@^18.0, react@^18.0.0, react@^18.2.0, react@>=16.8, react@>=16.8.0, react@>=17, react@>=17.0.0, react@18.2.0:
+react@*, "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.11.0 || ^17 || ^18", "react@^16.6.0 || ^17.0.0 || ^18.0.0", "react@^16.8 || ^17.0 || ^18.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.9.0 || ^17.0.0 || ^18", react@^18.0, react@^18.0.0, react@^18.2.0, react@>=16.8, react@>=17.0.0, react@18.2.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react/-/react-18.2.0.tgz"
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==
@@ -8002,12 +7807,12 @@ recast@^0.21.0:
     source-map "~0.6.1"
     tslib "^2.0.1"
 
-redux-thunk@^3.1.0, redux-thunk@3.1.0:
+redux-thunk@^3.1.0:
   version "3.1.0"
   resolved "https://registry.npmjs.org/redux-thunk/-/redux-thunk-3.1.0.tgz"
   integrity sha512-NW2r5T6ksUKXCabzhL9z+h206HQw/NJkcLm1GPImRQ8IzfXwRGqjVhKJGauHirT0DAuyy6hjdnMZaRoAcy0Klw==
 
-"redux@^3.1.0 || ^4.0.0 || ^5.0.0", redux@^5.0.0, redux@^5.0.1, redux@5.0.1:
+"redux@^3.1.0 || ^4.0.0 || ^5.0.0", redux@^5.0.0, redux@^5.0.1:
   version "5.0.1"
   resolved "https://registry.npmjs.org/redux/-/redux-5.0.1.tgz"
   integrity sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w==
@@ -8104,7 +7909,7 @@ requires-port@^1.0.0:
   resolved "https://registry.npmjs.org/requires-port/-/requires-port-1.0.0.tgz"
   integrity sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==
 
-reselect@^5.1.0, reselect@5.1.1:
+reselect@^5.1.0:
   version "5.1.1"
   resolved "https://registry.npmjs.org/reselect/-/reselect-5.1.1.tgz"
   integrity sha512-K/BG6eIky/SBpzfHZv/dd+9JBFiS4SWV7FIujVyJRux6e45+73RaUHXLmIR1f7WOMaQ0U1km6qwklRQxpJJY0w==
@@ -9090,7 +8895,7 @@ ts-interface-checker@^0.1.9:
   resolved "https://registry.npmjs.org/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz"
   integrity sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==
 
-tslib@^2.0.1, tslib@^2.1.0, tslib@^2.4.0, tslib@^2.4.1, tslib@2.6.3:
+tslib@^2.0.1, tslib@^2.1.0, tslib@^2.4.0:
   version "2.6.3"
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.6.3.tgz"
   integrity sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==

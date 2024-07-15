@@ -1,34 +1,28 @@
 import { Image, StyleSheet, Platform } from 'react-native';
-
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { GoogleLoginButtonProps, UserInfo, AuthFullProps } from '@/user-store';
 import {Text, View} from 'react-native';
-import Logout from '@/components/Logout';
-import {useAuthStore} from '@/user-store';
 import { useEffect, useState } from 'react';
 
 export default function HomeScreen() {
   const [data, setData] = useState(null);
 
-  const getData = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/auth'); // replace <your-ip-address> with your backend's IP address
-      const result = await response.json();
-      setData(result);
-      console.log(result);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  // const getData = async () => {
+  //   try {
+  //     const response = await fetch('http://localhost:5000/api/auth'); // replace <your-ip-address> with your backend's IP address
+  //     const result = await response.json();
+  //     setData(result);
+  //     console.log(result);
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
 
-  useEffect(() => {
-    getData();
-  }, []);
-
-  let userInfo = useAuthStore.getState();
+  // useEffect(() => {
+  //   getData();
+  // }, []);
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}

@@ -61,7 +61,7 @@ export async function uploadFileToS3(uploadDetails) {
       const { key, body, contentType } = uploadDetails;
   
       const params = {
-        Bucket: 'podcast-pro',
+        Bucket: 'main-server',
         Key: key,
         Body: body,
         ContentType: contentType,
