@@ -24,22 +24,6 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use("/record", records);
 
-
-// const checkJwt = jwt.expressjwt({
-//     secret: jwksRsa.expressJwtSecret({
-//     cache: true,
-//     rateLimit: true,
-//     jwksRequestsPerMinute: 5,
-//     jwksUri: 'https://YOUR_DOMAIN/.well-known/jwks.json'
-//   }) as jwt.GetVerificationKey,
-//   audience: 'YOUR_API_IDENTIFIER',
-//   issuer: 'https://YOUR_DOMAIN/',
-//   algorithms: ['RS256']
-// });
-  
-//   app.use(checkJwt);
-
-
 // Start the server
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

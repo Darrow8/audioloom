@@ -1,5 +1,4 @@
 import { MongoClient, ServerApiVersion } from "mongodb";
-
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -29,5 +28,27 @@ export async function init(){
 
     db = client.db("fullData");
 }
+export interface Pod {
+    readings: string[];
+    audio: string[];
+}
+// Class that Mongo Accepts
+export class MongoUser {
+    _id: string; // mongo ID
+    name: string;
+    pod: Pod;
+    user_id: string; // auth0 ID
 
-// export default main;
+
+    constructor(data: {
+        _id: string;
+        name: string;
+        pod: Pod;
+        user_id: string;
+    }) {
+        this._id = data._id;
+        this.name = data.name;
+        this.pod = data.pod;
+        this.user_id = data.user_id;
+    }
+}
