@@ -4,19 +4,21 @@ import * as eleven from './elevenlabs.js'
 import * as aud from './audio_processer.js';
 import fs from 'fs';
 import path from 'path';
-import { CharLine, MusicLine, Script,  } from './pod.js';
+import { CharLine, MusicLine, MusicType, Script,  } from './pod_utils.js';
 import { Readable } from 'stream';
 import { v4 as uuidv4 } from 'uuid';
+import * as epidemic from './epidemic.js';
+import { Track, usefulTrack } from './epidemic_utils.js';
 
-
+let script : Script = undefined;
 /**
  * proccess_pod
  * Main function to process script
  */
 async function proccess_pod(scriptName:string){
-    let script = await getScript(scriptName);
+    script = await getScript(scriptName);
 
-    // // process char lines
+    // // // process char lines
     // let char_lines = script.getCharLines();
     // let char_audio = await processCharacterLines(char_lines);
     // try {
@@ -32,16 +34,15 @@ async function proccess_pod(scriptName:string){
     //     };
     //     await aws.uploadFileToS3(uploadDetails);
     //     // delete temp files
-    //     deleteAllFilesInFolder('./temp');
-    //     // deleteAllFilesInFolder('./result');
+        // deleteAllFilesInFolder('./temp');
+        // deleteAllFilesInFolder('./result');
     // } catch (err) {
     //     console.error('Error concatenating audio streams:', err);
     // }
 
     let output = "c4aa59a4-0b69-4bdc-8813-2a074d029d37.mp3";
     let music_lines = script.getMusicLines();
-    
-      
+    let music_audio = await processMusicLines(music_lines);
 
 }
 /**
@@ -157,14 +158,83 @@ async function processCharacterLine(line:CharLine, prev_line: CharLine | null, n
 
 }
 
+async function processMusicLines(lines: MusicLine[]){
+    let audio_arr : usefulTrack[] = [];
+    for(let line of lines){
+        let audio;
+        if(line.type == MusicType.BMusic){
+            audio = await processBMusicLine(line);
+        }else if(line.type == MusicType.SFX){
+            audio = await processSFXMusicLine(line)
+
+        }else{
+            throw `error, found line with bad type: ${line}`;
+        }
+        audio_arr.push(audio);
+    }
+    console.log(audio_arr);
+}
+
 
 /**
  * processMusicLine
  * An audio clip is going to play during this line
  */
-async function processMusicLine(line){
-
+async function processBMusicLine(music_line:MusicLine) : Promise<usefulTrack>{
+    let line_order = music_line.order;
+    let dialogue_desc = "";
+    if(line_order < script.lines.length){
+        dialogue_desc = script.lines[line_order].raw_string;
+    }
+    // console.log(`dialogue_desc: ${dialogue_desc}`);
+    let res = await openai.musicChooser(music_line.music_description, dialogue_desc)
+    let music_choice = {};
+    try {
+        music_choice = JSON.parse(res);
+    } catch (e) {
+        throw `error parsing music chooser result ${res}`;
+    }
+    if('genre' in music_choice == false){
+        music_choice['genre'] = "";
+    }
+    if('mood' in music_choice == false){
+        music_choice['mood'] = "";
+    }
+    let tracks : usefulTrack[] = await epidemic.fetchTracks(music_choice['genre'],music_choice['mood'])
+    let track = tracks[0];
+    if(tracks.length == 0){
+        return undefined;
+    }
+    let new_id = uuidv4();
+    track.id = new_id;
+    let outputPath = `./music/${track.id}.mp3`; // Replace with your desired local output file name
+    let url = track.stems.full.lqMp3Url
+    await epidemic.downloadFile(url, outputPath).catch((err) => {
+        console.error(err);
+    });
+    return track;
 }
+
+/**
+ * processMusicLine
+ * An audio clip is going to play during this line
+ */
+async function processSFXMusicLine(music_line:MusicLine) : Promise<usefulTrack>{
+    let tracks : usefulTrack[] = await epidemic.fetchSFX(music_line.music_description)
+    let track = tracks[0];
+    if(tracks.length == 0){
+        return undefined;
+    }
+    let new_id = uuidv4();
+    track.id = new_id;
+    let outputPath = `./music/${track.id}.mp3`; // Replace with your desired local output file name
+    let url = track.stems.full.lqMp3Url
+    await epidemic.downloadFile(url, outputPath).catch((err) => {
+        console.error(err);
+    });
+    return track;
+}
+
 
 function deleteAllFilesInFolder(folderPath) {
     fs.readdir(folderPath, (err, files) => {

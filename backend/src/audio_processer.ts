@@ -66,11 +66,9 @@ export async function spliceAudioFiles(inputFiles, outputFile, path) {
         // Create a file list for the concat filter
         
     try {
-      // let writer = fs.createWriteStream(`${path}/${outputFile}`);
       const ffmpegCommand = ffmpeg();
 
       inputFiles.forEach(async file => {
-        // let dur = await getAudioDuration(file)
         ffmpegCommand.addInput(file);
       });
 
