@@ -1,6 +1,20 @@
-import * as epidemic from './epidemic_utils';
+import * as epidemic from './utils_sound';
 import fetch from 'node-fetch';
-import fs from 'fs';
+
+
+
+export async function fetchTracks(genre:string, mood:string) : Promise<epidemic.usefulTrack[]> {
+  let result = await fetchTracksAPI(genre,mood);
+  if(result.length == 0 || result == undefined){
+    result = await fetchTracksAPI(genre,"");
+  }
+  // if result is 0 again
+  if(result.length == 0 || result == undefined){
+    result = await fetchTracksAPI("",mood);
+  }
+
+  return result;
+}
 
 /**
  * 
@@ -19,7 +33,7 @@ import fs from 'fs';
     });
   })
  */
-export async function fetchTracks(genre:string, mood:string) : Promise<epidemic.usefulTrack[]> {
+export async function fetchTracksAPI(genre:string, mood:string) : Promise<epidemic.usefulTrack[]> {
     const myHeaders = {
         "host": "www.epidemicsound.com",
         "Accept": "application/json",
@@ -49,7 +63,7 @@ export async function fetchTracks(genre:string, mood:string) : Promise<epidemic.
         if(mood != "" && epidemic.moods.includes(mood)){
             search += `&moods=${encodeURI(mood)}`;
         }
-        console.log(search);
+        // console.log(search);
         const response = await fetch(`https://www.epidemicsound.com/json/search/tracks/${search}`, requestOptions as any);
         const result = await response.json() as epidemic.DataStructure;
         return epidemic.processTrackJSON(result);
@@ -98,28 +112,10 @@ export async function fetchTracks(genre:string, mood:string) : Promise<epidemic.
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json() as epidemic.DataStructure;
-      console.log(result);
+      // console.log(result);
       return epidemic.processTrackJSON(result);
     } catch (error) {
       console.error('Error fetching SFX:', error);
       throw error;
     }
   }
-  
-export async function downloadFile(url:string, outputPath:string) {
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Error downloading file: ${response.statusText}`);
-    }
-    const fileStream = fs.createWriteStream(outputPath);
-    response.body.pipe(fileStream);
-
-    fileStream.on('finish', () => {
-        fileStream.close();
-        console.log(`Download ${outputPath} completed!`);
-    });
-
-    fileStream.on('error', (err) => {
-        console.error(`Error writing to file: ${err.message}`);
-    });
-}

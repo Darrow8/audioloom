@@ -70,7 +70,7 @@ export async function uploadFileToS3(uploadDetails) {
       const command = new PutObjectCommand(params);
       const data = await s3.send(command);
   
-      console.log('Successfully uploaded file:', data);
+      // console.log('Successfully uploaded file:', data);
   
       return {
         statusCode: 200,

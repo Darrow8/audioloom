@@ -14,7 +14,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.frontend"
+      "bundleIdentifier": "com.anonymous.frontend",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -35,7 +40,11 @@
         {
           "domain": "dev-r0ex85m18bf4us41.us.auth0.com"
         }
-      ]
+      ],
+      "expo-font",
+      {
+        "fonts": ["./assets/fonts/Inter-Black.otf"]
+      }
     ],
     "experiments": {
       "typedRoutes": true

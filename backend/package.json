@@ -4,7 +4,7 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "pod": "npx tsx src/process_pod.ts",
     "build": "npx tsc",
     "start": "node dist/server.js",
     "dev": "npx tsx src/server.ts"
@@ -46,8 +46,9 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/fs-extra": "^11.0.4",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.12",
     "@typescript-eslint/parser": "^7.16.0",
     "concurrently": "^8.2.2",
     "nodemon": "^3.1.4",
