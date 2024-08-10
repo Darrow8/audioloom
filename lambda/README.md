@@ -13,18 +13,23 @@
 
 ## Terminology
 
-- Reading: raw pdf that is passed to us 
+- Reading: raw pdf/txt file that is passed to us 
+- Article: cleaned reading as txt file
+- Script: podcast script as txt file generated from article in special format
+- Podcast: audio file generated from script
 
 ## Flow of Usage for Lambda functions
 
 The main thing we will be doing with lambda functions is creating a podcast from a single pdf. Here is the general flow
 
-1. Create Script
+1. Upload Reading to S3
+
+2. Create Script from Reading 
   - Clean, Trim, and Format Reading (Ideally PDF or TXT) for Usage into an Article (TXT format)
   - Convert Article to Script with LLM
   - Save to AWS S3 Bucket
 
-2. Create Podcast
+3. Create Podcast from Script
  - Generate Audio Clips — Dialogue, Background Music, and SFX — from Script
  - Concatenate Dialogue Audio Clips into a file
  - Overlay Background Music and SFX Clips 

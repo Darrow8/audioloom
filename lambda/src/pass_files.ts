@@ -6,7 +6,7 @@ import { s3Client } from "./init";
  * @param {string} fileName - The key (path) of the file in the S3 bucket
  * @returns {Promise<Buffer>} - A promise that resolves to the file data
  */
-export async function getFileFromS3(fileName): Promise<string> {
+export async function getFileFromS3(fileName: string ): Promise<string> {
   // Create a command to retrieve the object
   const command = new GetObjectCommand({
     Bucket: 'main-server',

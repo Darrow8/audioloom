@@ -4,21 +4,37 @@ import { encoding_for_model, TiktokenModel } from "tiktoken";
 import { openaiClient } from "./init.js";
 import { ChatModel } from "openai/resources/index.js";
 import { buildIntructions } from "./util_script.js";
-// https://platform.openai.com/docs/models/gpt-4o
-
 
 /**
- * TODO: 
- */
-export async function createScript(articleName : string){
-  let articleContent = await aws.getFileFromS3(`articles/${articleName}.txt`);
+ * Start with reading that has been uploaded earlier, ends with script in S3
+*/
+export async function createScript(readingFileName : string){
+  let readingContent = await aws.getFileFromS3(`readings/${readingFileName}`);
+  let fileType = readingFileName.split('.')[1]; 
+  if(fileType == "txt"){
+    // good!
+  } else if (fileType == "pdf"){
+    // convert to txt
+    
+  }else {
+    // figure out what else we can do
 
+  }
+  
+  
+  let article = cleanReading();  
+  // upload article
+
+  let articleName = "";
+  let articleContent = await aws.getFileFromS3(`articles/${articleName}.txt`);
+  await articleToScript(articleName,articleContent);
 }
 
 /**
  * remove unnecessary things in article and trim whitespace
  */ 
-async function cleanArticle(){
+async function cleanReading(){
+  // manually clean reading through basic methods
 
 }
 
