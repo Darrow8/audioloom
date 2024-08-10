@@ -1,5 +1,37 @@
 # generatePod
 
+## General Structure of lambda functions
+
+- `main.ts` handles all endpoints to be called
+- `temp_data.ts` stores temp data that is used for testing
+- `init.ts` holds startup functions that must be run
+- `local.ts` handles local creation, reading, and deletion of files
+
+- process_ files manipulate data based on name groupings 
+- util_ files hold classes and interfaces to be used by other files
+- pass_ files primarily retrieve or send data from APIs to be used by process_ files
+
+## Terminology
+
+- Reading: raw pdf that is passed to us 
+
+## Flow of Usage for Lambda functions
+
+The main thing we will be doing with lambda functions is creating a podcast from a single pdf. Here is the general flow
+
+1. Create Script
+  - Clean, Trim, and Format Reading (Ideally PDF or TXT) for Usage into an Article (TXT format)
+  - Convert Article to Script with LLM
+  - Save to AWS S3 Bucket
+
+2. Create Podcast
+ - Generate Audio Clips — Dialogue, Background Music, and SFX — from Script
+ - Concatenate Dialogue Audio Clips into a file
+ - Overlay Background Music and SFX Clips 
+ - Save to AWS S3 Bucket
+
+## AWS SAM CLI messages
+
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
 
 - hello-world - Code for the application's Lambda function.

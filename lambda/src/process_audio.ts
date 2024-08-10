@@ -1,24 +1,13 @@
 
-import { PassThrough, Readable, pipeline } from 'stream';
 import * as fs from 'fs';
-import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
 import ffmpeg from 'fluent-ffmpeg';
-import { promisify } from 'util';
-import * as dotenv from 'dotenv';
-import { AudioFile, Clip, MusicLine, MusicType } from './utils_pod';
-import { exec } from 'child_process';
-import * as fse from 'fs-extra';
+import { AudioFile, Clip, MusicLine, MusicType } from './util_pod';
 
-dotenv.config();
-const execPromise = promisify(exec);
-
-// TODO: prevent audio files from clipping over one another
 async function overlayAudios(backgroundFile: string, overlayFiles: Clip[], outputFile: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const outputPath = `./content/result/${outputFile}.mp3`;
-    const backgroundFilePath = `./content/character/${backgroundFile}.mp3`;
-    
+    const outputPath = `/tmp/result/${outputFile}.mp3`;
+    const backgroundFilePath = `/tmp/character/${backgroundFile}.mp3`;
+
     // Check if the input files exist
     if (!fs.existsSync(backgroundFilePath)) {
       return reject(new Error(`Main audio file not found: ${backgroundFilePath}`));
@@ -150,37 +139,6 @@ function determineStartTime(file: AudioFile, inputFiles: AudioFile[]) {
   return sum;
 }
 
-
-
-/**
- * Saves a Readable stream to a file.
- * 
- * @param {Readable} inputStream - The Readable stream to be saved.
- * @param {string} outputFile - The file path where the stream should be saved.
- * @returns {Promise<void>} - A promise that resolves when the operation is complete.
- * 
- * @example
- * const readableStream = someReadableStreamFunction();
- * saveStreamToFile(readableStream, 'output.txt')
- *   .then(() => console.log('Stream saved successfully'))
- *   .catch(err => console.error('Error saving stream:', err));
- */
-export async function saveStreamToFile(inputStream: Readable, outputFile: string): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const writeStream = fs.createWriteStream(outputFile);
-
-    pipeline(inputStream, writeStream, (err) => {
-      if (err) {
-        console.log(err);
-        reject();
-      } else {
-        console.log('saved!', outputFile);
-        resolve();
-      }
-    });
-  });
-}
-
 /**
  * Function to get the duration of an audio file.
  * 
@@ -208,7 +166,7 @@ export async function getAudioDuration(filePath: string): Promise<number> {
  * @param char_clips character clips of the current pod
  * @param music_clips music clips of the current pod
  */
-export async function addInMusic(input: string, char_clips: Clip[], music_clips: Clip[], output:string) {
+export async function addInMusic(input: string, char_clips: Clip[], music_clips: Clip[], output: string) {
 
   for (let i = 0; i < music_clips.length; i++) {
     // console.log('examining', music_clips[i]);
@@ -238,8 +196,6 @@ export async function addInMusic(input: string, char_clips: Clip[], music_clips:
     .catch((err) => { console.log(err) }).then(() => {
       console.log('completed')
     });
-
-
 }
 
 /**
@@ -254,96 +210,4 @@ function nearestAfterChar(char_clips: Clip[], music_clip: Clip): Clip {
   }
 
   return undefined;
-}
-
-function getVolume(file: string): Promise<number> {
-  return new Promise((resolve, reject) => {
-    let volumeOutput = '';
-    
-    ffmpeg()
-      .input(file)
-      // .inputOptions('-t 60') // Analyze only the first 60 seconds to speed up the process
-      .audioFilters('volumedetect')
-      .noVideo()
-      .outputOptions('-f null')
-      .on('stderr', (stderrLine) => {
-        volumeOutput += stderrLine + '\n';
-      })
-      .on('error', (err, stdout, stderr) => {
-        // Check if we have the volume info despite the "error"
-        const match = volumeOutput.match(/mean_volume: ([-\d.]+) dB/);
-        if (match) {
-          resolve(parseFloat(match[1]));
-        } else {
-          console.error('FFmpeg stderr:', stderr);
-          reject(new Error('Could not detect volume'));
-        }
-      })
-      .on('end', () => {
-        const match = volumeOutput.match(/mean_volume: ([-\d.]+) dB/);
-        if (match) {
-          resolve(parseFloat(match[1]));
-        } else {
-          console.error('Volume data not found in FFmpeg output');
-          reject(new Error('Could not detect volume'));
-        }
-      })
-      .output('/dev/null')
-      .run();
-  });
-}
-
-// async function normalizeLoudness(folderPath:string, file:string) {
-//   try {
-//       let fullFilePath = `${folderPath}/${file}`;
-//       let tempFilePath = `${folderPath}-temp/${file}`;
-//       await new Promise<void>((resolve, reject) => {
-//           ffmpeg(fullFilePath)
-//               .audioFilters('loudnorm')
-//               .on('end', () => {
-//                   resolve();
-//               })
-//               .on('error', (err) => {
-//                   reject(`Error normalizing loudness: ${err.message}`);
-//               })
-//               .save(tempFilePath);
-//       });
-
-//       await fse.move(tempFilePath, fullFilePath, { overwrite: true });
-
-//       console.log(`Normalization complete: ${fullFilePath}`);
-//   } catch (err) {
-//       console.error(err);
-//   }
-// }
-
-// async function checkAndAdjustVolume(backgroundFile: string, overlayFile: string): Promise<number> {
-//   try {
-//     console.log("background file: ", backgroundFile)
-//     console.log("overlay file: ", overlayFile)
-
-//     const backgroundVolume = await getVolume(backgroundFile);
-//     const overlayVolume = await getVolume(overlayFile);
-//     console.log("background volume ", backgroundVolume);
-//     console.log("overlay volume ", overlayVolume);
-
-
-//     // If overlay is louder than background, calculate adjustment
-//     if (overlayVolume > backgroundVolume) {
-//       const adjustment = backgroundVolume - overlayVolume - 10; // -10 dB buffer
-//       return Math.max(adjustment, -50); // Limit max reduction to -50 dB
-//     }
-
-//     await normalizeLoudness('./content/music',extractFileName(overlayFile));
-
-//     return 0; // No adjustment needed
-//   } catch (error) {
-//     console.error('Error checking volume:', error);
-//     return 0; // Return 0 if there's an error, assuming no adjustment
-//   }
-// }
-
-function extractFileName(filePath:string) {
-  const parts = filePath.split('/');
-  return parts[parts.length - 1];
 }

@@ -1,10 +1,5 @@
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from 'ffmpeg-static';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-// Promisify exec for easier async/await usage
-const execPromise = promisify(exec);
 
 // Set the path to the FFmpeg binary
 if (ffmpegPath) {
@@ -68,9 +63,3 @@ const loudnormTwoPass = async (inputFile: string, outputFile: string): Promise<v
         console.error('Error during loudness normalization:', error);
     }
 };
-
-// // Example usage
-// const inputFile = 'input.wav';
-// const outputFile = 'output.wav';
-
-// loudnormTwoPass(inputFile, outputFile);
