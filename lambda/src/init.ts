@@ -2,7 +2,9 @@ import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-sec
 import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
 import { ElevenLabsClient } from "elevenlabs";
 import OpenAI from "openai";
-
+import fs from 'fs';
+import path from 'path';
+import { Readable } from "stream";
 // elevenlabs client
 export let elevenlabsClient: ElevenLabsClient;
 export let elevenlabsInitialized = false;
@@ -12,9 +14,15 @@ export let s3Client: S3Client;
 export let s3Initialized = false;
 
 // openai client
-export let openaiClient : OpenAI;
+export let openaiClient: OpenAI;
 export let openai_initialized = false;
 
+// Whether or not we are going to load temporary data 
+export let run_temp = true;
+
+/**
+ * Main startup function that initializes all API calls and gets secret keys
+ */
 export async function startup() {
     try {
         // secret must be retrieved first
@@ -23,14 +31,83 @@ export async function startup() {
         initS3();
         initElevenLabs();
         initOpenAI();
+        if (run_temp) {
+            console.log("Downloading example data to /tmp");
+            await copyExampleDataToTmp();
+        }
     }
     catch (e) {
         throw new Error(`Error on Startup: ${e}`);
     }
 }
 
+// ... existing code ...
 
-export const initOpenAI = () => { 
+/**
+ * Downloads files from S3 bucket and stores them in /tmp directory
+ */
+export async function copyExampleDataToTmp() {
+    const bucketName = 'main-server';
+    const targetDir = '/tmp';
+    // Create /tmp/temp-data directory if it doesn't exist
+    const tempDataDir = path.join(targetDir, 'temp-data');
+    if (!fs.existsSync(tempDataDir)) {
+        fs.mkdirSync(tempDataDir, { recursive: true });
+    }
+
+    // List all objects in the bucket within the temp-data folder
+    const listCommand = new ListObjectsV2Command({ Bucket: bucketName, Prefix: 'temp-data/' });
+    const listResponse = await s3Client.send(listCommand);
+    console.log(`Listing objects in bucket ${bucketName} with prefix 'temp-data/':`);
+    console.log(listResponse);
+
+    // Download each object
+    for (const object of listResponse.Contents || []) {
+        if (object.Key) {
+            // Skip the directory itself
+            if (object.Key.endsWith('/')) {
+                continue;
+            }
+
+            console.log(`Downloading object ${object.Key} from bucket ${bucketName} to ${tempDataDir}`);
+
+            const getObjectCommand = new GetObjectCommand({
+                Bucket: bucketName,
+                Key: object.Key,
+            });
+            const getObjectResponse = await s3Client.send(getObjectCommand);
+
+            if (getObjectResponse.Body instanceof Readable) {
+                const relativePath = object.Key.replace('temp-data/', '');
+                const targetPath = path.join(tempDataDir, relativePath);
+                const fileDir = path.dirname(targetPath);
+
+                // Create subdirectories if they don't exist
+                if (!fs.existsSync(fileDir)) {
+                    fs.mkdirSync(fileDir, { recursive: true });
+                }
+
+                // Write the file
+                const writeStream = fs.createWriteStream(targetPath);
+                await new Promise((resolve, reject) => {
+                    if (getObjectResponse.Body instanceof Readable) {
+                        getObjectResponse.Body.pipe(writeStream)
+                            .on('finish', resolve)
+                            .on('error', reject);
+                    } else {
+                        reject(new Error('Response body is not a readable stream'));
+                    }
+                });
+            }
+        }
+    }
+
+    console.log(`Downloaded files from S3 bucket to ${targetDir}`);
+
+}
+
+
+export const initOpenAI = () => {
     openaiClient = new OpenAI({
         organization: "org-nd9Kz3AFMD7Wo3q05FTQMFAw",
         project: "proj_6RLSgyTB2eo5NjAfghsFU8df",

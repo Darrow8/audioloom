@@ -6,7 +6,7 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 30
+    Timeout: 3000
 
 Resources:
   GeneratePodcast:
@@ -29,4 +29,4 @@ Resources:
         EntryPoints: 
           - src/main.ts
         Banner:
-          - js=import path from 'path'; import { fileURLToPath } from 'url'; import { createRequire as topLevelCreateRequire } from 'module'; const require = topLevelCreateRequire(import.meta.url); const __filename = fileURLToPath(import.meta.url); const __dirname = path.dirname(__filename);
+          - js=import * as pathglobal from 'path'; import { fileURLToPath } from 'url'; import { createRequire as topLevelCreateRequire } from 'module'; const require = topLevelCreateRequire(import.meta.url); const __filename = fileURLToPath(import.meta.url); const __dirname = pathglobal.dirname(__filename);

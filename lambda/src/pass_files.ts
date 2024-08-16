@@ -1,5 +1,6 @@
 import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "./init";
+import * as fs from 'fs';
 
 /**
  * Retrieve a file from an S3 bucket
@@ -34,6 +35,9 @@ export async function getFileFromS3(fileName: string ): Promise<string> {
     throw err;
   }
 };
+
+
+
 
 /**
  * Function to upload a file to an S3 bucket using the @aws-sdk/client-s3 package.

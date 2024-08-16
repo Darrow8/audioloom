@@ -5,9 +5,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { temp_char, temp_music, temp_result_file } from './temp.js';
 import { processCharacterLines, processMusicLines } from './process_line.js';
 import { deleteAllFilesInFolder, saveAsJson } from './local.js';
+import { run_temp } from './init.js';
 
 export let script: Script | null = null;
-export let run_temp = true;
+
 
 /**
  * proccess_pod
