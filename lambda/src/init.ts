@@ -2,9 +2,8 @@ import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-sec
 import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
 import { ElevenLabsClient } from "elevenlabs";
 import OpenAI from "openai";
-import fs from 'fs';
-import path from 'path';
-import { Readable } from "stream";
+import ffmpeg from 'fluent-ffmpeg';
+
 // elevenlabs client
 export let elevenlabsClient: ElevenLabsClient;
 export let elevenlabsInitialized = false;
@@ -25,87 +24,47 @@ export let run_temp = true;
  */
 export async function startup() {
     try {
+        // local env variables check
+        console.log(process.env.IS_DOCKER);
+        console.log(process.env.IS_LAMBDA);
         // secret must be retrieved first
         let secret = await initSecrets();
         passSecrets(secret);
         initS3();
         initElevenLabs();
         initOpenAI();
-        if (run_temp) {
-            console.log("Downloading example data to /tmp");
-            await copyExampleDataToTmp();
-        }
+        configureFFMPEG();
     }
     catch (e) {
         throw new Error(`Error on Startup: ${e}`);
     }
 }
 
-// ... existing code ...
-
-/**
- * Downloads files from S3 bucket and stores them in /tmp directory
- */
-export async function copyExampleDataToTmp() {
-    const bucketName = 'main-server';
-    const targetDir = '/tmp';
-    // Create /tmp/temp-data directory if it doesn't exist
-    const tempDataDir = path.join(targetDir, 'temp-data');
-    if (!fs.existsSync(tempDataDir)) {
-        fs.mkdirSync(tempDataDir, { recursive: true });
+export const configureFFMPEG = () => {
+    if (process.env.IS_DOCKER) {
+        console.log("DOCKER");
+        ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
+        ffmpeg()
+            .input('/tmp/music/1a25463d-ec44-4057-b620-80bbcd2e23b7_raw.mp3') // Replace this with an actual small video or audio file in your project
+            .output('/tmp/ffmpeg-output.mp3') // Output file (you can delete this later)
+            .on('start', (commandLine) => {
+                console.log('Spawned Ffmpeg with command: ' + commandLine);
+            })
+            .on('progress', (progress) => {
+                console.log('Processing: ' + progress.percent + '% done');
+            })
+            .on('error', (err) => {
+                console.error('An error occurred: ' + err.message);
+            })
+            .on('end', () => {
+                console.log('Processing finished successfully');
+            })
+            .run();
+    } else if (!process.env.IS_DOCKER) {
+        console.log("NOT DOCKER");
+        ffmpeg.setFfmpegPath('/opt/homebrew/bin/ffmpeg');
     }
-
-    // List all objects in the bucket within the temp-data folder
-    const listCommand = new ListObjectsV2Command({ Bucket: bucketName, Prefix: 'temp-data/' });
-    const listResponse = await s3Client.send(listCommand);
-    console.log(`Listing objects in bucket ${bucketName} with prefix 'temp-data/':`);
-    console.log(listResponse);
-
-    // Download each object
-    for (const object of listResponse.Contents || []) {
-        if (object.Key) {
-            // Skip the directory itself
-            if (object.Key.endsWith('/')) {
-                continue;
-            }
-
-            console.log(`Downloading object ${object.Key} from bucket ${bucketName} to ${tempDataDir}`);
-
-            const getObjectCommand = new GetObjectCommand({
-                Bucket: bucketName,
-                Key: object.Key,
-            });
-            const getObjectResponse = await s3Client.send(getObjectCommand);
-
-            if (getObjectResponse.Body instanceof Readable) {
-                const relativePath = object.Key.replace('temp-data/', '');
-                const targetPath = path.join(tempDataDir, relativePath);
-                const fileDir = path.dirname(targetPath);
-
-                // Create subdirectories if they don't exist
-                if (!fs.existsSync(fileDir)) {
-                    fs.mkdirSync(fileDir, { recursive: true });
-                }
-
-                // Write the file
-                const writeStream = fs.createWriteStream(targetPath);
-                await new Promise((resolve, reject) => {
-                    if (getObjectResponse.Body instanceof Readable) {
-                        getObjectResponse.Body.pipe(writeStream)
-                            .on('finish', resolve)
-                            .on('error', reject);
-                    } else {
-                        reject(new Error('Response body is not a readable stream'));
-                    }
-                });
-            }
-        }
-    }
-
-    console.log(`Downloaded files from S3 bucket to ${targetDir}`);
-
 }
-
 
 export const initOpenAI = () => {
     openaiClient = new OpenAI({

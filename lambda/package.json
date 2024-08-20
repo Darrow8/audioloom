@@ -12,7 +12,7 @@
     "dbuild": "esbuild src/*.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outdir=dist/",
     "lambda-start": "sam build && sam local invoke",
     "docker-build": "docker build --platform linux/amd64 -t rivet .",
-    "docker-run": "docker run -it -v /Users/darrowhartman/Desktop/repos/podcast-pro/lambda/temp-data:/tmp --platform linux/amd64 -p 9000:8080 rivet",
+    "docker-run": "docker run -it -v \"$(pwd)/temp-data:/tmp\" --env-file .env --platform linux/amd64 -p 9000:8080 rivet",
     "docker-start": "npm run docker-build && npm run docker-run"
   },
   "author": "",
