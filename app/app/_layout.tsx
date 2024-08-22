@@ -1,30 +1,57 @@
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, {useEffect, useState, useCallback} from 'react';
-import { StyleSheet, Text, View, Button } from 'react-native';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Appearance, useColorScheme } from 'react-native';
-import auth0, {useAuth0, Auth0Provider} from 'react-native-auth0';
-// import Auth from './Auth';
+import React, { useEffect, useState } from 'react';
+import { useColorScheme } from 'react-native';
 import * as config from "../auth0_config";
 import Landing from './landing';
+import { Auth0Provider, useAuth0 } from 'react-native-auth0';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+function AppContent() {
+  const { user } = useAuth0();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    async function checkLogin() {
+      try {
+        if(user) {
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error("Error checking login status:", error);
+      }
+    }
+    checkLogin();
+  }, [user]);
+  return isLoggedIn ? (
+    <Stack screenOptions={{
+      headerStyle: {
+        backgroundColor: '#f4511e',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },
+      headerShown: false
+    }}>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
+  ) : (
+    <Landing />
+  );
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  
-
-  const {authorize, clearSession, user, error} = useAuth0();
-
-  const loggedIn = user !== undefined && user !== null;
-  
   const [loaded] = useFonts({
     FuturaHeavy: require('../assets/fonts/futura/Futura_Heavy_font.ttf'),
     FuturaBook: require('../assets/fonts/futura/Futura_Book_font.ttf'),
     FuturaLight: require('../assets/fonts/futura/Futura_Light_font.ttf'),
-    // FuturaMedium: require('../assets/fonts/futura/Futura_Medium_font.ttf'),
     FuturaBold: require('../assets/fonts/futura/Futura_Bold_font.ttf'),
     FuturaExtraBlack: require('../assets/fonts/futura/Futura_Extra_Black_font.ttf'),
     FuturaBoldItalic: require('../assets/fonts/futura/Futura_Bold_Italic_font.ttf'),
@@ -46,23 +73,8 @@ export default function RootLayout() {
   }
 
   return (
-    
     <Auth0Provider domain={config.default.domain} clientId={config.default.clientId}>
-        {loggedIn ? 
-        <Stack screenOptions={{
-            headerStyle: {
-              backgroundColor: '#f4511e',
-            },
-            headerTintColor: '#fff',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-            },
-            headerShown: false
-          }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
-        </Stack>:
-        <Landing />
-        }
+      <AppContent />
     </Auth0Provider>
   );
 }

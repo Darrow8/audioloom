@@ -9,7 +9,6 @@ import * as config from "../auth0_config";
  */
 export default function Root({ children }: PropsWithChildren) {
   return (
-    <Auth0Provider domain={config.default.domain} clientId={config.default.clientId}>
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
@@ -28,7 +27,6 @@ export default function Root({ children }: PropsWithChildren) {
       </head>
       <body>{children}</body>
     </html>
-    </Auth0Provider>
   );
 }
 

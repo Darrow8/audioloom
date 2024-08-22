@@ -10,13 +10,17 @@ import { FontAwesome6 } from '@expo/vector-icons';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   let size = 28;
-  console.log("in tab layout")
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: Colors[colorScheme ?? 'light'].background,
+        },
+        headerTintColor: Colors[colorScheme ?? 'light'].header,
+        headerTitleStyle: {
+        },
       }}>
       <Tabs.Screen
         name="index"
@@ -27,7 +31,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="upload"
         options={{
           title: 'Upload',
@@ -35,7 +39,7 @@ export default function TabLayout() {
             <Feather name="upload" size={size} color={color} />
           ),
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="profile"
         options={{
