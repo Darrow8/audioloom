@@ -1,8 +1,10 @@
-import Auth from '@/components/Auth';
+import LoginButton from '@/components/LoginButton';
 import React from 'react'
 import { View, Text, StyleSheet, Image, Button } from 'react-native';
 
 const Landing = () => {
+    
+
     return (
         <View style={styles.container}>
             <Image
@@ -11,7 +13,7 @@ const Landing = () => {
             />
             <Text  style={styles.title}>Rivet Audio</Text>
             <Text style={styles.subtitle}>Listen to your readings as you walk to class</Text>
-            <Auth></Auth>
+            <LoginButton />
         </View>
     )
 }
