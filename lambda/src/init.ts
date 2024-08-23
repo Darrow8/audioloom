@@ -3,7 +3,7 @@ import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } fr
 import { ElevenLabsClient } from "elevenlabs";
 import OpenAI from "openai";
 import ffmpeg from 'fluent-ffmpeg';
-
+import { ensureRequiredFolders } from './local';
 // elevenlabs client
 export let elevenlabsClient: ElevenLabsClient;
 export let elevenlabsInitialized = false;
@@ -16,24 +16,41 @@ export let s3Initialized = false;
 export let openaiClient: OpenAI;
 export let openai_initialized = false;
 
-// Whether or not we are going to load temporary data 
-export let run_temp = true;
+export let TEMP_DATA_PATH = '';
 
 /**
  * Main startup function that initializes all API calls and gets secret keys
  */
 export async function startup() {
     try {
-        // local env variables check
-        console.log(process.env.IS_DOCKER);
-        console.log(process.env.IS_LAMBDA);
         // secret must be retrieved first
         let secret = await initSecrets();
+        console.log("Secrets initialized:", secret !== undefined);
+        
         passSecrets(secret);
+        console.log("Secrets passed to environment");
+        
         initS3();
+        console.log("S3 initialized:", s3Initialized);
+        
         initElevenLabs();
-        initOpenAI();
+        console.log("ElevenLabs initialized:", elevenlabsInitialized);
+        
+        const openAIInitialized = initOpenAI();
+        console.log("OpenAI initialized:", openAIInitialized);
+        
         configureFFMPEG();
+        console.log("FFMPEG configured");
+        
+        TEMP_DATA_PATH = process.env.IS_DOCKER == "true" ? '/tmp' : './temp-data';
+        console.log("TEMP_DATA_PATH:", TEMP_DATA_PATH);
+
+        ensureRequiredFolders();
+        console.log("Required folders ensured");
+        
+        if (!secret || !s3Initialized || !elevenlabsInitialized || !openAIInitialized) {
+            throw new Error("One or more initializations failed");
+        }
     }
     catch (e) {
         throw new Error(`Error on Startup: ${e}`);
@@ -41,28 +58,12 @@ export async function startup() {
 }
 
 export const configureFFMPEG = () => {
-    if (process.env.IS_DOCKER) {
-        console.log("DOCKER");
+    if (process.env.IS_DOCKER == "true") {
         ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
-        ffmpeg()
-            .input('/tmp/music/1a25463d-ec44-4057-b620-80bbcd2e23b7_raw.mp3') // Replace this with an actual small video or audio file in your project
-            .output('/tmp/ffmpeg-output.mp3') // Output file (you can delete this later)
-            .on('start', (commandLine) => {
-                console.log('Spawned Ffmpeg with command: ' + commandLine);
-            })
-            .on('progress', (progress) => {
-                console.log('Processing: ' + progress.percent + '% done');
-            })
-            .on('error', (err) => {
-                console.error('An error occurred: ' + err.message);
-            })
-            .on('end', () => {
-                console.log('Processing finished successfully');
-            })
-            .run();
-    } else if (!process.env.IS_DOCKER) {
-        console.log("NOT DOCKER");
+        ffmpeg.setFfprobePath('/usr/bin/ffprobe');
+    } else {
         ffmpeg.setFfmpegPath('/opt/homebrew/bin/ffmpeg');
+        ffmpeg.setFfprobePath('/opt/homebrew/bin/ffprobe');
     }
 }
 
@@ -73,6 +74,7 @@ export const initOpenAI = () => {
         apiKey: process.env.OPENAI_API_KEY,
     });
     openai_initialized = true;
+    return openai_initialized;
 }
 
 export const initElevenLabs = () => {
@@ -82,19 +84,27 @@ export const initElevenLabs = () => {
         });
         elevenlabsInitialized = true;
     }
+    return elevenlabsInitialized;
 }
 
 export const initS3 = () => {
     if (!s3Initialized) {
-        s3Client = new S3Client({
-            region: "us-west-1",
-            credentials: {
-                accessKeyId: process.env.AWS_ACCESS_KEY,
-                secretAccessKey: process.env.AWS_SECRET_KEY
-            }
-        });
-        s3Initialized = true;
+        try {
+            s3Client = new S3Client({
+                region: "us-west-1",
+                credentials: {
+                    accessKeyId: process.env.AWS_ACCESS_KEY,
+                    secretAccessKey: process.env.AWS_SECRET_KEY
+                }
+            });
+            s3Initialized = true;
+            return true;
+        } catch (error) {
+            console.error("Failed to initialize S3:", error);
+            return false;
+        }
     }
+    return true;
 };
 
 /**
@@ -103,8 +113,8 @@ export const initS3 = () => {
 export async function initSecrets() {
     const secret_name = "dev-keys";
     const credentials = {
-        accessKeyId: "AKIA36WXSAYKWJKZWQGX",
-        secretAccessKey: "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",
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY,
     }
 
     const client = new SecretsManagerClient({

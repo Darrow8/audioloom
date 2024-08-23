@@ -1,15 +1,15 @@
-
 import * as fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 
 import { AudioFile, Clip, MusicLine, MusicType } from './util_pod';
-
-
+import { TEMP_DATA_PATH } from './init';
+import path from 'path';
+import { PassThrough } from 'stream';
 
 async function overlayAudios(backgroundFile: string, overlayFiles: Clip[], outputFile: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const outputPath = `/tmp/result/${outputFile}.mp3`;
-    const backgroundFilePath = `/tmp/character/${backgroundFile}.mp3`;
+    const outputPath = `${TEMP_DATA_PATH}/result/${outputFile}.mp3`;
+    const backgroundFilePath = `${TEMP_DATA_PATH}/character/${backgroundFile}.mp3`;
 
     // Check if the input files exist
     if (!fs.existsSync(backgroundFilePath)) {
@@ -64,12 +64,18 @@ async function overlayAudios(backgroundFile: string, overlayFiles: Clip[], outpu
     command = command.complexFilter(filterComplex.join(';'), 'aout');
 
     // Output the mixed audio to the specified output file
+    let totalTime = 0;
     command
       .on('start', (cmd) => {
         console.log(`Started: ${cmd}`);
+        totalTime = parseInt(cmd.duration.replace(/:/g, ''))
       })
       .on('progress', (progress) => {
-        console.log(`Overlaying audio progress: ${progress.percent}% done`);
+        const time = parseInt(progress.timemark.replace(/:/g, ''))
+
+        // AND HERE IS THE CALCULATION
+        const percent = (time / totalTime) * 100
+        console.log(`Overlaying audio progress: ${percent}% done`);
       })
       .on('end', () => {
         console.log('Finished processing');
@@ -100,28 +106,42 @@ async function overlayAudios(backgroundFile: string, overlayFiles: Clip[], outpu
  *   .catch(err => console.error('Error splicing audio files:', err));
  */
 
-export async function spliceAudioFiles(inputFiles: AudioFile[], outputFile: string, path: string): Promise<void> {
+export async function spliceAudioFiles(inputFiles: AudioFile[], outputFile: string, pathModule: string): Promise<void> {
   return new Promise<void>(async (resolve, reject) => {
-    // Create a file list for the concat filter
     try {
-      const ffmpegCommand = ffmpeg();
-      inputFiles.forEach(async file => {
-        ffmpegCommand.addInput(file.url);
-        // TODO: update with more advanced placement in the future
-        file.start = round(determineStartTime(file, inputFiles), 3);
-      });
+      console.log('inputFiles', inputFiles);
+      console.log('outputFile', outputFile);
+      console.log('path', pathModule);
 
-      ffmpegCommand
-        .mergeToFile(`${path}/${outputFile}`, `${path}-temp/`)
-        .audioFilters(`volume=1.5`) // increase volume to 1.5 
-        .on('end', () => {
-          resolve();
-        })
+      // Ensure the output directory exists
+      if (!fs.existsSync(pathModule)) {
+        fs.mkdirSync(pathModule, { recursive: true });
+      }
+      const fileList = inputFiles.map(file => `file '${file.url}'`).join('\n');
+      const fileListPath = path.join(pathModule, 'filelist.txt');
+      fs.writeFileSync(fileListPath, fileList);
+
+      const outputFilePath = path.join(pathModule, outputFile);
+
+      // Use ffmpeg with the file list
+      ffmpeg()
+        .input(fileListPath)
+        .inputOptions('-f', 'concat', '-safe', '0')
+        .outputOptions('-c', 'copy')
         .on('error', (err) => {
+          console.error('Error: ' + err.message);
           reject(err);
         })
+        .on('end', () => {
+          console.log('Concatenation finished!');
+          // Clean up the temporary file
+          fs.unlinkSync(fileListPath);
+          resolve();
+        })
+        .save(outputFilePath);
 
     } catch (err) {
+      console.error('Error in spliceAudioFiles:', err);
       reject(err);
     }
   });

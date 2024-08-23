@@ -6,6 +6,7 @@ import { useColorScheme } from 'react-native';
 import * as config from "../auth0_config";
 import Landing from './landing';
 import { Auth0Provider, useAuth0 } from 'react-native-auth0';
+import { Linking, Alert } from 'react-native';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -17,7 +18,7 @@ function AppContent() {
   useEffect(() => {
     async function checkLogin() {
       try {
-        if(user) {
+        if (user) {
           setIsLoggedIn(true);
         } else {
           setIsLoggedIn(false);

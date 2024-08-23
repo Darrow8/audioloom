@@ -4,7 +4,7 @@ import { usefulTrack, Segment } from './util_music';
 import { AudioFile } from './util_pod';
 import ffmpeg from 'fluent-ffmpeg';
 import { getAudioDuration, round } from './process_audio';
-
+import { TEMP_DATA_PATH } from './init';
 
 export async function saveMusicAsAudio(tracks: usefulTrack[], id:string): Promise<AudioFile> {
     // default to first track for now
@@ -12,7 +12,7 @@ export async function saveMusicAsAudio(tracks: usefulTrack[], id:string): Promis
     if (tracks.length == 0) {
         return undefined;
     }
-    let outputPath = `/tmp/music/${id}.mp3`; // Replace with your desired local output file name
+    let outputPath = `${TEMP_DATA_PATH}/music/${id}.mp3`; // Replace with your desired local output file name
     let url = track.stems.full.lqMp3Url;
     let segment = undefined;
 
@@ -46,7 +46,7 @@ export async function downloadFile(track_id: string, url: string, outputPath: st
             reject();
         }
 
-        let tempPath = `/tmp/music/${track_id}_raw.mp3`; // Temporary file path
+        let tempPath = `${TEMP_DATA_PATH}/music/${track_id}_raw.mp3`; // Temporary file path
         const fileStream = fs.createWriteStream(tempPath);
         response.body.pipe(fileStream);
         fileStream.on('finish', () => {

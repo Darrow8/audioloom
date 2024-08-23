@@ -8,6 +8,7 @@ import { saveMusicAsAudio } from './util_track.js';
 import { fetchTracks, fetchEpidemicSFX } from './pass_music.js';
 import { Readable } from 'stream';
 import { saveStreamToFile } from './local.js';
+import { TEMP_DATA_PATH } from './init.js';
 
 /** 
  * processCharacterLines
@@ -46,7 +47,7 @@ export async function processCharacterLines(lines: CharLine[]): Promise<AudioFil
 
         let stream = await processCharacterLine(lines[i], prev_line, next_line, current_character.voice_model);
         let fileName = `${lines[i].id}.mp3`;
-        let url = `/tmp/dialogue/${fileName}`;
+        let url = `${TEMP_DATA_PATH}/dialogue/${fileName}`;
         await saveStreamToFile(stream, url);
         await getAudioDuration(url).catch(err => console.error(err))
             .then((duration: number) => {
