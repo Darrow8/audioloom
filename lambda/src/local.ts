@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import path from "path";
 import { PassThrough, Readable, pipeline } from 'stream';
+import { TEMP_DATA_PATH } from './init';
 
 /**
  * Saves an array of objects as a JSON file in the specified folder.
@@ -88,3 +89,32 @@ export function deleteAllFilesInFolder(folderPath) {
     });
 }
 
+
+/**
+ * Checks for required folders in /temp-data and creates them if they don't exist.
+ */
+export function ensureRequiredFolders(): void {
+    const requiredFolders = [
+        'character',
+        'character-temp',
+        'dialogue',
+        'music',
+        'music-temp',
+        'result',
+        'logs'
+    ];
+
+    let tempDataPath = TEMP_DATA_PATH;
+
+    requiredFolders.forEach(folder => {
+        const folderPath = path.join(tempDataPath, folder);
+        if (!fs.existsSync(folderPath)) {
+            try {
+                fs.mkdirSync(folderPath, { recursive: true });
+                console.log(`Created folder: ${folderPath}`);
+            } catch (error) {
+                console.error(`Error creating folder ${folderPath}:`, error);
+            }
+        }
+    });
+}

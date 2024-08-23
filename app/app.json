@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.frontend",
+      "bundleIdentifier": "com.rivetaudio.frontend",
       "infoPlist": {
         "UIBackgroundModes": [
           "audio"
@@ -58,6 +58,12 @@
             "assets/fonts/futura/Futura_Medium_Italic_font.ttf",
             "assets/fonts/futura/futura_medium_bt.ttf"
           ]
+        }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.554636964216-v3fsfvau5939st9bjquk8to2fnt0m2f1"
         }
       ]
     ],

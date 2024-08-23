@@ -1,11 +1,11 @@
-import { uploadFileToS3, getFileFromS3, uploadAudioToS3} from './pass_files.js';
+import { uploadFileToS3, getFileFromS3, uploadAudioToS3 } from './pass_files.js';
 import * as aud from './process_audio.js';
 import { CharLine, Clip, MusicLine, Script, createClips } from './util_pod.js';
 import { v4 as uuidv4 } from 'uuid';
-import { temp_char, temp_music, temp_result_file } from './temp.js';
+import { getTempChar, getTempMusic, temp_result_file } from './temp.js';
 import { processCharacterLines, processMusicLines } from './process_line.js';
 import { deleteAllFilesInFolder, saveAsJson } from './local.js';
-import { run_temp } from './init.js';
+import { TEMP_DATA_PATH } from './init.js';
 
 export let script: Script | null = null;
 
@@ -17,18 +17,20 @@ export let script: Script | null = null;
 export async function createPodcast(scriptName: string) {
     try {
         script = await getScript(scriptName);
-        
+
         // final result file name
         let resultFileName = `${uuidv4()}`;
-        if(run_temp){
+        if (process.env.RUN_TEMP == "true") {
             resultFileName = temp_result_file;
         }
-        let char_clips : Clip[] = await getCharClips(resultFileName);
-        let music_clips : Clip[] = await getMusicClips();
-        // combine clips and save in ./result
-        await aud.addInMusic(resultFileName, char_clips, music_clips, resultFileName);
+        let char_clips: Clip[] = await getCharClips(resultFileName);
+        console.log(char_clips);
+        console.log('coolio!');
+        // let music_clips: Clip[] = await getMusicClips();
+        // // combine clips and save in ./result
+        // await aud.addInMusic(resultFileName, char_clips, music_clips, resultFileName);
 
-        await uploadAudioToS3(resultFileName);
+        // await uploadAudioToS3(resultFileName);
         // deleteTempFiles()
     } catch (err) {
         console.error('Error in process_pod:', err);
@@ -36,30 +38,32 @@ export async function createPodcast(scriptName: string) {
     }
 }
 
-async function getCharClips(resultFileName: string) : Promise<Clip[]> {
-    if(run_temp){
-        // await saveAsJson(temp_char, "./logs",`char-${uuidv4()}`)
-        return temp_char;
+async function getCharClips(resultFileName: string): Promise<Clip[]> {
+    if (process.env.RUN_TEMP == "true") {
+        let char_processed = getTempChar().map(char => char.audio);
+        console.log('char_processed', char_processed);
+        await aud.spliceAudioFiles(char_processed, `${resultFileName}.mp3`, `${TEMP_DATA_PATH}/character`);
+        return getTempChar();
     }
     // process char lines
     let char_lines = script.getCharLines();
     let char_processed = await processCharacterLines(char_lines);
-    await aud.spliceAudioFiles(char_processed, `${resultFileName}.mp3`, '/tmp/character');
+    await aud.spliceAudioFiles(char_processed, `${resultFileName}.mp3`, `${TEMP_DATA_PATH}/character`);
     let char_clips: Clip[] = createClips(char_processed, char_lines);
-    await saveAsJson(char_clips, "./logs",`char-${uuidv4()}`)
+    await saveAsJson(char_clips, `${TEMP_DATA_PATH}/logs`, `char-${uuidv4()}`)
     return char_clips;
 }
 
-async function getMusicClips() : Promise<Clip[]> {
-    if(run_temp){
+async function getMusicClips(): Promise<Clip[]> {
+    if (process.env.RUN_TEMP == "true") {
         // await saveAsJson(temp_music, "./logs", `music-${uuidv4()}`)
-        return temp_music;
+        return getTempMusic();
     }
     // process music lines
     let music_lines = script.getMusicLines();
     let music_processed = await processMusicLines(music_lines);
     let music_clips: Clip[] = createClips(music_processed, music_lines);
-    await saveAsJson(music_clips, "./logs",`music-${uuidv4()}`)
+    await saveAsJson(music_clips, `${TEMP_DATA_PATH}/logs`, `music-${uuidv4()}`)
     return music_clips;
 }
 
@@ -68,12 +72,12 @@ async function getMusicClips() : Promise<Clip[]> {
  * Delete temp files that are used in processing
  */
 function deleteTempFiles() {
-    deleteAllFilesInFolder('/tmp/dialogue');
-    deleteAllFilesInFolder('/tmp/character');
-    deleteAllFilesInFolder('/tmp/character-temp');
-    deleteAllFilesInFolder('/tmp/music');
-    deleteAllFilesInFolder('/tmp/music-temp');
-    deleteAllFilesInFolder('/tmp/result');
+    deleteAllFilesInFolder(TEMP_DATA_PATH + '/dialogue');
+    deleteAllFilesInFolder(TEMP_DATA_PATH + '/character');
+    deleteAllFilesInFolder(TEMP_DATA_PATH + '/character-temp');
+    deleteAllFilesInFolder(TEMP_DATA_PATH + '/music');
+    deleteAllFilesInFolder(TEMP_DATA_PATH + '/music-temp');
+    deleteAllFilesInFolder(TEMP_DATA_PATH + '/result');
 }
 
 

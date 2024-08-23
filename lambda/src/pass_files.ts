@@ -1,6 +1,5 @@
 import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from "./init";
-import * as fs from 'fs';
+import { s3Client, TEMP_DATA_PATH } from "./init";
 
 /**
  * Retrieve a file from an S3 bucket
@@ -81,7 +80,7 @@ export async function uploadFileToS3(uploadDetails) {
 }
 
 export async function uploadAudioToS3(resultFileName: string){
-  let resultFilePath = `/tmp/result/${resultFileName}.mp3`;
+  let resultFilePath = `${TEMP_DATA_PATH}/result/${resultFileName}.mp3`;
   // upload to S3
   const uploadDetails = {
       key: `pod-audio/${resultFileName}.mp3`,

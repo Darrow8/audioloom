@@ -1,13 +1,14 @@
 import { AudioFile, Clip, MusicLine, MusicType } from "./util_pod";
-
+import { TEMP_DATA_PATH } from "./init";
 
 export let temp_result_file = "ea91931f-47f7-4785-8c89-9b5bfa19b5f0";
 
-export let temp_music : Clip[] = [
+// this is a function because TEMP_DATA_PATH is not available at the time of import
+export let getTempMusic = () => [
   {
     "audio": {
       "id": "5a9e317c-05ac-48da-8338-200e5e694635",
-      "url": "/tmp/music/5a9e317c-05ac-48da-8338-200e5e694635.mp3",
+      "url": `${TEMP_DATA_PATH}/music/5a9e317c-05ac-48da-8338-200e5e694635.mp3`,
       "duration": 47,
       "start": -1
     },
@@ -23,7 +24,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "ab046c4c-6112-4d35-9741-2c01f35074cd",
-      "url": "/tmp/music/ab046c4c-6112-4d35-9741-2c01f35074cd.mp3",
+      "url": `${TEMP_DATA_PATH}/music/ab046c4c-6112-4d35-9741-2c01f35074cd.mp3`,
       "duration": 60,
       "start": -1
     },
@@ -39,7 +40,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "c04d58ba-d0a1-42d4-b4bd-d1bf55843073",
-      "url": "/tmp/music/c04d58ba-d0a1-42d4-b4bd-d1bf55843073.mp3",
+      "url": `${TEMP_DATA_PATH}/music/c04d58ba-d0a1-42d4-b4bd-d1bf55843073.mp3`,
       "duration": 23,
       "start": -1
     },
@@ -55,7 +56,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "ec459f99-8fd3-4142-b24e-92fab0901f1d",
-      "url": "/tmp/music/ec459f99-8fd3-4142-b24e-92fab0901f1d.mp3",
+      "url": `${TEMP_DATA_PATH}/music/ec459f99-8fd3-4142-b24e-92fab0901f1d.mp3`,
       "duration": 60,
       "start": -1
     },
@@ -71,7 +72,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "01e1ca3c-2819-4336-bcc4-e643dcfac94e",
-      "url": "/tmp/music/01e1ca3c-2819-4336-bcc4-e643dcfac94e.mp3",
+      "url": `${TEMP_DATA_PATH}/music/01e1ca3c-2819-4336-bcc4-e643dcfac94e.mp3`,
       "duration": 38.27,
       "start": -1
     },
@@ -87,7 +88,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "c1890345-7229-4214-bf13-c04ac23c8dec",
-      "url": "/tmp/music/c1890345-7229-4214-bf13-c04ac23c8dec.mp3",
+      "url": `${TEMP_DATA_PATH}/music/c1890345-7229-4214-bf13-c04ac23c8dec.mp3`,
       "duration": 60.02,
       "start": -1
     },
@@ -103,7 +104,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "ebe909b1-28e5-44a4-a43d-11724f470c7b",
-      "url": "/tmp/music/ebe909b1-28e5-44a4-a43d-11724f470c7b.mp3",
+      "url": `${TEMP_DATA_PATH}/music/ebe909b1-28e5-44a4-a43d-11724f470c7b.mp3`,
       "duration": 10.73,
       "start": -1
     },
@@ -119,7 +120,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "7bba6535-1cac-4478-9fb5-d8e43ec81854",
-      "url": "/tmp/music/7bba6535-1cac-4478-9fb5-d8e43ec81854.mp3",
+      "url": `${TEMP_DATA_PATH}/music/7bba6535-1cac-4478-9fb5-d8e43ec81854.mp3`,
       "duration": 5.71,
       "start": -1
     },
@@ -135,7 +136,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "6d80f2fb-63d1-4705-9d8b-e76ce7cb11ba",
-      "url": "/tmp/music/6d80f2fb-63d1-4705-9d8b-e76ce7cb11ba.mp3",
+      "url": `${TEMP_DATA_PATH}/music/6d80f2fb-63d1-4705-9d8b-e76ce7cb11ba.mp3`,
       "duration": 13.05,
       "start": -1
     },
@@ -151,7 +152,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "e8e0fe29-ba45-4d2e-8673-83f547a5ba38",
-      "url": "/tmp/music/e8e0fe29-ba45-4d2e-8673-83f547a5ba38.mp3",
+      "url": `${TEMP_DATA_PATH}/music/e8e0fe29-ba45-4d2e-8673-83f547a5ba38.mp3`,
       "duration": 11.04,
       "start": -1
     },
@@ -167,7 +168,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "186e1251-80c4-4d94-9ca3-d60145d802f9",
-      "url": "/tmp/music/186e1251-80c4-4d94-9ca3-d60145d802f9.mp3",
+      "url": `${TEMP_DATA_PATH}/music/186e1251-80c4-4d94-9ca3-d60145d802f9.mp3`,
       "duration": 15.42,
       "start": -1
     },
@@ -183,7 +184,7 @@ export let temp_music : Clip[] = [
   {
     "audio": {
       "id": "9130a3e2-ede2-4a02-9cb4-f45e74157e1d",
-      "url": "/tmp/music/9130a3e2-ede2-4a02-9cb4-f45e74157e1d.mp3",
+      "url": `${TEMP_DATA_PATH}/music/9130a3e2-ede2-4a02-9cb4-f45e74157e1d.mp3`,
       "duration": 6.1,
       "start": -1
     },
@@ -199,11 +200,11 @@ export let temp_music : Clip[] = [
 ];
 
 
-export let temp_char: Clip[] = [
+export let getTempChar = () => [
   {
     "audio": {
       "id": "9240a9d5-3d50-4214-b4a1-8262404b6c42",
-      "url": "/tmp/dialogue/9240a9d5-3d50-4214-b4a1-8262404b6c42.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/9240a9d5-3d50-4214-b4a1-8262404b6c42.mp3`,
       "duration": 33,
       "start": 0
     },
@@ -221,7 +222,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "9b447f05-453c-4f68-91df-f8ef3a964451",
-      "url": "/tmp/dialogue/9b447f05-453c-4f68-91df-f8ef3a964451.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/9b447f05-453c-4f68-91df-f8ef3a964451.mp3`,
       "duration": 19,
       "start": 33
     },
@@ -239,17 +240,17 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "a55ac1a3-7a5b-4528-8e44-285f505f1d3e",
-      "url": "/tmp/dialogue/a55ac1a3-7a5b-4528-8e44-285f505f1d3e.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/a55ac1a3-7a5b-4528-8e44-285f505f1d3e.mp3`,
       "duration": 26,
       "start": 52
     },
     "line": {
-      "raw_string": "Adam Page: On the morning of February 24th, 2022, people took to the streets in over 50 cities throughout Russia to protest the war in Ukraine. The demonstrations were fierce, but the state’s response was even fiercer. Police brutality was immense, with 1,974 people detained that very day. Yet, resilient Russians kept protesting, enduring detentions, beatings, and worse.",
+      "raw_string": "Adam Page: On the morning of February 24th, 2022, people took to the streets in over 50 cities throughout Russia to protest the war in Ukraine. The demonstrations were fierce, but the state's response was even fiercer. Police brutality was immense, with 1,974 people detained that very day. Yet, resilient Russians kept protesting, enduring detentions, beatings, and worse.",
       "order": 6,
       "id": "a55ac1a3-7a5b-4528-8e44-285f505f1d3e",
       "character": "Adam Page",
-      "raw_dialogue": "On the morning of February 24th, 2022, people took to the streets in over 50 cities throughout Russia to protest the war in Ukraine. The demonstrations were fierce, but the state’s response was even fiercer. Police brutality was immense, with 1,974 people detained that very day. Yet, resilient Russians kept protesting, enduring detentions, beatings, and worse.",
-      "dialogue": "On the morning of February 24th, 2022, people took to the streets in over 50 cities throughout Russia to protest the war in Ukraine. The demonstrations were fierce, but the state’s response was even fiercer. Police brutality was immense, with 1,974 people detained that very day. Yet, resilient Russians kept protesting, enduring detentions, beatings, and worse.",
+      "raw_dialogue": "On the morning of February 24th, 2022, people took to the streets in over 50 cities throughout Russia to protest the war in Ukraine. The demonstrations were fierce, but the state's response was even fiercer. Police brutality was immense, with 1,974 people detained that very day. Yet, resilient Russians kept protesting, enduring detentions, beatings, and worse.",
+      "dialogue": "On the morning of February 24th, 2022, people took to the streets in over 50 cities throughout Russia to protest the war in Ukraine. The demonstrations were fierce, but the state's response was even fiercer. Police brutality was immense, with 1,974 people detained that very day. Yet, resilient Russians kept protesting, enduring detentions, beatings, and worse.",
       "adjective": ""
     },
     "id": "a55ac1a3-7a5b-4528-8e44-285f505f1d3e"
@@ -257,7 +258,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "9ccc92ad-a37d-4264-b770-dd9125116830",
-      "url": "/tmp/dialogue/9ccc92ad-a37d-4264-b770-dd9125116830.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/9ccc92ad-a37d-4264-b770-dd9125116830.mp3`,
       "duration": 21,
       "start": 78
     },
@@ -275,7 +276,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "e17ffe42-20aa-4df0-8d86-7accaa1d4517",
-      "url": "/tmp/dialogue/e17ffe42-20aa-4df0-8d86-7accaa1d4517.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/e17ffe42-20aa-4df0-8d86-7accaa1d4517.mp3`,
       "duration": 20,
       "start": 100
     },
@@ -293,17 +294,17 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "3a5c4daf-901e-4942-bfc7-ca6951c0331d",
-      "url": "/tmp/dialogue/3a5c4daf-901e-4942-bfc7-ca6951c0331d.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/3a5c4daf-901e-4942-bfc7-ca6951c0331d.mp3`,
       "duration": 15.882,
       "start": 120.529
     },
     "line": {
-      "raw_string": "Daria Korolenko: [Somber] Kirill’s act of defiance led to a 13-year prison sentence. Yet, even as mass street protests dwindled, protests did not vanish. They evolved into more subtle forms, showing us that Russians have found innovative ways to resist.",
+      "raw_string": "Daria Korolenko: [Somber] Kirill's act of defiance led to a 13-year prison sentence. Yet, even as mass street protests dwindled, protests did not vanish. They evolved into more subtle forms, showing us that Russians have found innovative ways to resist.",
       "order": 10,
       "id": "3a5c4daf-901e-4942-bfc7-ca6951c0331d",
       "character": "Daria Korolenko",
-      "raw_dialogue": "[Somber] Kirill’s act of defiance led to a 13-year prison sentence. Yet, even as mass street protests dwindled, protests did not vanish. They evolved into more subtle forms, showing us that Russians have found innovative ways to resist.",
-      "dialogue": "Kirill’s act of defiance led to a 13-year prison sentence. Yet, even as mass street protests dwindled, protests did not vanish. They evolved into more subtle forms, showing us that Russians have found innovative ways to resist.",
+      "raw_dialogue": "[Somber] Kirill's act of defiance led to a 13-year prison sentence. Yet, even as mass street protests dwindled, protests did not vanish. They evolved into more subtle forms, showing us that Russians have found innovative ways to resist.",
+      "dialogue": "Kirill's act of defiance led to a 13-year prison sentence. Yet, even as mass street protests dwindled, protests did not vanish. They evolved into more subtle forms, showing us that Russians have found innovative ways to resist.",
       "adjective": "Somber"
     },
     "id": "3a5c4daf-901e-4942-bfc7-ca6951c0331d"
@@ -311,7 +312,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "ab67b0f4-c9c7-4dd6-b867-6a0752287623",
-      "url": "/tmp/dialogue/ab67b0f4-c9c7-4dd6-b867-6a0752287623.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/ab67b0f4-c9c7-4dd6-b867-6a0752287623.mp3`,
       "duration": 21,
       "start": 136.411
     },
@@ -329,7 +330,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "899d752f-021d-4f71-b09d-4ecd3eab5be2",
-      "url": "/tmp/dialogue/899d752f-021d-4f71-b09d-4ecd3eab5be2.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/899d752f-021d-4f71-b09d-4ecd3eab5be2.mp3`,
       "duration": 24.424,
       "start": 152.659
     },
@@ -347,7 +348,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "8736815e-18c5-43c9-a0a4-69a6a5cbe7fa",
-      "url": "/tmp/dialogue/8736815e-18c5-43c9-a0a4-69a6a5cbe7fa.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/8736815e-18c5-43c9-a0a4-69a6a5cbe7fa.mp3`,
       "duration": 13.819,
       "start": 177.083
     },
@@ -365,7 +366,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "9eb93bab-832d-476d-943b-ce30c4cb181c",
-      "url": "/tmp/dialogue/9eb93bab-832d-476d-943b-ce30c4cb181c.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/9eb93bab-832d-476d-943b-ce30c4cb181c.mp3`,
       "duration": 19.644,
       "start": 190.902
     },
@@ -383,17 +384,17 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "200721ac-b12b-4a75-ac3c-c3219b584535",
-      "url": "/tmp/dialogue/200721ac-b12b-4a75-ac3c-c3219b584535.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/200721ac-b12b-4a75-ac3c-c3219b584535.mp3`,
       "duration": 16.718,
       "start": 210.546
     },
     "line": {
-      "raw_string": "Dan Storyev: [Encouraging] Their bravery shows us the tremendous power and diversity within Russia’s anti-war movement. The Kremlin's crackdown has, paradoxically, energized civil society. From organized letter-writing campaigns to radical activism and journalism, defiance lives on.",
+      "raw_string": "Dan Storyev: [Encouraging] Their bravery shows us the tremendous power and diversity within Russia's anti-war movement. The Kremlin's crackdown has, paradoxically, energized civil society. From organized letter-writing campaigns to radical activism and journalism, defiance lives on.",
       "order": 18,
       "id": "200721ac-b12b-4a75-ac3c-c3219b584535",
       "character": "Dan Storyev",
-      "raw_dialogue": "[Encouraging] Their bravery shows us the tremendous power and diversity within Russia’s anti-war movement. The Kremlin's crackdown has, paradoxically, energized civil society. From organized letter-writing campaigns to radical activism and journalism, defiance lives on.",
-      "dialogue": "Their bravery shows us the tremendous power and diversity within Russia’s anti-war movement. The Kremlin's crackdown has, paradoxically, energized civil society. From organized letter-writing campaigns to radical activism and journalism, defiance lives on.",
+      "raw_dialogue": "[Encouraging] Their bravery shows us the tremendous power and diversity within Russia's anti-war movement. The Kremlin's crackdown has, paradoxically, energized civil society. From organized letter-writing campaigns to radical activism and journalism, defiance lives on.",
+      "dialogue": "Their bravery shows us the tremendous power and diversity within Russia's anti-war movement. The Kremlin's crackdown has, paradoxically, energized civil society. From organized letter-writing campaigns to radical activism and journalism, defiance lives on.",
       "adjective": "Encouraging"
     },
     "id": "200721ac-b12b-4a75-ac3c-c3219b584535"
@@ -401,7 +402,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "58547d77-e79c-4ba9-99b7-8281cffbacee",
-      "url": "/tmp/dialogue/58547d77-e79c-4ba9-99b7-8281cffbacee.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/58547d77-e79c-4ba9-99b7-8281cffbacee.mp3`,
       "duration": 12.016,
       "start": 227.264
     },
@@ -419,7 +420,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "3a153400-750f-44c6-ac29-52529d534ba2",
-      "url": "/tmp/dialogue/3a153400-750f-44c6-ac29-52529d534ba2.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/3a153400-750f-44c6-ac29-52529d534ba2.mp3`,
       "duration": 13.558,
       "start": 239.28
     },
@@ -437,7 +438,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "c413ad39-4fba-4985-b892-4156cdbbdfae",
-      "url": "/tmp/dialogue/c413ad39-4fba-4985-b892-4156cdbbdfae.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/c413ad39-4fba-4985-b892-4156cdbbdfae.mp3`,
       "duration": 17.58,
       "start": 252.838
     },
@@ -455,17 +456,17 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "0a6ba529-e41c-43c4-a345-1b2cd26881f8",
-      "url": "/tmp/dialogue/0a6ba529-e41c-43c4-a345-1b2cd26881f8.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/0a6ba529-e41c-43c4-a345-1b2cd26881f8.mp3`,
       "duration": 23.719,
       "start": 270.418
     },
     "line": {
-      "raw_string": "Lauren McCarthy: [Hopeful] The anti-war movement is more than just a protest; it is a testament to human resilience, determination, and solidarity. We must ask not why Russians aren’t protesting, but why they continue to protest despite the overwhelming threats they face.",
+      "raw_string": "Lauren McCarthy: [Hopeful] The anti-war movement is more than just a protest; it is a testament to human resilience, determination, and solidarity. We must ask not why Russians aren't protesting, but why they continue to protest despite the overwhelming threats they face.",
       "order": 24,
       "id": "0a6ba529-e41c-43c4-a345-1b2cd26881f8",
       "character": "Lauren McCarthy",
-      "raw_dialogue": "[Hopeful] The anti-war movement is more than just a protest; it is a testament to human resilience, determination, and solidarity. We must ask not why Russians aren’t protesting, but why they continue to protest despite the overwhelming threats they face.",
-      "dialogue": "The anti-war movement is more than just a protest; it is a testament to human resilience, determination, and solidarity. We must ask not why Russians aren’t protesting, but why they continue to protest despite the overwhelming threats they face.",
+      "raw_dialogue": "[Hopeful] The anti-war movement is more than just a protest; it is a testament to human resilience, determination, and solidarity. We must ask not why Russians aren't protesting, but why they continue to protest despite the overwhelming threats they face.",
+      "dialogue": "The anti-war movement is more than just a protest; it is a testament to human resilience, determination, and solidarity. We must ask not why Russians aren't protesting, but why they continue to protest despite the overwhelming threats they face.",
       "adjective": "Hopeful"
     },
     "id": "0a6ba529-e41c-43c4-a345-1b2cd26881f8"
@@ -473,7 +474,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "d5243dae-cc34-4f0f-88a1-9aae364170b7",
-      "url": "/tmp/dialogue/d5243dae-cc34-4f0f-88a1-9aae364170b7.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/d5243dae-cc34-4f0f-88a1-9aae364170b7.mp3`,
       "duration": 16.536,
       "start": 294.137
     },
@@ -491,7 +492,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "4d94abac-186b-494b-afda-9f656d65124a",
-      "url": "/tmp/dialogue/4d94abac-186b-494b-afda-9f656d65124a.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/4d94abac-186b-494b-afda-9f656d65124a.mp3`,
       "duration": 1.28,
       "start": 310.673
     },
@@ -509,7 +510,7 @@ export let temp_char: Clip[] = [
   {
     "audio": {
       "id": "152d804d-ac47-400a-bc7f-5cc728666a1c",
-      "url": "/tmp/dialogue/152d804d-ac47-400a-bc7f-5cc728666a1c.mp3",
+      "url": `${TEMP_DATA_PATH}/dialogue/152d804d-ac47-400a-bc7f-5cc728666a1c.mp3`,
       "duration": 1.933,
       "start": 311.953
     },
