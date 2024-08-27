@@ -6,29 +6,48 @@ import { useColorScheme } from 'react-native';
 import * as config from "../auth0_config";
 import Landing from './landing';
 import { Auth0Provider, useAuth0 } from 'react-native-auth0';
-import { Linking, Alert } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+
 function AppContent() {
-  const { user } = useAuth0();
+  const { user, getCredentials } = useAuth0();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
 
   useEffect(() => {
     async function checkLogin() {
       try {
+        setIsLoading(true);
         if (user) {
+          console.log(user.sub);
+          const credentials = await getCredentials();
+          if (credentials && credentials.accessToken) {
+            await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
+            console.log('Access Token stored securely from _layout.tsx');
+            // You can now use this access token for authenticated API requests
+          }
           setIsLoggedIn(true);
         } else {
           setIsLoggedIn(false);
+          await SecureStore.deleteItemAsync('auth0AccessToken');
         }
       } catch (error) {
         console.error("Error checking login status:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
     checkLogin();
-  }, [user]);
+  }, [user, getCredentials]);
+
+  if (isLoading) {
+    return null; // or return a loading indicator
+  }
+
   return isLoggedIn ? (
     <Stack screenOptions={{
       headerStyle: {

@@ -22,6 +22,15 @@ const UploadButton = () => {
   const [isLoading, setIsLoading] = useState(false);
   const gdrive = new GDrive();
 
+  useEffect(() => {
+    if(file == null){
+      return;
+    }
+    console.log('in use effect for file!')
+    console.log('file', file)
+  }, [file])
+
+
   const testAccessToken = async () => {
     try {
       await gdrive.files.list({ pageSize: 1 });
