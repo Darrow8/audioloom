@@ -13,19 +13,19 @@ export interface Pod {
 export class MongoUser {
     _id: string; // mongo ID
     name: string;
-    pod: Pod;
+    pods: Pod[];
     user_id: string; // auth0 ID
 
 
     constructor(data: {
         _id: string;
         name: string;
-        pod: Pod;
+        pods: Pod[];
         user_id: string;
     }) {
         this._id = data._id;
         this.name = data.name;
-        this.pod = data.pod;
+        this.pods = data.pods;
         this.user_id = data.user_id;
     }
 }
@@ -49,7 +49,7 @@ export class FullUser {
     blocked_for: any[];
     guardian_authenticators: any[];
     passkeys: any[];
-    pod: Pod;
+    pods: Pod[];
 
     constructor(data: {
         created_at: string;
@@ -69,7 +69,7 @@ export class FullUser {
         blocked_for: any[];
         guardian_authenticators: any[];
         passkeys: any[];
-        pod: Pod;
+        pods: Pod[];
     }) {
         this.created_at = data.created_at;
         this.email = data.email;
@@ -88,6 +88,6 @@ export class FullUser {
         this.blocked_for = data.blocked_for;
         this.guardian_authenticators = data.guardian_authenticators;
         this.passkeys = data.passkeys;
-        this.pod = data.pod;
+        this.pods = data.pods;
     }
 }

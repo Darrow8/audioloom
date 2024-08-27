@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useAuth0 } from 'react-native-auth0';
+import * as SecureStore from 'expo-secure-store';
 
 const Profile = () => {
   const { user, clearSession } = useAuth0();
@@ -9,6 +10,7 @@ const Profile = () => {
   const onLogout = async () => {
     try {
       await clearSession();
+      await SecureStore.deleteItemAsync('auth0AccessToken');
     } catch (e) {
       console.log('Log out cancelled');
     }
