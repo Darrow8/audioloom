@@ -27,20 +27,12 @@ export const Colors = {
     header: '#fff',
     border: '#E0E0E0'
   },
-  // lightblue: {
-  //   text: '#6394ba',
-  //   background: '#f0f4f8',
-  //   tint: '#6394ba',
-  //   icon: '#6394ba',
-  //   tabIconDefault: '#6394ba',
-  //   tabIconSelected: '#6394ba',
-  // },
-  // gblue: {
-  //   text: '#8fb3b7',
-  //   background: '#f0f4f8',
-  //   tint: '#8fb3b7',
-  //   icon: '#8fb3b7',
-  //   tabIconDefault: '#8fb3b7',
-  //   tabIconSelected: '#8fb3b7',
-  // }
+  theme: {
+    lightGreen: '#CDD2B1',
+    green: "#5B8C5A",
+    darkBlue: '#395a77',
+    blue: '#7ba2b9',
+    brown: '#825550',
+    black: "#100B00"
+  }
 };

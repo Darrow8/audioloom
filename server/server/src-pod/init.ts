@@ -1,0 +1,163 @@
+import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
+import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
+import { ElevenLabsClient } from "elevenlabs";
+import OpenAI from "openai";
+import ffmpeg from 'fluent-ffmpeg';
+import { ensureRequiredFolders } from './local';
+// elevenlabs client
+export let elevenlabsClient: ElevenLabsClient;
+export let elevenlabsInitialized = false;
+
+// aws s3 client
+export let s3Client: S3Client;
+export let s3Initialized = false;
+
+// openai client
+export let openaiClient: OpenAI;
+export let openai_initialized = false;
+
+export let TEMP_DATA_PATH = '';
+
+/**
+ * Main startup function that initializes all API calls and gets secret keys
+ */
+export async function startup() {
+    try {
+        // secret must be retrieved first
+        let secret = await initSecrets();
+        console.log("Secrets initialized:", secret !== undefined);
+        
+        passSecrets(secret);
+        console.log("Secrets passed to environment");
+        
+        initS3();
+        console.log("S3 initialized:", s3Initialized);
+        
+        initElevenLabs();
+        console.log("ElevenLabs initialized:", elevenlabsInitialized);
+        
+        const openAIInitialized = initOpenAI();
+        console.log("OpenAI initialized:", openAIInitialized);
+        
+        configureFFMPEG();
+        console.log("FFMPEG configured");
+        
+        TEMP_DATA_PATH = process.env.IS_DOCKER == "true" ? '/tmp' : './temp-data';
+        console.log("TEMP_DATA_PATH:", TEMP_DATA_PATH);
+
+        ensureRequiredFolders();
+        console.log("Required folders ensured");
+        
+        if (!secret || !s3Initialized || !elevenlabsInitialized || !openAIInitialized) {
+            throw new Error("One or more initializations failed");
+        }
+    }
+    catch (e) {
+        throw new Error(`Error on Startup: ${e}`);
+    }
+}
+
+export const configureFFMPEG = () => {
+    if (process.env.IS_DOCKER == "true") {
+        ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
+        ffmpeg.setFfprobePath('/usr/bin/ffprobe');
+    } else {
+        ffmpeg.setFfmpegPath('/opt/homebrew/bin/ffmpeg');
+        ffmpeg.setFfprobePath('/opt/homebrew/bin/ffprobe');
+    }
+}
+
+export const initOpenAI = () => {
+    openaiClient = new OpenAI({
+        organization: "org-nd9Kz3AFMD7Wo3q05FTQMFAw",
+        project: "proj_6RLSgyTB2eo5NjAfghsFU8df",
+        apiKey: process.env.OPENAI_API_KEY,
+    });
+    openai_initialized = true;
+    return openai_initialized;
+}
+
+export const initElevenLabs = () => {
+    if (!elevenlabsInitialized) {
+        elevenlabsClient = new ElevenLabsClient({
+            apiKey: process.env.ELEVENLABS_API_KEY,
+        });
+        elevenlabsInitialized = true;
+    }
+    return elevenlabsInitialized;
+}
+
+export const initS3 = () => {
+    if (!s3Initialized) {
+        try {
+            s3Client = new S3Client({
+                region: "us-west-1",
+                credentials: {
+                    accessKeyId: process.env.AWS_ACCESS_KEY,
+                    secretAccessKey: process.env.AWS_SECRET_KEY
+                }
+            });
+            s3Initialized = true;
+            return true;
+        } catch (error) {
+            console.error("Failed to initialize S3:", error);
+            return false;
+        }
+    }
+    return true;
+};
+
+/**
+ * Initializes secrets from AWS Secrets Manager
+ */
+export async function initSecrets() {
+    const secret_name = "dev-keys";
+    const credentials = {
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY,
+    }
+
+    const client = new SecretsManagerClient({
+        region: "us-west-1",
+        credentials: credentials,
+    });
+
+    let response;
+
+    try {
+        response = await client.send(
+            new GetSecretValueCommand({
+                SecretId: secret_name,
+                VersionStage: "AWSCURRENT", // VersionStage defaults to AWSCURRENT if unspecified
+            })
+        );
+    } catch (error) {
+        // For a list of exceptions thrown, see
+        // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        throw error;
+    }
+
+    const secret = response.SecretString;
+    return secret;
+}
+/**
+ * Gets secret from initSecrets() and passes to process.env
+ */
+export function passSecrets(secret) {
+    if (secret) {
+        try {
+            const secretObj = JSON.parse(secret);
+            if (typeof secretObj === 'object' && secretObj !== null) {
+                for (let key in secretObj) {
+                    if (secretObj.hasOwnProperty(key)) {
+                        process.env[key] = secretObj[key];
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error parsing secret:', error);
+        }
+    } else {
+        console.error('No secrets found');
+    }
+}

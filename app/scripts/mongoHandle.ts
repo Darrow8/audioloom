@@ -2,7 +2,9 @@ import * as SecureStore from 'expo-secure-store';
 import { Alert, Platform } from 'react-native';
 import { isValidMongoUser } from './validateData';
 import { makeAuthenticatedRequest } from './mongoSecurity';
+import { BASE_URL } from './mongoSecurity';
 
+let DB_BASE_URL = BASE_URL + 'db/records/'
 /**
  * Fetches all records from the database.
  *
@@ -11,7 +13,7 @@ import { makeAuthenticatedRequest } from './mongoSecurity';
  */
 export async function getAllRecords(): Promise<any[]> {
   try {
-    const records = await makeAuthenticatedRequest();
+    const records = await makeAuthenticatedRequest(DB_BASE_URL);
     console.log(`Successfully fetched ${records.length} records`);
     return records;
   } catch (error) {
@@ -31,7 +33,7 @@ export async function getAllRecords(): Promise<any[]> {
  */
 export async function getRecordById(collection: string, id: string): Promise<any> {
   try {
-    const record = await makeAuthenticatedRequest(`${collection}/${id}`);
+    const record = await makeAuthenticatedRequest(DB_BASE_URL,`${collection}/${id}`);
     console.log(`Successfully fetched record with ID ${id} from collection ${collection}`);
     return record;
   } catch (error) {
@@ -51,7 +53,7 @@ export async function getRecordById(collection: string, id: string): Promise<any
  */
 export async function createRecord(collection: string, obj: any): Promise<void> {
   try {
-    await makeAuthenticatedRequest(`${collection}`, 'POST', obj);
+    await makeAuthenticatedRequest(DB_BASE_URL,`${collection}`, 'POST', obj);
     console.log(`Successfully created new record in collection ${collection}`);
   } catch (error) {
     console.error(`Error creating new record in collection ${collection}:`, error);
@@ -71,7 +73,7 @@ export async function createRecord(collection: string, obj: any): Promise<void> 
  */
 export async function updateRecord(collection: string, id: string, obj: any): Promise<void> {
   try {
-    await makeAuthenticatedRequest(`${collection}/${id}`, 'PATCH', obj);
+    await makeAuthenticatedRequest(DB_BASE_URL,`${collection}/${id}`, 'PATCH', obj);
     console.log(`Successfully updated record with ID ${id} in collection ${collection}`);
   } catch (error) {
     console.error(`Error updating record with ID ${id} in collection ${collection}:`, error);
@@ -90,7 +92,7 @@ export async function updateRecord(collection: string, id: string, obj: any): Pr
  */
 export async function deleteRecord(collection: string, id: string): Promise<void> {
   try {
-    await makeAuthenticatedRequest(`${collection}/${id}`, 'DELETE');
+    await makeAuthenticatedRequest(DB_BASE_URL,`${collection}/${id}`, 'DELETE');
     console.log(`Successfully deleted record with ID ${id} from collection ${collection}`);
   } catch (error) {
     console.error(`Error deleting record with ID ${id} from collection ${collection}:`, error);
