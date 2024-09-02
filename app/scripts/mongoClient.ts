@@ -1,8 +1,14 @@
-import {  getRecordById, createRecord, updateRecord, deleteRecord } from './mongoHandle';
+import {  getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection } from './mongoHandle';
 import { isValidPod, isValidMongoUser } from './validateData';
 
 
 // User endpoints
+
+export const getAllUsers = async () => {
+    const users = await getRecordsByCollection('users');
+    return users;
+}
+
 export const createUser = async (data: any) => {
     if (isValidMongoUser(data)) {
         await createRecord('users', data).catch((error) => {
@@ -56,6 +62,12 @@ export const deleteUser = async (id: string) => {
 }
 
 // Pod endpoints
+
+export const getAllPods = async () => {
+    const pods = await getRecordsByCollection('pods');
+    return pods;
+}
+
 export const createPod = async (data: any) =>{
     if(isValidPod(data)){
         await createRecord('pods', data).catch((error) => {

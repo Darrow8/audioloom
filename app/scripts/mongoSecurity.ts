@@ -13,12 +13,12 @@ export const makeAuthenticatedRequest = async (url: string, method: string = 'GE
     throw new Error('No access token available');
   }
 
-  const fetchWithTimeout = (url: string, options: RequestInit, timeout = 10000) => {
-    return Promise.race([
-      fetch(url, options),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), timeout))
-    ]);
-  };
+  // const fetchWithTimeout = (url: string, options: RequestInit, timeout = 10000) => {
+  //   return Promise.race([
+  //     fetch(url, options),
+  //     new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), timeout))
+  //   ]);
+  // };
 
   const fetchOptions: RequestInit = {
     method,
@@ -38,7 +38,8 @@ export const makeAuthenticatedRequest = async (url: string, method: string = 'GE
 
   try {
     console.log(`Attempting ${method} request to: ${url}`);
-    const response = await fetchWithTimeout(url, fetchOptions) as Response;
+    const response = await fetch(url, fetchOptions) as Response;
+    // const response = await fetchWithTimeout(url, fetchOptions) as Response;
     console.log('Response status:', response.status);
 
     if (!response.ok) {
@@ -51,12 +52,12 @@ export const makeAuthenticatedRequest = async (url: string, method: string = 'GE
   } catch (error) {
     console.log('error', error);
     console.error('Fetch error details:', error);
-    if (retries > 0) {
-      console.log(`Retrying... (${retries} attempts left)`);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
-      return makeAuthenticatedRequest(method, body, retries - 1);
-    }
-    Alert.alert('Error', 'There was a problem connecting to the server. Please check your internet connection and try again.');
-    throw error;
+    // if (retries > 0) {
+    //   console.log(`Retrying... (${retries} attempts left)`);
+    //   await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
+    //   return makeAuthenticatedRequest(method, body, retries - 1);
+    // }
+    // Alert.alert('Error', 'There was a problem connecting to the server. Please check your internet connection and try again.');
+    // throw error;
   }
 };

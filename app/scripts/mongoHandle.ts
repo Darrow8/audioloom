@@ -11,9 +11,9 @@ let DB_BASE_URL = BASE_URL + 'db/records/'
  * @returns {Promise<any[]>} A promise that resolves to an array of all records.
  * @throws Will throw an error if the request fails.
  */
-export async function getAllRecords(): Promise<any[]> {
+export async function getRecordsByCollection(collection: string): Promise<any[]> {
   try {
-    const records = await makeAuthenticatedRequest(DB_BASE_URL);
+    const records = await makeAuthenticatedRequest(DB_BASE_URL + collection);
     console.log(`Successfully fetched ${records.length} records`);
     return records;
   } catch (error) {
@@ -33,7 +33,7 @@ export async function getAllRecords(): Promise<any[]> {
  */
 export async function getRecordById(collection: string, id: string): Promise<any> {
   try {
-    const record = await makeAuthenticatedRequest(DB_BASE_URL,`${collection}/${id}`);
+    const record = await makeAuthenticatedRequest(DB_BASE_URL + `${collection}/${id}`);
     console.log(`Successfully fetched record with ID ${id} from collection ${collection}`);
     return record;
   } catch (error) {
@@ -53,7 +53,7 @@ export async function getRecordById(collection: string, id: string): Promise<any
  */
 export async function createRecord(collection: string, obj: any): Promise<void> {
   try {
-    await makeAuthenticatedRequest(DB_BASE_URL,`${collection}`, 'POST', obj);
+    await makeAuthenticatedRequest(DB_BASE_URL + `${collection}`, 'POST', obj);
     console.log(`Successfully created new record in collection ${collection}`);
   } catch (error) {
     console.error(`Error creating new record in collection ${collection}:`, error);
@@ -73,7 +73,7 @@ export async function createRecord(collection: string, obj: any): Promise<void> 
  */
 export async function updateRecord(collection: string, id: string, obj: any): Promise<void> {
   try {
-    await makeAuthenticatedRequest(DB_BASE_URL,`${collection}/${id}`, 'PATCH', obj);
+    await makeAuthenticatedRequest(DB_BASE_URL + `${collection}/${id}`, 'PATCH', obj);
     console.log(`Successfully updated record with ID ${id} in collection ${collection}`);
   } catch (error) {
     console.error(`Error updating record with ID ${id} in collection ${collection}:`, error);
@@ -92,7 +92,7 @@ export async function updateRecord(collection: string, id: string, obj: any): Pr
  */
 export async function deleteRecord(collection: string, id: string): Promise<void> {
   try {
-    await makeAuthenticatedRequest(DB_BASE_URL,`${collection}/${id}`, 'DELETE');
+    await makeAuthenticatedRequest(DB_BASE_URL +`${collection}/${id}`, 'DELETE');
     console.log(`Successfully deleted record with ID ${id} from collection ${collection}`);
   } catch (error) {
     console.error(`Error deleting record with ID ${id} from collection ${collection}:`, error);
