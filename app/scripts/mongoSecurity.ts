@@ -2,10 +2,11 @@ import * as SecureStore from 'expo-secure-store';
 import { Alert, Platform } from 'react-native';
 import { isValidMongoUser } from './validateData';
 
-const BASE_URL = 'https://146.190.137.168:3000/records';
+
+export const BASE_URL = 'https://api.rivetaudio.com/'
 const RIVET_API_KEY = '1023hfiudobf023rhnqwof18ihr0oqefbu2rt0243heirhbnqpofb2u09tgh';
 
-export const makeAuthenticatedRequest = async (method: string = 'GET', body?: any, retries = 3): Promise<any> => {
+export const makeAuthenticatedRequest = async (url: string, method: string = 'GET', body?: any, retries = 3): Promise<any> => {
   const accessToken = await SecureStore.getItemAsync('auth0AccessToken');
 
   if (!accessToken) {
@@ -36,8 +37,8 @@ export const makeAuthenticatedRequest = async (method: string = 'GET', body?: an
   }
 
   try {
-    console.log(`Attempting ${method} request to: ${BASE_URL}`);
-    const response = await fetchWithTimeout(BASE_URL, fetchOptions) as Response;
+    console.log(`Attempting ${method} request to: ${url}`);
+    const response = await fetchWithTimeout(url, fetchOptions) as Response;
     console.log('Response status:', response.status);
 
     if (!response.ok) {

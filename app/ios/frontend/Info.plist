@@ -22,6 +22,15 @@
 	<string>1.0.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -37,14 +46,14 @@
 				<string>exp+frontend</string>
 			</array>
 		</dict>
-    <dict>
-            <key>CFBundleURLName</key>
-            <string>com.googleusercontent.apps.554636964216-v3fsfvau5939st9bjquk8to2fnt0m2f1</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>com.googleusercontent.apps.554636964216-v3fsfvau5939st9bjquk8to2fnt0m2f1</string>
-            </array>
-        </dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.googleusercontent.apps.554636964216-v3fsfvau5939st9bjquk8to2fnt0m2f1</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.554636964216-v3fsfvau5939st9bjquk8to2fnt0m2f1</string>
+			</array>
+		</dict>
 		<dict>
 			<key>CFBundleURLName</key>
 			<string>auth0</string>
@@ -58,13 +67,6 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<false/>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Allow $(PRODUCT_NAME) to access your microphone</string>
 	<key>NSUserActivityTypes</key>

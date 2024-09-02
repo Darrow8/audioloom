@@ -7,6 +7,7 @@ import * as config from "../auth0_config";
 import Landing from './landing';
 import { Auth0Provider, useAuth0 } from 'react-native-auth0';
 import * as SecureStore from 'expo-secure-store';
+import { getUser } from '../scripts/mongoClient';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -17,6 +18,7 @@ function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // testPublic();
 
   useEffect(() => {
     async function checkLogin() {
@@ -29,6 +31,8 @@ function AppContent() {
             await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
             console.log('Access Token stored securely from _layout.tsx');
             // You can now use this access token for authenticated API requests
+            const user = await getUser('66c80f9cd5beabc2a97bdd39');
+            console.log("user: ", user);
           }
           setIsLoggedIn(true);
         } else {
@@ -97,4 +101,16 @@ export default function RootLayout() {
       <AppContent />
     </Auth0Provider>
   );
+}
+
+async function testPublic() {
+  await fetch('https://api.rivetaudio.com/public')
+    .then(response => response.text())
+    .then(data => {
+      console.log('Public data:', data);
+    })
+    .catch(error => {
+      console.error('Error fetching public data:', error);
+    });
+  
 }
