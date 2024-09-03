@@ -10,67 +10,60 @@ export interface Pod {
     audio: string[];
 }
 
-export class MongoUser {
-    _id: string; // mongo ID
-    name: string;
-    pods: Pod[];
-    user_id: string; // auth0 ID
+export interface UserState {
+    user: User | undefined;
+    isLoggedIn: boolean;
+}
 
+export const initialState: UserState = {
+    user: undefined,
+    isLoggedIn: false,
+};
+
+export class User {
+    // necessary fields: _id, name, created_at, email, email_verified, pods
+    _id: string;
+    created_at: string;
+    email: string;
+    email_verified: boolean;
+    pods: Pod[];
+    name: string;
+
+    // optional fields:
+    family_name?: string;
+    given_name?: string;
+    identities?: Identity[];
+    nickname?: string;
+    picture?: string;
+    updated_at?: string;
+    last_ip?: string;
+    last_login?: string;
+    logins_count?: number;
+    blocked_for?: any[];
+    guardian_authenticators?: any[];
+    passkeys?: any[];
 
     constructor(data: {
         _id: string;
         name: string;
-        pods: Pod[];
-        user_id: string;
-    }) {
-        this._id = data._id;
-        this.name = data.name;
-        this.pods = data.pods;
-        this.user_id = data.user_id;
-    }
-}
-
-
-export class FullUser {
-    created_at: string;
-    email: string;
-    email_verified: boolean;
-    family_name: string;
-    given_name: string;
-    identities: Identity[];
-    name: string;
-    nickname: string;
-    picture: string;
-    updated_at: string;
-    user_id: string;
-    last_ip: string;
-    last_login: string;
-    logins_count: number;
-    blocked_for: any[];
-    guardian_authenticators: any[];
-    passkeys: any[];
-    pods: Pod[];
-
-    constructor(data: {
         created_at: string;
         email: string;
         email_verified: boolean;
-        family_name: string;
-        given_name: string;
-        identities: Identity[];
-        name: string;
-        nickname: string;
-        picture: string;
+        family_name?: string;
+        given_name?: string;
+        identities?: Identity[];
+        nickname?: string;
+        picture?: string;
         updated_at: string;
-        user_id: string;
-        last_ip: string;
-        last_login: string;
-        logins_count: number;
-        blocked_for: any[];
-        guardian_authenticators: any[];
-        passkeys: any[];
+        last_ip?: string;
+        last_login?: string;
+        logins_count?: number;
+        blocked_for?: any[];
+        guardian_authenticators?: any[];
+        passkeys?: any[];
         pods: Pod[];
     }) {
+        this._id = data._id;
         this.created_at = data.created_at;
         this.email = data.email;
         this.email_verified = data.email_verified;
@@ -81,7 +74,6 @@ export class FullUser {
         this.nickname = data.nickname;
         this.picture = data.picture;
         this.updated_at = data.updated_at;
-        this.user_id = data.user_id;
         this.last_ip = data.last_ip;
         this.last_login = data.last_login;
         this.logins_count = data.logins_count;

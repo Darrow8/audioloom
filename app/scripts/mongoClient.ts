@@ -1,7 +1,6 @@
-import {  getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection } from './mongoHandle';
+import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection } from './mongoHandle';
 import { isValidPod, isValidMongoUser } from './validateData';
-
-
+import { User } from './user';
 // User endpoints
 
 export const getAllUsers = async () => {
@@ -10,21 +9,25 @@ export const getAllUsers = async () => {
 }
 
 export const createUser = async (data: any) => {
-    if (isValidMongoUser(data)) {
-        await createRecord('users', data).catch((error) => {
-            console.error('Error creating user:', error);
-            return false;
-        });
-        return true;
-    } else {
+    // Add created_at timestamp
+    data.created_at = new Date().toISOString();
+    data.updated_at = data.created_at;
+
+    if (!isValidMongoUser(data)) {
         console.error('Invalid user data:', data);
         throw new Error('Invalid user data');
     }
+
+    await createRecord('users', data).catch((error) => {
+        console.error('Error creating user:', error);
+        return undefined;
+    });
+    return data as User;
 }
 
 export const getUser = async (id: string) => {
     if (id) {
-        const user = await getRecordById('users', id).catch((error) => {
+        const user = await getRecordById('users', id.toString()).catch((error) => {
             console.error('Error getting user:', error);
             return false;
         });
@@ -36,16 +39,13 @@ export const getUser = async (id: string) => {
 }
 
 export const updateUser = async (id: string, data: any) => {
-    if (isValidMongoUser(data) && id) {
-        await updateRecord('users', id, data).catch((error) => {
-            console.error('Error updating user:', error);
-            return false;
-        });
-        return true;
-    } else {
-        console.error('Invalid user data or id:', { id, data });
-        throw new Error('Invalid user data or id');
-    }
+    data.updated_at = new Date().toISOString();
+    await updateRecord('users', id, data).catch((error) => {
+        console.error('Error updating user:', error);
+        return false;
+    });
+    return true;
+
 }
 
 export const deleteUser = async (id: string) => {
@@ -68,14 +68,14 @@ export const getAllPods = async () => {
     return pods;
 }
 
-export const createPod = async (data: any) =>{
-    if(isValidPod(data)){
+export const createPod = async (data: any) => {
+    if (isValidPod(data)) {
         await createRecord('pods', data).catch((error) => {
             console.error('Error creating pod:', error);
             return false;
         });
         return true;
-    }else{
+    } else {
         console.error('Invalid pod data:', data);
         throw new Error('Invalid pod data');
     }

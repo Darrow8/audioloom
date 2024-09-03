@@ -1,11 +1,12 @@
-import { MongoUser, Pod } from './user';
+import { User, Pod } from './user';
 
-export function isValidMongoUser(obj: any): obj is MongoUser {
+// lax requirements for now
+export function isValidMongoUser(obj: any): obj is User {
   if (typeof obj !== 'object' || obj === null) {
     return false;
   }
 
-  const requiredFields: (keyof MongoUser)[] = ['_id', 'name', 'pods', 'user_id'];
+  const requiredFields: (keyof User)[] = ['_id', 'name', 'pods', 'email', 'email_verified', 'created_at'];
 
   for (const field of requiredFields) {
     if (!(field in obj)) {
@@ -13,7 +14,7 @@ export function isValidMongoUser(obj: any): obj is MongoUser {
     }
   }
 
-  if (typeof obj._id !== 'string' || typeof obj.name !== 'string' || typeof obj.user_id !== 'string') {
+  if (typeof obj._id !== 'string' || typeof obj.name !== 'string') {
     return false;
   }
 
@@ -36,14 +37,6 @@ export function isValidPod(pod: any): pod is Pod {
   }
 
   if (!Array.isArray(pod.readings) || !Array.isArray(pod.audio)) {
-    return false;
-  }
-
-  if (!pod.readings.every((reading: any) => typeof reading === 'string')) {
-    return false;
-  }
-
-  if (!pod.audio.every((audio: any) => typeof audio === 'string')) {
     return false;
   }
 
