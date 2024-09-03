@@ -7,65 +7,85 @@ import * as config from "../auth0_config";
 import Landing from './landing';
 import { Auth0Provider, useAuth0 } from 'react-native-auth0';
 import * as SecureStore from 'expo-secure-store';
-import { getAllUsers, getUser } from '../scripts/mongoClient';
-
+import { createUser, getAllUsers, getUser } from '../scripts/mongoClient';
+import { User } from '@/scripts/user';
+import { useStateContext } from '@/state/StateContext';
+import { StateProvider } from '@/state/StateContext';
+import { initUser, userStateCheck } from '@/scripts/auth';
+import { ActivityIndicator, View } from 'react-native';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 
 function AppContent() {
-  const { user, getCredentials } = useAuth0();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user: auth0_user, getCredentials } = useAuth0();
+  const { state, dispatch } = useStateContext();
   const [isLoading, setIsLoading] = useState(true);
 
-  // testPublic();
 
   useEffect(() => {
     async function checkLogin() {
       try {
         setIsLoading(true);
-        if (user) {
-          console.log(user.sub);
+        if (auth0_user) {
           const credentials = await getCredentials();
           if (credentials && credentials.accessToken) {
             await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
             console.log('Access Token stored securely from _layout.tsx');
-            
+            let userId = (auth0_user.sub as string).split('|')[1];
+            let mongo_user = await getUser(userId);
+            if (mongo_user == undefined) {
+              // create new user
+              let new_user = await initUser(userId, auth0_user);
+              if (new_user) {
+                dispatch({ type: 'LOGIN', payload: new_user });
+              } 
+            } else {
+              dispatch({ type: 'LOGIN', payload: mongo_user });
+              await userStateCheck(mongo_user, auth0_user, dispatch);
+            }
+          } else {
+            dispatch({ type: 'LOGOUT' });
+            await SecureStore.deleteItemAsync('auth0AccessToken');
           }
-          setIsLoggedIn(true);
-        } else {
-          setIsLoggedIn(false);
-          await SecureStore.deleteItemAsync('auth0AccessToken');
         }
       } catch (error) {
         console.error("Error checking login status:", error);
+        await SecureStore.deleteItemAsync('auth0AccessToken');
+        dispatch({ type: 'LOGOUT' });
       } finally {
         setIsLoading(false);
       }
     }
     checkLogin();
-  }, [user, getCredentials]);
+  }, [auth0_user, getCredentials]);
 
   if (isLoading) {
-    return null; // or return a loading indicator
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
-  return isLoggedIn ? (
-    <Stack screenOptions={{
-      headerStyle: {
-        backgroundColor: '#f4511e',
-      },
-      headerTintColor: '#fff',
-      headerTitleStyle: {
-        fontWeight: 'bold',
-      },
-      headerShown: false
-    }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
-  ) : (
-    <Landing />
-  );
+  return (
+    state.isLoggedIn ? (
+      <Stack screenOptions={{
+        headerStyle: {
+          backgroundColor: '#f4511e',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        headerShown: false
+      }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    ) : (
+      <Landing />
+    )
+  )
 }
 
 export default function RootLayout() {
@@ -96,7 +116,9 @@ export default function RootLayout() {
 
   return (
     <Auth0Provider domain={config.default.domain} clientId={config.default.clientId}>
-      <AppContent />
+      <StateProvider>
+        <AppContent />
+      </StateProvider>
     </Auth0Provider>
   );
 }
@@ -110,5 +132,5 @@ async function testPublic() {
     .catch(error => {
       console.error('Error fetching public data:', error);
     });
-  
+
 }

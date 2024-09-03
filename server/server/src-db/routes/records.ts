@@ -21,6 +21,10 @@ router.get("/:col", async (req, res) => {
 // This section will help you get a single record by id
 router.get("/:col/:id", async (req, res) => {
   let collection = client.db("fullData").collection(req.params.col);
+  // TODO: Check if the id is valid
+  if (!ObjectId.isValid(req.params.id)) {
+    return res.status(400).send("Invalid ID format");
+  }
   let query = { _id: new ObjectId(req.params.id) };
   let result = await collection.findOne(query);
 
@@ -32,6 +36,11 @@ router.get("/:col/:id", async (req, res) => {
 router.post("/:col", async (req, res) => {
   try {
     let newDocument = req.body as User;
+    let obj_id = new ObjectId(newDocument._id);
+    if (!ObjectId.isValid(obj_id)) {
+      return res.status(400).send("Invalid ID format");
+    }
+    newDocument._id = obj_id;
     let collection = client.db("fullData").collection(req.params.col);
     let result = await collection.insertOne(newDocument);
     res.send(result).status(204);
@@ -44,7 +53,11 @@ router.post("/:col", async (req, res) => {
 // This section will help you update a record by id.
 router.patch("/:col/:id", async (req, res) => {
   try {
-    const query = { _id: new ObjectId(req.params.id) };
+    let obj_id = new ObjectId(req.params.id);
+    if (!ObjectId.isValid(obj_id)) {
+      return res.status(400).send("Invalid ID format");
+    }
+    const query = { _id: obj_id };
     let data = req.body as User;
     const updates = {
       $set: data,
@@ -61,7 +74,11 @@ router.patch("/:col/:id", async (req, res) => {
 // This section will help you delete a record
 router.delete("/:col/:id", async (req, res) => {
   try {
-    const query = { _id: new ObjectId(req.params.id) };
+    let obj_id = new ObjectId(req.params.id);
+    if (!ObjectId.isValid(obj_id)) {
+      return res.status(400).send("Invalid ID format");
+    }
+    const query = { _id: obj_id };
 
     let collection = client.db("fullData").collection(req.params.col);
     let result = await collection.deleteOne(query);
