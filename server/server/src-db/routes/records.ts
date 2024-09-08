@@ -21,7 +21,6 @@ router.get("/:col", async (req, res) => {
 // This section will help you get a single record by id
 router.get("/:col/:id", async (req, res) => {
   let collection = client.db("fullData").collection(req.params.col);
-  // TODO: Check if the id is valid
   if (!ObjectId.isValid(req.params.id)) {
     return res.status(400).send("Invalid ID format");
   }

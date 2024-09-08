@@ -23,7 +23,8 @@ export const app: Express = express();
 
 const PORT = parseInt(process.env.PORT || '3000');
 
-app.use(express.json());
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb'}));
 app.use(helmet());
 app.use(cors());
 
@@ -74,6 +75,10 @@ const apiKeyCheck = (req: Request, res: Response, next: NextFunction) => {
 
 // Combine JWT and API key checks
 export const authCheck = (req: Request, res: Response, next: NextFunction) => {
+    if(process.env.NODE_ENV == 'development'){
+        return next();
+    }
+
     jwtCheck(req, res, (jwtError) => {
         if (jwtError) {
             return next(jwtError);

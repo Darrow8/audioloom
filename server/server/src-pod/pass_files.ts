@@ -1,5 +1,8 @@
-import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, PutObjectCommandInput } from "@aws-sdk/client-s3";
 import { s3Client, TEMP_DATA_PATH } from "./init";
+
+import { Upload } from "@aws-sdk/lib-storage";
+import { Readable } from "stream";
 
 /**
  * Retrieve a file from an S3 bucket
@@ -48,17 +51,9 @@ export async function getFileFromS3(fileName: string ): Promise<string> {
  * @param {string} uploadDetails.contentType - The MIME type of the file.
  * @returns {Object} Response object with status code and message.
  */
-export async function uploadFileToS3(uploadDetails) {
+export async function uploadFileToS3(params: PutObjectCommandInput) {
   
   try {
-    const { key, body, contentType } = uploadDetails;
-
-    const params = {
-      Bucket: 'main-server',
-      Key: key,
-      Body: body,
-      ContentType: contentType,
-    };
 
     const command = new PutObjectCommand(params);
     const data = await s3Client.send(command);
@@ -79,12 +74,15 @@ export async function uploadFileToS3(uploadDetails) {
   }
 }
 
+
+
 export async function uploadAudioToS3(resultFileName: string){
   let resultFilePath = `${TEMP_DATA_PATH}/result/${resultFileName}.mp3`;
   // upload to S3
-  const uploadDetails = {
-      key: `pod-audio/${resultFileName}.mp3`,
-      body: resultFilePath,
+  const uploadDetails : PutObjectCommandInput = {
+      Bucket: 'main-server',
+      Key: `pod-audio/${resultFileName}.mp3`,
+      Body: resultFilePath,
       ContentType: 'audio/mpeg'
   };
   await uploadFileToS3(uploadDetails);
