@@ -1,9 +1,11 @@
-import { MongoClient, ServerApiVersion, ObjectId } from "mongodb";
+import { MongoClient, ServerApiVersion, ObjectId, Db } from "mongodb";
 import { User, Pod } from './utils.js';
 
 
 
-export let client, uri = undefined;
+export let client : MongoClient = undefined
+export let uri:string = undefined;
+export let db: Db = undefined;
 
 export async function run() {
   uri = process.env.ATLAS_URI;
@@ -24,6 +26,7 @@ export async function run() {
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
+    db = client.db('fullData');
     console.log("Successfully connected to MongoDB Atlas");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
@@ -58,31 +61,57 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-// export async function createMongoUser(user: User) {
-//   const client = new MongoClient(uri);
-//   await client.connect();
-//   const db = client.db('fullData');
-//   const collection = db.collection('users');
-//   await collection.insertOne(user);
-//   await client.close();
-// }
+export async function createMongoData(collectionName: string, data: any) {
+  try {
+    const collection = db.collection(collectionName);
+    const result = await collection.insertOne(data);
+    console.log(`Successfully inserted document with _id: ${result.insertedId}`);
+    return result;
+  } catch (error) {
+    console.error(`Error creating data in ${collectionName}:`, error);
+    throw error;
+  }
+}
 
-// export async function getMongoUserByAuth0Id(user_id: string) {
-//   const client = new MongoClient(uri);
-//   await client.connect();
-//   const db = client.db('fullData');
-//   const collection = db.collection('users');
-//   const user = await collection.findOne({ user_id: user_id });
-//   await client.close();
-//   return user;
-// }
+export async function getMongoDataById(collectionName: string, id: ObjectId) {
+  try {
+    const collection = db.collection(collectionName);
+    const data = await collection.findOne({ _id: id });
+    if (!data) {
+      console.log(`No document found with _id: ${id} in ${collectionName}`);
+    }
+    return data;
+  } catch (error) {
+    console.error(`Error getting data from ${collectionName}:`, error);
+    throw error;
+  }
+}
 
-// export async function getMongoUserBy_Id(id: ObjectId) {
-//   const client = new MongoClient(uri);
-//   await client.connect();
-//   const db = client.db('fullData');
-//   const collection = db.collection('users');
-//   const user = await collection.findOne({ _id: id });
-//   await client.close();
-//   return user;
-// }
+export async function updateMongoData(collectionName: string, data: any) {
+  try {
+    const collection = db.collection(collectionName);
+    const result = await collection.updateOne({ _id: data._id }, { $set: data });
+    if (result.matchedCount === 0) {
+      console.log(`No document found with _id: ${data._id} in ${collectionName}`);
+    } else {
+      console.log(`Successfully updated document with _id: ${data._id}`);
+    }
+    return result;
+  } catch (error) {
+    console.error(`Error updating data in ${collectionName}:`, error);
+    throw error;
+  }
+}
+
+export async function updateMongoArrayDoc<T extends Document>(collectionName: string, documentId: string,  arrayField: any,
+  newItem: any){
+  const collection = db.collection(collectionName);
+
+    const result = await collection.updateOne(
+      { _id: new ObjectId(documentId) },
+      { $push: { [arrayField]: newItem } as any }
+    );
+
+    console.log(`Updated ${result.modifiedCount} document`);
+    return result;
+}
