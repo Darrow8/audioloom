@@ -7,14 +7,15 @@ export interface Pod {
 export class User {
     _id: ObjectId; // mongo ID
     name: string;
-    pods: Pod[];
+    pods: string[];
+    articles: string[]
     user_id: string; // auth0 ID
 
 
     constructor(data: {
         _id: string;
         name: string;
-        pods: Pod[];
+        pods: string[];
         user_id: string;
     }) {
         this._id = new ObjectId(data._id);
