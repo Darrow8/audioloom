@@ -4,6 +4,10 @@ import { ElevenLabsClient } from "elevenlabs";
 import OpenAI from "openai";
 import ffmpeg from 'fluent-ffmpeg';
 import { ensureRequiredFolders } from './local';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 // elevenlabs client
 export let elevenlabsClient: ElevenLabsClient;
 export let elevenlabsInitialized = false;
@@ -113,8 +117,8 @@ export const initS3 = () => {
 export async function initSecrets() {
     const secret_name = "dev-keys";
     const credentials = {
-        accessKeyId: process.env.ACCESS_KEY_ID,
-        secretAccessKey: process.env.SECRET_ACCESS_KEY,
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_KEY,
     }
 
     const client = new SecretsManagerClient({
