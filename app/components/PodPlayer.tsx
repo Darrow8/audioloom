@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { AntDesign } from '@expo/vector-icons';
+import { Pod } from './Pod';
 
-const PodPlayer = () => {
+const PodPlayer = ({pod}: {pod: Pod}) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(3600);
 
@@ -15,12 +16,12 @@ const PodPlayer = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={{ uri: 'https://via.placeholder.com/300x300' }}
+          source={{ uri: pod.coverImage }}
           style={styles.podcastCover}
         />
-        <Text style={styles.podcastTitle}>The Tech Podcast</Text>
+        <Text style={styles.podcastTitle}>{pod.title}</Text>
         <Text style={styles.podcastDescription}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          {/* {pod.description} */}
         </Text>
       </View>
 

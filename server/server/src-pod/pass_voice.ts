@@ -33,27 +33,32 @@ export async function processCharacterVoices(characters: string[]): Promise<Char
   let char_arr: Character[] = [];
 
   for (let char_name of characters) {
-    let char = new Character(char_name, "", "");
-    if (char_name == "Adam Page") {
-      char.voice_model = "iP95p4xoKVk53GoZ742B"; // Adam Page voice
-    } else {
-      let guess_gender = await determineFemMasc(char_name);
-      if (guess_gender == 'masculine') {
-        char.voice_model = getRandomElement(masculine_voices);
-      } else if (guess_gender == 'feminine') {
-        char.voice_model = getRandomElement(feminine_voices);
-
-      } else {
-        console.error('No voice recieved!')
-        // just do all random for now
-        char.voice_model = getRandomElement([...masculine_voices, ...feminine_voices])
-      }
-
-    }
+    let char = await processCharacterVoice(char_name);
     char_arr.push(char);
   }
 
   return char_arr;
+}
+
+export async function processCharacterVoice(char_name: string): Promise<Character> {
+  let char = new Character(char_name, "", "");
+  if (char_name == "Adam Page") {
+    char.voice_model = "pNInz6obpgDQGcFmaJgB"; // Adam Page voice
+  } else {
+    let guess_gender = await determineFemMasc(char_name);
+    if (guess_gender == 'masculine') {
+      char.voice_model = getRandomElement(masculine_voices);
+    } else if (guess_gender == 'feminine') {
+      char.voice_model = getRandomElement(feminine_voices);
+
+    } else {
+      console.error('No voice recieved!')
+      // just do all random for now
+      char.voice_model = getRandomElement([...masculine_voices, ...feminine_voices])
+    }
+
+  }
+  return char;
 }
 
 function getRandomElement(arr: any[]) {

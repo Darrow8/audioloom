@@ -1,8 +1,11 @@
-import React from 'react';
-import { StyleSheet, View, Image, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { StyleSheet, View, Image, Text, TouchableOpacity, ActivityIndicator, Modal, PanResponder } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import PodPlayer from './PodPlayer';
+import GestureRecognizer from 'react-native-swipe-gestures';
+
 export interface Pod {
     id: string;
     title: string;
@@ -19,6 +22,26 @@ export enum Status {
 
 
 const PodComponent: React.FC<{ pod: Pod }> = ({ pod }) => {
+    const [isPlayerModalVisible, setIsPlayerModalVisible] = useState(false);
+    const panResponder = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponderCapture: (_, gestureState) => {
+                return gestureState.dy > 10;
+            },
+            onPanResponderRelease: (_, gestureState) => {
+                if (gestureState.dy > 50) {
+                    setIsPlayerModalVisible(false);
+                }
+            },
+        })
+    ).current;
+
+    const openPlayerModal = () => {
+        if (pod.status === Status.READY) {
+            setIsPlayerModalVisible(true);
+        }
+    };
+
     return (
         <View style={styles.songItem}>
             <Image source={{ uri: pod.coverImage }} style={styles.songCover} />
@@ -26,7 +49,7 @@ const PodComponent: React.FC<{ pod: Pod }> = ({ pod }) => {
                 <Text style={styles.songTitle}>{pod.title}</Text>
                 <Text style={styles.songArtist}>{pod.artist}</Text>
             </View>
-            <TouchableOpacity style={styles.addToPlaylistButton}>
+            <TouchableOpacity style={styles.addToPlaylistButton} onPress={openPlayerModal}>
                 {pod.status === Status.READY && (
                     <Entypo name="controller-play" size={24} color="#007AFF" />
                 )}
@@ -37,9 +60,29 @@ const PodComponent: React.FC<{ pod: Pod }> = ({ pod }) => {
                     <MaterialIcons name="error-outline" size={24} color="#007AFF" />
                 )}
             </TouchableOpacity>
+            <GestureRecognizer
+                style={{flex: 1}}
+                onSwipeUp={ () => setIsPlayerModalVisible(true) }
+                onSwipeDown={ () => setIsPlayerModalVisible(false) }
+                >
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={isPlayerModalVisible}
+                // onRequestClose={() => setIsPlayerModalVisible(false)}
+            >
+                <View style={styles.modalContainer} {...panResponder.panHandlers}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.dragIndicator} />
+                        <PodPlayer pod={pod} />
+                    </View>
+                </View>
+            </Modal>
+            </GestureRecognizer>
         </View>
     );
 };
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -87,6 +130,25 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 20,
+        height: '90%',
+    },
+    dragIndicator: {
+        width: 40,
+        height: 5,
+        backgroundColor: '#ccc',
+        borderRadius: 3,
+        alignSelf: 'center',
+        marginBottom: 10,
     },
 });
 export default PodComponent;

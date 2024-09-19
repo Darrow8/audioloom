@@ -7,7 +7,7 @@ import * as config from "../auth0_config";
 import Landing from './landing';
 import { Auth0Provider, useAuth0 } from 'react-native-auth0';
 import * as SecureStore from 'expo-secure-store';
-import { createUser, getAllUsers, getUser } from '../scripts/mongoClient';
+import { getUserBySub } from '../scripts/mongoClient';
 import { User } from '@/scripts/user';
 import { useStateContext } from '@/state/StateContext';
 import { StateProvider } from '@/state/StateContext';
@@ -18,41 +18,47 @@ SplashScreen.preventAutoHideAsync();
 
 
 function AppContent() {
-  const { user: auth0_user, getCredentials } = useAuth0();
+  const { user: auth0_user, getCredentials,clearSession, clearCredentials } = useAuth0();
   const { state, dispatch } = useStateContext();
   const [isLoading, setIsLoading] = useState(true);
 
-
+  // check if user is logged in at start of app
   useEffect(() => {
     async function checkLogin() {
       try {
         setIsLoading(true);
         if (auth0_user) {
+          console.log("auth0_user: ", auth0_user);
           const credentials = await getCredentials();
           if (credentials && credentials.accessToken) {
             await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
             console.log('Access Token stored securely from _layout.tsx');
-            let userId = (auth0_user.sub as string).split('|')[1];
-            let mongo_user = await getUser(userId);
-            if (mongo_user == undefined) {
-              // create new user
-              let new_user = await initUser(userId, auth0_user);
-              if (new_user) {
-                dispatch({ type: 'LOGIN', payload: new_user });
-              } 
-            } else {
+            let mongo_user = await getUserBySub(auth0_user.sub);
+            console.log("mongo_user: ", mongo_user);
+            if (mongo_user != undefined && mongo_user != false) {
               dispatch({ type: 'LOGIN', payload: mongo_user });
               await userStateCheck(mongo_user, auth0_user, dispatch);
+            }else{
+              if (auth0_user.email && auth0_user.name) {
+                // make new user
+                let new_user = await initUser(auth0_user);
+                dispatch({ type: 'LOGIN', payload: new_user });
+              }else{
+                throw new Error('User email and name are required');
+              }
             }
           } else {
-            dispatch({ type: 'LOGOUT' });
-            await SecureStore.deleteItemAsync('auth0AccessToken');
+            throw new Error('Error getting credentials');
           }
         }
       } catch (error) {
         console.error("Error checking login status:", error);
+        // full sign out
         await SecureStore.deleteItemAsync('auth0AccessToken');
         dispatch({ type: 'LOGOUT' });
+        clearCredentials();
+        clearSession();
+        console.log("User logged out");
       } finally {
         setIsLoading(false);
       }

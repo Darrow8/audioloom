@@ -5,15 +5,15 @@ import { View, Text, StyleSheet, Image, Button } from 'react-native';
 const Landing = () => {
 
     return (
-            <View style={styles.container}>
-                <Image
-                    source={require("../assets/images/walk2.png")}
-                    style={styles.heroImage}
-                />
-                <Text style={styles.title}>Rivet Audio</Text>
-                <Text style={styles.subtitle}>Listen to your readings as you walk to class</Text>
-                <LoginButton />
-            </View>
+        <View style={styles.container}>
+            <Image
+                source={require("../assets/images/walk2.png")}
+                style={styles.heroImage}
+            />
+            <Text style={styles.title}>Rivet Audio</Text>
+            <Text style={styles.subtitle}>Listen to your readings as you walk to class</Text>
+            <LoginButton />
+        </View>
     )
 }
 

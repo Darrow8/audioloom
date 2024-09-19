@@ -26,8 +26,10 @@ export class User {
     created_at: string;
     email: string;
     email_verified: boolean;
-    pods: Pod[];
+    pods: string[];
+    articles: string[];
     name: string;
+    sub: string;
 
     // optional fields:
     family_name?: string;
@@ -61,9 +63,12 @@ export class User {
         blocked_for?: any[];
         guardian_authenticators?: any[];
         passkeys?: any[];
-        pods: Pod[];
+        pods: string[];
+        articles: string[];
+        sub: string;
     }) {
         this._id = data._id;
+        this.sub = data.sub;
         this.created_at = data.created_at;
         this.email = data.email;
         this.email_verified = data.email_verified;
@@ -81,5 +86,6 @@ export class User {
         this.guardian_authenticators = data.guardian_authenticators;
         this.passkeys = data.passkeys;
         this.pods = data.pods;
+        this.articles = data.articles;
     }
 }

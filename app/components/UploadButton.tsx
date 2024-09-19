@@ -9,13 +9,14 @@ import {
 } from "@robinbobin/react-native-google-drive-api-wrapper";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DriveList from './DriveList';
+import { uploadToS3 } from '../scripts/s3';
 
 GoogleSignin.configure({
   scopes: ['https://www.googleapis.com/auth/drive.readonly'], // what API you want to access on behalf of the user, default is email and profile
   iosClientId: '554636964216-v3fsfvau5939st9bjquk8to2fnt0m2f1.apps.googleusercontent.com', // [iOS] if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
 });
 
-const UploadButton = () => {
+const UploadButton: React.FC<{ userId: string }> = ({ userId }) => {
   const [file, setFile] = useState<any>(null);
   const [driveFiles, setDriveFiles] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -28,7 +29,14 @@ const UploadButton = () => {
     }
     console.log('in use effect for file!')
     console.log('file', file)
-  }, [file])
+    console.log('ready to upload!')
+    // step 1: upload to s3
+    async function getS3Url() {
+      const s3Response = await uploadToS3(file, userId)
+      console.log('s3Response', s3Response)
+    }
+    getS3Url()
+  }, [file, userId])
 
 
   const testAccessToken = async () => {
@@ -61,7 +69,7 @@ const UploadButton = () => {
         q: "mimeType='application/pdf' or mimeType='text/plain'",
         fields: 'files(id, name, mimeType)',
       })
-      console.log('files', files)
+      // console.log('files', files)
 
       if (files.files && files.files.length > 0) {
         setDriveFiles(files.files);

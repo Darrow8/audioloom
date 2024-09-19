@@ -133,19 +133,25 @@ export function createClips(audios: AudioFile[], lines: MusicLine[] | CharLine[]
             continue;
         }
         let audio = filtered_audios[0]; // get first audio, should only be 1
-        clip_arr.push(new Clip(audio,line,line.id));
+        clip_arr.push(createClip(audio, line));
     }
     return clip_arr;
+}
+
+export function createClip(audio: AudioFile, line: MusicLine | CharLine): Clip {
+    return new Clip(audio,line,line.id);
 }
 
 export class AudioFile {
     id: string;
     url: string;
+    rawDuration?: number; // raw duration is the duration of the audio file, but it may be too long for what we want
     duration: number;
     start: number;
-    constructor(id: string, url: string, duration: number, start: number) {
+    constructor(id: string, url: string, start: number, duration:number, rawDuration?: number,) {
         this.id = id;
         this.url = url;
+        this.rawDuration = rawDuration;
         this.duration = duration;
         this.start = start;
     }

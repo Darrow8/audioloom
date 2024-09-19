@@ -1,5 +1,5 @@
-import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection } from './mongoHandle';
-import { isValidPod, isValidMongoUser } from './validateData';
+import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection, getRecordByField } from './mongoHandle';
+import { isValidPod } from './validateData';
 import { User } from './user';
 // User endpoints
 
@@ -8,15 +8,10 @@ export const getAllUsers = async () => {
     return users;
 }
 
-export const createUser = async (data: any) => {
+export const createUser = async (data: Partial<User>) => {
     // Add created_at timestamp
     data.created_at = new Date().toISOString();
     data.updated_at = data.created_at;
-
-    if (!isValidMongoUser(data)) {
-        console.error('Invalid user data:', data);
-        throw new Error('Invalid user data');
-    }
 
     await createRecord('users', data).catch((error) => {
         console.error('Error creating user:', error);
@@ -25,7 +20,7 @@ export const createUser = async (data: any) => {
     return data as User;
 }
 
-export const getUser = async (id: string) => {
+export const getUserById = async (id: string) => {
     if (id) {
         const user = await getRecordById('users', id.toString()).catch((error) => {
             console.error('Error getting user:', error);
@@ -33,8 +28,16 @@ export const getUser = async (id: string) => {
         });
         return user;
     } else {
-        console.error('Invalid user id:', id);
-        throw new Error('Invalid user id');
+        return false;
+    }
+}
+
+export const getUserBySub = async (sub: string | undefined) => {
+    if (sub) {
+        const user = await getRecordByField('users', 'sub', sub);
+        return user;
+    } else {
+        return false;
     }
 }
 

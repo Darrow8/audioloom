@@ -18,13 +18,13 @@ export async function saveAsJson(data: any[], folderPath: string, fileName: stri
     // Create the full file path
     const filePath = `${folderPath}/${fileName}.json`;
 
-    // Convert data to JSON string
-    const jsonData = JSON.stringify(data);
+    // Convert data to formatted JSON string
+    const jsonData = JSON.stringify(data, null, 2);
 
-    // Write JSON data to file
+    // Write formatted JSON data to file
     await fs.promises.writeFile(filePath, jsonData, 'utf-8');
 
-    console.log(`Data saved to ${filePath}.json`);
+    console.log(`Formatted data saved to ${filePath}`);
 }
 
 /**
