@@ -344,3 +344,10 @@ $RECYCLE.BIN/
 
 /env.json
 env.json
+
+temp-data
+temp-data-backup
+uploads
+node_modules
+package-lock.json
+.env

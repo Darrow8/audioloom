@@ -9,10 +9,11 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { expressjwt, GetVerificationKey, Request as JWTRequest } from 'express-jwt';
 import jwks from 'jwks-rsa';
-
+import { createPodcastInParallel } from './src-pod/process_pod.js';
 // Import the route modules
-import { podRoutes } from './src-pod/server-pod.js';
-import { dbRoutes } from './src-db/server-db.js';
+import { podRoutes } from './src-pod/main.js';
+import { dbRoutes } from './src-db/main.js';
+import { routerFunctions } from './src-db/routes/records.js';
 
 dotenv.config();
 
@@ -91,6 +92,7 @@ export const authCheck = (req: Request, res: Response, next: NextFunction) => {
         });
     });
 };
+routerFunctions()
 podRoutes();
 dbRoutes();
 // Error handling middleware

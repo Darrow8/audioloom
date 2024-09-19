@@ -1,16 +1,17 @@
 import React from 'react';
 import { Text, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { useAuth0 } from 'react-native-auth0';
 import * as SecureStore from 'expo-secure-store';
+import { useStateContext } from '@/state/StateContext';
+import { useAuth0 } from 'react-native-auth0';
 
 const Profile = () => {
-  const { user, clearSession } = useAuth0();
-  console.log("user: ", user);
-
+  const { clearSession } = useAuth0();
+  const { state, dispatch } = useStateContext();
   const onLogout = async () => {
     try {
-      await clearSession();
       await SecureStore.deleteItemAsync('auth0AccessToken');
+      await clearSession();
+      dispatch({ type: 'LOGOUT' });
     } catch (e) {
       console.log('Log out cancelled');
     }
@@ -20,38 +21,32 @@ const Profile = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={{ uri: user?.picture }}
+          source={{ uri: state.user?.picture }}
           style={styles.profileImage}
         />
-        <Text style={styles.name}>{user?.name}</Text>
-        <Text style={styles.username}>{user?.email}</Text>
+        {
+          state.user?.email == state.user?.name ? 
+          <>
+            {state.user?.nickname && <Text style={styles.name}>{state.user.nickname}</Text>}
+            {state.user?.email && <Text style={styles.username}>{state.user.email}</Text>}
+          </>
+          : <>
+            {state.user?.name && <Text style={styles.name}>{state.user.name}</Text>}
+            {state.user?.email ?  
+            <Text style={styles.username}>{state.user.email}</Text>
+            : <Text style={styles.username}>{state.user?.nickname}</Text>
+            }
+          </>
+        }
+        
       </View>
 
       <View style={styles.content}>
-        {/* <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>About</Text>
-          <Text style={styles.infoText}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae
-            magna vel magna vehicula tincidunt.
-          </Text>
-        </View> */}
-
-        {/* <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>Contact</Text>
-          <Text style={styles.infoText}>
-            Email: johndoe@example.com
-            {'\n'}
-            Phone: 123-456-7890
-          </Text>
-        </View> */}
 
         <View style={styles.actionSection}>
           <TouchableOpacity style={styles.actionButton} onPress={onLogout}>
             <Text style={styles.actionButtonText}>Log Out</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionButtonText}>Settings</Text>
-          </TouchableOpacity> */}
         </View>
       </View>
     </View>

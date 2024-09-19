@@ -6,9 +6,11 @@ import { Feather } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
   let size = 28;
   return (
     <Tabs

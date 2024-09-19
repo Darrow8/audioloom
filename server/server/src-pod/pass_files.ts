@@ -76,7 +76,7 @@ export async function uploadFileToS3(params: PutObjectCommandInput) {
 
 
 
-export async function uploadAudioToS3(resultFileName: string){
+export async function uploadAudioToS3(resultFileName: string) : Promise<boolean>{
   let resultFilePath = `${TEMP_DATA_PATH}/result/${resultFileName}.mp3`;
   // upload to S3
   const uploadDetails : PutObjectCommandInput = {
@@ -85,5 +85,9 @@ export async function uploadAudioToS3(resultFileName: string){
       Body: resultFilePath,
       ContentType: 'audio/mpeg'
   };
-  await uploadFileToS3(uploadDetails);
+  let result = await uploadFileToS3(uploadDetails);
+  if(result.statusCode == 200){
+    return true;
+  }
+  return false;
 }

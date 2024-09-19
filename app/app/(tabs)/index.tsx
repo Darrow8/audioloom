@@ -3,29 +3,13 @@ import { Modal, StyleSheet, View, ScrollView } from 'react-native';
 import UploadButton from '../../components/UploadButton';
 import PodComponent, { Pod, Status } from '../../components/Pod';
 import PodPlayer from '@/components/PodPlayer';
-import Upload from '@/components/upload';
+import { useStateContext } from '@/state/StateContext';
 // import * as mongo from '@/scripts/mongoClient';
 // import * as SecureStore from 'expo-secure-store';
 
 const Listen: React.FC = () => {
-  const [playerVisible, setPlayerVisible] = useState(false);
   const [uploadVisible, setUploadVisible] = useState(false);
-
-
-  async function testCall(){
-    try {
-      const response = await fetch('https://10.0.2.2:3000/public')
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('Fetch response:', data);
-    } catch (error) {
-      console.error('Fetch error:', error);
-    }
-  }
-
-  testCall();
+  const { state } = useStateContext();
 
   const pods: Pod[] = [
     {
@@ -37,17 +21,14 @@ const Listen: React.FC = () => {
     }
   ];
 
+
+  if (state.user == null) {
+    return <></>
+  }
+
   return (
     <View style={styles.container}>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={playerVisible}
-        onRequestClose={() => {
-          setPlayerVisible(!playerVisible);
-        }}>
-        <PodPlayer />
-      </Modal>
+      
       <Modal
         animationType="slide"
         transparent={true}
@@ -55,14 +36,13 @@ const Listen: React.FC = () => {
         onRequestClose={() => {
           setUploadVisible(!uploadVisible);
         }}>
-          <Upload />
       </Modal>
       <ScrollView contentContainerStyle={styles.songList}>
         {pods.map((song) => (
           <PodComponent key={song.id} pod={song}/>
         ))}
       </ScrollView>
-      <UploadButton />
+      <UploadButton userId={state.user?._id}/>
     </View>
   );
 };

@@ -1,71 +1,157 @@
 import { uploadFileToS3, getFileFromS3, uploadAudioToS3 } from './pass_files.js';
-import * as aud from './process_audio.js';
-import { CharLine, Clip, MusicLine, Script, createClips } from './util_pod.js';
+import { CharLine, Clip, MusicLine, Script, createClips, Line, AudioFile, createClip } from './util_pod.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getTempChar, getTempMusic, temp_result_file } from './temp.js';
-import { processCharacterLines, processMusicLines } from './process_line.js';
+import { processCharacterLines, processMusicLines,processMusicLine, processCharacterLine, prevAndNextCharLines } from './process_line.js';
 import { deleteAllFilesInFolder, saveAsJson } from './local.js';
 import { TEMP_DATA_PATH } from './init.js';
-
-export let script: Script | null = null;
-
+import { addInMusic, checkStartTime, spliceAudioFiles } from './process_audio.js';
+import { processCharacterVoices } from './pass_voice.js';
+import { Character } from './util_voice.js';
+import { parallelMerge } from './process_merging.js';
 
 /**
  * proccess_pod
  * Main function to process script
  */
 export async function createPodcast(scriptName: string) {
-    try {
-        script = await getScript(scriptName);
+    return new Promise(async (resolve, reject) => {
+        try {
+            let script = await getScript(scriptName);
 
-        // final result file name
-        let resultFileName = `${uuidv4()}`;
-        if (process.env.RUN_TEMP == "true") {
-            resultFileName = temp_result_file;
+            // final result file name
+            let resultFileName = `${uuidv4()}`;
+            if (process.env.RUN_TEMP == "true") {
+                resultFileName = temp_result_file;
+            }
+            let char_clips: Clip[] = await getCharClips(resultFileName, script);
+            let music_clips: Clip[] = await getMusicClips(script);
+            // combine clips and save in ./result
+            await addInMusic(resultFileName, char_clips, music_clips, resultFileName);
+
+            await uploadAudioToS3(resultFileName);
+            // deleteTempFiles()
+            resolve(resultFileName);
+        } catch (err) {
+            console.error('Error in process_pod:', err);
+            reject(err);
         }
-        let char_clips: Clip[] = await getCharClips(resultFileName);
-        console.log(char_clips);
-        console.log('coolio!');
-        // let music_clips: Clip[] = await getMusicClips();
-        // // combine clips and save in ./result
-        // await aud.addInMusic(resultFileName, char_clips, music_clips, resultFileName);
+    });
+}
 
-        // await uploadAudioToS3(resultFileName);
-        // deleteTempFiles()
-    } catch (err) {
-        console.error('Error in process_pod:', err);
-        throw err;
+/**
+ * createPodcastInParallel
+ * In each iteration, process a character line and music line to update audio file
+ */
+export async function createPodcastInParallel(scriptName: string) {
+    let script = await getScript(scriptName);
+    let resultFileName = `${uuidv4()}`;
+    let characters_str = new Set(script.getCharLines().map(line => line.character));
+    let characters : Character[] = await processCharacterVoices(Array.from(characters_str));
+    // keeps track of what time the current line should start at
+    let runningTime = 0;
+    // current clips to be merged
+    let cur_clips: Clip[] = [];
+    // loop through each line to create char audio and music audio, then merge together every 2 lines
+    for(let i = 0; i < script.lines.length; i++){
+        let line = script.lines[i];
+        let clip: Clip = undefined;
+        if(line instanceof CharLine){
+            clip = await getCharClip(line, script, characters, runningTime);
+            await saveAsJson([clip] as any[], `${TEMP_DATA_PATH}/logs`, `char-${uuidv4()}`)
+        }else if(line instanceof MusicLine){
+            clip = await getMusicClip(line, script);
+            await saveAsJson([clip] as any[], `${TEMP_DATA_PATH}/logs`, `music-${uuidv4()}`)
+        } else{
+            console.error('Unknown line type');
+        }
+        if(clip != undefined){
+            cur_clips.push(clip);
+        }
+        // if last clip is dialogue, then merge
+        if (cur_clips.length > 0 && 
+            'dialogue' in cur_clips[cur_clips.length - 1].line &&
+            (cur_clips[cur_clips.length - 1].line as CharLine).dialogue?.length > 0) {
+            // merge the audio
+            runningTime = await parallelMerge(runningTime, cur_clips, resultFileName, script);
+            // save to aws s3
+            let result = await uploadAudioToS3(`${resultFileName}.mp3`);
+            if(result){
+                console.log('saved to s3');
+            }
+            cur_clips = [];
+        }
     }
 }
 
-async function getCharClips(resultFileName: string): Promise<Clip[]> {
+
+/**
+ * convert char line into char clip 
+ */
+async function getCharClip(line: CharLine, script: Script, characters: Character[], runningStartTime: number): Promise<Clip>{
+    if(process.env.RUN_TEMP == "true"){
+        let clips : Clip[] = getTempChar();
+        let clip = clips.find((clip) => clip.line.order == line.order);
+        return clip;
+    }
+    let pn_chars = prevAndNextCharLines(line, script);
+    let current_character = characters.find((char) => char.name == line.character);
+    let audio = await processCharacterLine(line, pn_chars.prev, pn_chars.next, current_character, runningStartTime);
+    let clip = createClip(audio, line);
+    return clip;
+}
+
+/**
+ * get music clip 
+ */
+async function getMusicClip(line: MusicLine, script: Script): Promise<Clip>{
+    if(process.env.RUN_TEMP == "true"){
+        let clips : Clip[] = getTempMusic();
+        let clip = clips.find((clip) => clip.line.order == line.order);
+        return clip;
+    }
+    let music_processed = await processMusicLine(line, script);
+    let music_clip = createClip(music_processed, line);
+    return music_clip;
+}
+
+
+async function getCharClips(resultFileName: string, script: Script): Promise<Clip[]> {
     if (process.env.RUN_TEMP == "true") {
         let char_processed = getTempChar().map(char => char.audio);
-        console.log('char_processed', char_processed);
-        await aud.spliceAudioFiles(char_processed, `${resultFileName}.mp3`, `${TEMP_DATA_PATH}/character`);
-        return getTempChar();
+        char_processed = checkStartTime(char_processed);
+        await spliceAudioFiles(char_processed, `${resultFileName}.mp3`, `${TEMP_DATA_PATH}/character`);
+        // incorporate char_processed into temp_char
+        let temp_char = getTempChar();
+        for (let i = 0; i < temp_char.length; i++) {
+            temp_char[i].audio.start = char_processed[i].start;
+            temp_char[i].audio.duration = char_processed[i].duration;
+        }
+        return temp_char;
     }
     // process char lines
     let char_lines = script.getCharLines();
     let char_processed = await processCharacterLines(char_lines);
-    await aud.spliceAudioFiles(char_processed, `${resultFileName}.mp3`, `${TEMP_DATA_PATH}/character`);
+    await spliceAudioFiles(char_processed, `${resultFileName}.mp3`, `${TEMP_DATA_PATH}/character`);
+    char_processed = checkStartTime(char_processed);
     let char_clips: Clip[] = createClips(char_processed, char_lines);
     await saveAsJson(char_clips, `${TEMP_DATA_PATH}/logs`, `char-${uuidv4()}`)
     return char_clips;
 }
 
-async function getMusicClips(): Promise<Clip[]> {
+async function getMusicClips(script: Script): Promise<Clip[]> {
     if (process.env.RUN_TEMP == "true") {
         // await saveAsJson(temp_music, "./logs", `music-${uuidv4()}`)
         return getTempMusic();
     }
     // process music lines
     let music_lines = script.getMusicLines();
-    let music_processed = await processMusicLines(music_lines);
+    let music_processed = await processMusicLines(music_lines, script);
     let music_clips: Clip[] = createClips(music_processed, music_lines);
     await saveAsJson(music_clips, `${TEMP_DATA_PATH}/logs`, `music-${uuidv4()}`)
     return music_clips;
 }
+
 
 
 /**

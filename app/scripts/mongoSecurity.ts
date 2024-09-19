@@ -1,9 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
 import { Alert, Platform } from 'react-native';
-import { isValidMongoUser } from './validateData';
 
 
-export const BASE_URL = 'https://api.rivetaudio.com/'
+// export const BASE_URL = 'https://api.rivetaudio.com/'
+export const BASE_URL = 'http://localhost:3000/'
 const RIVET_API_KEY = '1023hfiudobf023rhnqwof18ihr0oqefbu2rt0243heirhbnqpofb2u09tgh';
 
 export const makeAuthenticatedRequest = async (url: string, method: string = 'GET', body?: any, retries = 3): Promise<any> => {
@@ -37,10 +37,7 @@ export const makeAuthenticatedRequest = async (url: string, method: string = 'GE
   }
 
   try {
-    console.log(`Attempting ${method} request to: ${url}`);
     const response = await fetch(url, fetchOptions) as Response;
-    // const response = await fetchWithTimeout(url, fetchOptions) as Response;
-    console.log('Response status:', response.status);
 
     if (!response.ok) {
       const errorBody = await response.text();
@@ -51,13 +48,5 @@ export const makeAuthenticatedRequest = async (url: string, method: string = 'GE
     return await response.json();
   } catch (error) {
     console.log('error', error);
-    console.error('Fetch error details:', error);
-    // if (retries > 0) {
-    //   console.log(`Retrying... (${retries} attempts left)`);
-    //   await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
-    //   return makeAuthenticatedRequest(method, body, retries - 1);
-    // }
-    // Alert.alert('Error', 'There was a problem connecting to the server. Please check your internet connection and try again.');
-    // throw error;
   }
 };

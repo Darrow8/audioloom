@@ -4,10 +4,10 @@ import { Request as JWTRequest } from 'express-jwt';
 import { convertToTXT } from './pass_convert.js';
 import { uploadFileToS3 } from './pass_files.js';
 import { v4 as uuidv4 } from 'uuid';
-import { upload, STORAGE_PATH } from './server-pod.js';
+import { upload, STORAGE_PATH } from './main.js';
 import { getMongoDataById, updateMongoData, createMongoData, updateMongoArrayDoc } from '../src-db/handle_mongo.js';
 import { ObjectId } from 'mongodb';
-
+import fs from 'fs';
 
 export const processArticles = () => {
 
@@ -20,6 +20,7 @@ export const processArticles = () => {
     let file = req.file;
     let originalMimetype = file.mimetype;
     let originalSize = file.size;
+    let originalPath = file.path;
 
     if(file.mimetype != 'text/plain'){
       file = await convertToTXT(req.file, `${STORAGE_PATH}`);
@@ -50,7 +51,8 @@ export const processArticles = () => {
         }
         let articleResult = await createMongoData('articles', articleData);
         await updateMongoArrayDoc('users', req.body._id, "articles",  articleId);
-
+        // delete the file from local storage in /uploads
+        fs.unlinkSync(originalPath);
       res.status(200).json({
         message: 'File uploaded successfully',
         fileKey: uploadDetails.Key
