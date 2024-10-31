@@ -11,7 +11,7 @@ const Landing = () => {
                 style={styles.heroImage}
             />
             <Text style={styles.title}>Rivet Audio</Text>
-            <Text style={styles.subtitle}>Listen to your readings as you walk to class</Text>
+            <Text style={styles.subtitle}>Finish your readings as you walk to class</Text>
             <LoginButton />
         </View>
     )

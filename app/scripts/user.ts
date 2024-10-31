@@ -5,11 +5,6 @@ export interface Identity {
     isSocial: boolean;
 }
 
-export interface Pod {
-    readings: string[];
-    audio: string[];
-}
-
 export interface UserState {
     user: User | undefined;
     isLoggedIn: boolean;

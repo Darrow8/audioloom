@@ -1,8 +1,10 @@
 import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, PutObjectCommandInput } from "@aws-sdk/client-s3";
 import { s3Client, TEMP_DATA_PATH } from "./init";
-
 import { Upload } from "@aws-sdk/lib-storage";
 import { Readable } from "stream";
+import { createReadStream } from 'fs';
+import { join } from 'path';
+import { existsSync } from 'fs';
 
 /**
  * Retrieve a file from an S3 bucket
@@ -76,18 +78,34 @@ export async function uploadFileToS3(params: PutObjectCommandInput) {
 
 
 
-export async function uploadAudioToS3(resultFileName: string) : Promise<boolean>{
-  let resultFilePath = `${TEMP_DATA_PATH}/result/${resultFileName}.mp3`;
-  // upload to S3
-  const uploadDetails : PutObjectCommandInput = {
-      Bucket: 'main-server',
-      Key: `pod-audio/${resultFileName}.mp3`,
-      Body: resultFilePath,
-      ContentType: 'audio/mpeg'
-  };
-  let result = await uploadFileToS3(uploadDetails);
-  if(result.statusCode == 200){
-    return true;
+export async function uploadAudioToS3(resultFileName: string): Promise<boolean> {
+  const resultFilePath = join(TEMP_DATA_PATH, 'result', resultFileName);
+  
+  // Check if the file exists before attempting to upload
+  if (!existsSync(resultFilePath)) {
+    console.error(`File not found: ${resultFilePath}`);
+    return false;
   }
-  return false;
+
+  // Create a read stream from the file
+  const fileStream = createReadStream(resultFilePath);
+
+  try {
+    const upload = new Upload({
+      client: s3Client,
+      params: {
+        Bucket: 'main-server',
+        Key: `pod-audio/${resultFileName}`,
+        Body: fileStream,
+        ContentType: 'audio/mpeg'
+      }
+    });
+
+    await upload.done();
+    console.log(`File uploaded successfully: ${resultFileName}`);
+    return true;
+  } catch (error) {
+    console.error('Error uploading audio to S3:', error);
+    return false;
+  }
 }

@@ -5,13 +5,15 @@ import { useStateContext } from '@/state/StateContext';
 import { useAuth0 } from 'react-native-auth0';
 
 const Profile = () => {
-  const { clearSession } = useAuth0();
+  const { clearSession, hasValidCredentials } = useAuth0();
   const { state, dispatch } = useStateContext();
   const onLogout = async () => {
     try {
-      await SecureStore.deleteItemAsync('auth0AccessToken');
       await clearSession();
-      dispatch({ type: 'LOGOUT' });
+      if (!hasValidCredentials()) {
+        await SecureStore.deleteItemAsync('auth0AccessToken');
+        dispatch({ type: 'LOGOUT' });        
+      }
     } catch (e) {
       console.log('Log out cancelled');
     }

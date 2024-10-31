@@ -1,6 +1,8 @@
-# generatePod
+# Pod Server
 
 ## General Structure of pod functions
+
+`src-db` handles all database interactions, `src-pod` handles all podcast generation
 
 - `main.ts` handles all endpoints to be called
 - `temp_data.ts` stores temp data that is used for testing

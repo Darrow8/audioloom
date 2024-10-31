@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import Auth0 from 'react-native-auth0';
 import auth0, { useAuth0, Auth0Provider } from 'react-native-auth0';
 import { getUserById, createUser } from '../scripts/mongoClient';
 import * as AuthSession from 'expo-auth-session';
@@ -10,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 const LoginButton = () => {
-  const { authorize, clearSession, isLoading } = useAuth0();
+  const { authorize, clearSession, isLoading,  } = useAuth0();
 
 
   if (isLoading) {
@@ -19,31 +18,21 @@ const LoginButton = () => {
   // when user clicks login, call auth0 to login
   const onLogin = async () => {
     try {
-      await authorize();
-      // let credentials = await authorize();
-      // console.log("credentials: ", credentials);
-      // if (credentials && credentials.accessToken) {
-      //   await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
-      //   console.log('Access Token stored securely from LoginButton.tsx');
-      //   // You can now use this access token for authenticated API requests
-      //   // let user_id = credentials.idToken;
-      //   // console.log("user_id: ", user_id);
-      //   // const user = await getUser(user_id);
-      //   // if (user) {
-      //   //   console.log("user: ", user);
-      //   // }
-      //   // else {
-      //   //   console.log("user not found");
-      //   //   // make new user
-      //   //   const newUser: MongoUser = {
-      //   //     _id: uuidv4(),
-      //   //     name: credentials.idTokenPayload.name,
-      //   //     pods: [],
-      //   //     user_id: user_id,
-      //   //   }
-      //   //   await createUser(newUser);
-      //   // }
-      // }
+      await authorize({
+        scope: 'openid profile email prompt:select_account'
+      });
+      
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const onSignup = async () => {
+    try {
+      await authorize({
+        scope: 'openid profile email prompt:select_account'
+      });
+      
     } catch (e) {
       console.log(e);
     }
@@ -55,7 +44,7 @@ const LoginButton = () => {
       <TouchableOpacity style={styles.button} onPress={onLogin}>
         <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={onLogin}>
+      <TouchableOpacity style={styles.button} onPress={onSignup}>
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
     </View>

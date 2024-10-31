@@ -1,12 +1,13 @@
 import fs from 'fs';
-import fetch from 'node-fetch';
 import { usefulTrack, Segment } from './util_music';
 import { AudioFile } from './util_pod';
 import ffmpeg from 'fluent-ffmpeg';
 import { getAudioDuration, round } from './process_audio';
 import { TEMP_DATA_PATH } from './init';
+import fetch from 'node-fetch';
 
 export async function saveMusicAsAudio(tracks: usefulTrack[], id:string): Promise<AudioFile> {
+    console.log(`saveMusicAsAudio: tracks: ${tracks}`);
     // default to first track for now
     let track = tracks[0];
     if (tracks.length == 0) {

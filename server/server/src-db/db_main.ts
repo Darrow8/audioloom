@@ -2,11 +2,14 @@ import { Request, Response } from 'express';
 import { Request as JWTRequest } from 'express-jwt';
 import { router as recordRouter } from "./routes/records.js";
 import { app, authCheck } from "../server.js";
-import { run } from "./handle_mongo.js";
-import { createPodcastInParallel } from '../src-pod/process_pod.js';
+import { mongo_startup } from "./mongo_interface.js";
+import { Server } from "socket.io";
+
+
+
 export async function dbRoutes() {
-    await run();
-    
+    mongo_startup();
+
     // Public route should be defined first
     app.get('/db/public', (req: Request, res: Response) => {
         res.send('Hello from the /db!');
@@ -28,5 +31,8 @@ export async function dbRoutes() {
     // Catch-all route for /db should be last
     app.use('/db', authCheck, (req: JWTRequest, res: Response) => {
         res.send(`DB Server: You accessed ${req.method} ${req.path}`);
+    });
+    return new Promise((resolve, reject) => {
+        resolve(true);
     });
 }

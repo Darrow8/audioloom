@@ -9,6 +9,10 @@ import { addInMusic, checkStartTime, spliceAudioFiles } from './process_audio.js
 import { processCharacterVoices } from './pass_voice.js';
 import { Character } from './util_voice.js';
 import { parallelMerge } from './process_merging.js';
+import path from 'path';
+import fs from 'fs';
+import { saveClipToLogs } from './local.js'; // Add this import at the top of the file
+import { Request, Response, Express } from 'express';
 
 /**
  * proccess_pod
@@ -43,7 +47,7 @@ export async function createPodcast(scriptName: string) {
  * createPodcastInParallel
  * In each iteration, process a character line and music line to update audio file
  */
-export async function createPodcastInParallel(scriptName: string) {
+export async function createPodcastInParallel(scriptName: string, res: Response) {
     let script = await getScript(scriptName);
     let resultFileName = `${uuidv4()}`;
     let characters_str = new Set(script.getCharLines().map(line => line.character));
@@ -52,16 +56,20 @@ export async function createPodcastInParallel(scriptName: string) {
     let runningTime = 0;
     // current clips to be merged
     let cur_clips: Clip[] = [];
+    let music_filelog : string = `music-${uuidv4()}`;
+    let char_filelog : string = `char-${uuidv4()}`;
     // loop through each line to create char audio and music audio, then merge together every 2 lines
     for(let i = 0; i < script.lines.length; i++){
         let line = script.lines[i];
         let clip: Clip = undefined;
-        if(line instanceof CharLine){
-            clip = await getCharClip(line, script, characters, runningTime);
-            await saveAsJson([clip] as any[], `${TEMP_DATA_PATH}/logs`, `char-${uuidv4()}`)
-        }else if(line instanceof MusicLine){
-            clip = await getMusicClip(line, script);
-            await saveAsJson([clip] as any[], `${TEMP_DATA_PATH}/logs`, `music-${uuidv4()}`)
+        if((line as CharLine).dialogue?.length > 0){
+            // this is a character line
+            clip = await getCharClip(line as CharLine, script, characters, runningTime);
+            await saveClipToLogs(clip, `${TEMP_DATA_PATH}/logs`, char_filelog)
+        }else if('type' in line){
+            // this is a music line
+            clip = await getMusicClip(line as MusicLine, script);
+            await saveClipToLogs(clip, `${TEMP_DATA_PATH}/logs`, music_filelog)
         } else{
             console.error('Unknown line type');
         }
@@ -74,14 +82,30 @@ export async function createPodcastInParallel(scriptName: string) {
             (cur_clips[cur_clips.length - 1].line as CharLine).dialogue?.length > 0) {
             // merge the audio
             runningTime = await parallelMerge(runningTime, cur_clips, resultFileName, script);
+            // Check if the resultFileName file exists
+            const resultFilePath = path.join(TEMP_DATA_PATH, 'result', `${resultFileName}.wav`);
+            if (!fs.existsSync(resultFilePath)) {
+                console.error(`Result file not found: ${resultFilePath}`);
+                throw new Error(`Result file not found: ${resultFilePath}`);
+            }
             // save to aws s3
-            let result = await uploadAudioToS3(`${resultFileName}.mp3`);
+            let result = await uploadAudioToS3(`${resultFileName}.wav`);
             if(result){
                 console.log('saved to s3');
+                res.write(JSON.stringify({
+                    "status":"in progress",
+                    "duration": runningTime,
+                    "filename": `${resultFileName}.wav`
+                }));
             }
             cur_clips = [];
         }
     }
+    console.log("done")
+    res.status(200).send(JSON.stringify({
+        "status":"done",
+        "filename": `${resultFileName}.wav`
+    }));
 }
 
 
@@ -157,7 +181,7 @@ async function getMusicClips(script: Script): Promise<Clip[]> {
 /**
  * Delete temp files that are used in processing
  */
-function deleteTempFiles() {
+export function deleteTempFiles() {
     deleteAllFilesInFolder(TEMP_DATA_PATH + '/dialogue');
     deleteAllFilesInFolder(TEMP_DATA_PATH + '/character');
     deleteAllFilesInFolder(TEMP_DATA_PATH + '/character-temp');
@@ -165,7 +189,6 @@ function deleteTempFiles() {
     deleteAllFilesInFolder(TEMP_DATA_PATH + '/music-temp');
     deleteAllFilesInFolder(TEMP_DATA_PATH + '/result');
 }
-
 
 /**
  * getScript
