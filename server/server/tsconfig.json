@@ -13,10 +13,11 @@
     "preserveConstEnums": true,
     "sourceMap": false
   },
-  "exclude": ["node_modules", "**/*.test.ts"],
+  "exclude": ["node_modules"],
   "include": [
     "server.ts",
     "src-db/**/*.ts",
-    "src-pod/**/*.ts"
+    "src-pod/**/*.ts",
+    "**/*.test.ts"
   ]
 }

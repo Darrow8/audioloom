@@ -4,9 +4,13 @@ import Slider from '@react-native-community/slider';
 import { AntDesign } from '@expo/vector-icons';
 import { Pod } from './Pod';
 
-const PodPlayer = ({pod}: {pod: Pod}) => {
+const PodPlayer = ({pod}: {pod: Pod | null}) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(3600);
+
+  if (pod == null) {
+    return <></>;
+  }
 
   const handlePlaybackProgress = (value:number) => {
     setCurrentTime(value);
@@ -15,10 +19,10 @@ const PodPlayer = ({pod}: {pod: Pod}) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image
+        {/* <Image
           source={{ uri: pod.coverImage }}
           style={styles.podcastCover}
-        />
+        /> */}
         <Text style={styles.podcastTitle}>{pod.title}</Text>
         <Text style={styles.podcastDescription}>
           {/* {pod.description} */}

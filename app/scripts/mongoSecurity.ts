@@ -8,17 +8,17 @@ const RIVET_API_KEY = '1023hfiudobf023rhnqwof18ihr0oqefbu2rt0243heirhbnqpofb2u09
 
 export const makeAuthenticatedRequest = async (url: string, method: string = 'GET', body?: any, retries = 3): Promise<any> => {
   const accessToken = await SecureStore.getItemAsync('auth0AccessToken');
-
+  console.log('calling...')
   if (!accessToken) {
     throw new Error('No access token available');
   }
 
-  // const fetchWithTimeout = (url: string, options: RequestInit, timeout = 10000) => {
-  //   return Promise.race([
-  //     fetch(url, options),
-  //     new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), timeout))
-  //   ]);
-  // };
+  const fetchWithTimeout = (url: string, options: RequestInit, timeout = 10000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), timeout))
+    ]);
+  };
 
   const fetchOptions: RequestInit = {
     method,
@@ -37,7 +37,7 @@ export const makeAuthenticatedRequest = async (url: string, method: string = 'GE
   }
 
   try {
-    const response = await fetch(url, fetchOptions) as Response;
+    const response = await fetchWithTimeout(url, fetchOptions) as Response;
 
     if (!response.ok) {
       const errorBody = await response.text();

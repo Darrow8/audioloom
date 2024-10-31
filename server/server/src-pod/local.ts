@@ -2,6 +2,30 @@ import * as fs from "fs";
 import path from "path";
 import { PassThrough, Readable, pipeline } from 'stream';
 import { TEMP_DATA_PATH } from './init';
+import { Clip, Line } from "./util_pod";
+
+
+
+export async function saveClipToLogs(data: Clip, folderPath: string, fileName: string){
+    // Ensure the folder exists
+    if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+    }
+
+    // Create the full file path
+    const filePath = `${folderPath}/${fileName}.json`;
+
+    // Check if the file exists
+    if (fs.existsSync(filePath)) {
+        await addToJsonArray(filePath, data);
+        console.log(`Data appended to existing file: ${filePath}`);
+    } else{
+        await saveAsJson([data], folderPath, fileName);
+    }
+    
+
+}
+
 
 /**
  * Saves an array of objects as a JSON file in the specified folder.
@@ -26,6 +50,44 @@ export async function saveAsJson(data: any[], folderPath: string, fileName: stri
 
     console.log(`Formatted data saved to ${filePath}`);
 }
+
+/**
+ * Adds a new object to a JSON array stored in a local file.
+ * If the file doesn't exist, it creates a new file with the object in an array.
+ * 
+ * @param {string} filePath - The path to the JSON file.
+ * @param {any} newObject - The new object to be added to the array.
+ * @returns {Promise<void>}
+ */
+export async function addToJsonArray(filePath: string, newObject: any): Promise<void> {
+    try {
+        let jsonArray: any[] = [];
+
+        // Check if the file exists
+        if (fs.existsSync(filePath)) {
+            // Read the existing file
+            const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+            jsonArray = JSON.parse(fileContent);
+
+            // Ensure the content is an array
+            if (!Array.isArray(jsonArray)) {
+                throw new Error('The file content is not a JSON array');
+            }
+        }
+
+        // Add the new object to the array
+        jsonArray.push(newObject);
+
+        // Write the updated array back to the file
+        await fs.promises.writeFile(filePath, JSON.stringify(jsonArray, null, 2), 'utf-8');
+
+        console.log(`Object added to ${filePath}`);
+    } catch (error) {
+        console.error(`Error adding object to JSON array: ${error}`);
+        throw error;
+    }
+}
+
 
 /**
  * Saves a Readable stream to a file.

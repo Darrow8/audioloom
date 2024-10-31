@@ -4,7 +4,7 @@ import { genres, moods } from "./util_music";
 
 
 export async function musicChooser(music_description: string, next_dialogue: string): Promise<string> {
-
+  console.log(`musicChooser: music_description: ${music_description}`);
   const completion = await openaiClient.chat.completions.create({
     messages: [
       {
@@ -34,7 +34,7 @@ export async function musicChooser(music_description: string, next_dialogue: str
     model: "gpt-4o-mini",
   });
   // TODO: write error handling code in case we get a bad response
-
+  console.log(`musicChooser: completion: ${completion.choices[0].message.content}`);
   return completion.choices[0].message.content as string;
 }
 

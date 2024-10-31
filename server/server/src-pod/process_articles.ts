@@ -4,8 +4,8 @@ import { Request as JWTRequest } from 'express-jwt';
 import { convertToTXT } from './pass_convert.js';
 import { uploadFileToS3 } from './pass_files.js';
 import { v4 as uuidv4 } from 'uuid';
-import { upload, STORAGE_PATH } from './main.js';
-import { getMongoDataById, updateMongoData, createMongoData, updateMongoArrayDoc } from '../src-db/handle_mongo.js';
+import { upload, STORAGE_PATH } from './pod_main.js';
+import { getMongoDataById, updateMongoData, createMongoData, updateMongoArrayDoc } from '../src-db/mongo_methods.js';
 import { ObjectId } from 'mongodb';
 import fs from 'fs';
 
@@ -47,7 +47,7 @@ export const processArticles = () => {
             type: originalMimetype,
             size: originalSize,
             uploadedAt: new Date(),
-            uploadedBy: new ObjectId(req.body._id)
+            uploadedBy: (req.body._id)
         }
         let articleResult = await createMongoData('articles', articleData);
         await updateMongoArrayDoc('users', req.body._id, "articles",  articleId);

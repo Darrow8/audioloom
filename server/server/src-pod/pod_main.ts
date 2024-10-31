@@ -6,8 +6,6 @@ import path from 'path';
 import { processArticles } from './process_articles.js';
 import { startup } from './init.js';
 import { createPodcast, createPodcastInParallel } from './process_pod.js';
-// import { stream } from './stream.js';
-// currently 3 types of files are supported: pdf, docx, txt
 const supportedTypes = {
   'application/pdf': 'pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
@@ -15,6 +13,10 @@ const supportedTypes = {
 };
 
 export const STORAGE_PATH = 'uploads';
+
+export function sum(a: number, b: number) {
+  return a + b;
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -41,10 +43,8 @@ export const upload = multer({
   }
 });
 
-
-
-export const podRoutes = () => {
-  startup();
+export async function podRoutes() {
+  await startup();
   // Public route should be defined first
   app.get('/pod/public', (req: Request, res: Response) => {
     res.send('Hello from the /pod!');
@@ -57,7 +57,12 @@ export const podRoutes = () => {
 
   app.get('/pod/gen', async (req: Request, res: Response) => {
     console.log('creating podcast')
-    let resp = await createPodcastInParallel('russia_script3')
+    const scriptName = req.query.scriptName as string;
+    if (!scriptName) {
+      return res.status(400).send('Script name is required as a query parameter');
+    }
+    console.log(`Creating podcast for script: ${scriptName}`);
+    let resp = await createPodcastInParallel(scriptName, res)
     res.send(resp);
   });
 
@@ -67,5 +72,8 @@ export const podRoutes = () => {
   // Catch-all route for /pod should be last
   app.use('/pod', authCheck, (req: JWTRequest, res: Response) => {
     res.send(`Pod Server: You accessed ${req.method} ${req.path}`);
+  });
+  return new Promise((resolve, reject) => {
+    resolve(true);
   });
 }

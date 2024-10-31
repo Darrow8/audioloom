@@ -7,78 +7,47 @@ import PodPlayer from './PodPlayer';
 import GestureRecognizer from 'react-native-swipe-gestures';
 
 export interface Pod {
-    id: string;
+    _id: string;
     title: string;
-    artist: string;
-    coverImage: string;
+    author: string;
     status: Status;
 }
 
 export enum Status {
+    READY = "ready",
+    PENDING = "pending",
+    ERROR = "error",
+}
+
+export enum StatrusToIcon {
     READY = "check",
     PENDING = "loading",
     ERROR = "error",
 }
 
 
-const PodComponent: React.FC<{ pod: Pod }> = ({ pod }) => {
-    const [isPlayerModalVisible, setIsPlayerModalVisible] = useState(false);
-    const panResponder = useRef(
-        PanResponder.create({
-            onMoveShouldSetPanResponderCapture: (_, gestureState) => {
-                return gestureState.dy > 10;
-            },
-            onPanResponderRelease: (_, gestureState) => {
-                if (gestureState.dy > 50) {
-                    setIsPlayerModalVisible(false);
-                }
-            },
-        })
-    ).current;
-
-    const openPlayerModal = () => {
-        if (pod.status === Status.READY) {
-            setIsPlayerModalVisible(true);
-        }
-    };
-
+const PodComponent: React.FC<{ pod: Pod, onPodClick: () => void }> = ({ pod, onPodClick }) => {
     return (
-        <View style={styles.songItem}>
-            <Image source={{ uri: pod.coverImage }} style={styles.songCover} />
-            <View style={styles.songInfo}>  
-                <Text style={styles.songTitle}>{pod.title}</Text>
-                <Text style={styles.songArtist}>{pod.artist}</Text>
+        <View style={styles.podItem}>
+            {/* <Image source={{ uri: pod.coverImage }} style={styles.podCover} /> */}
+            <View style={styles.podInfo}>  
+                <Text style={styles.podTitle}>{pod.title}</Text>
+                <Text style={styles.podArtist}>{pod.author}</Text>
             </View>
-            <TouchableOpacity style={styles.addToPlaylistButton} onPress={openPlayerModal}>
-                {pod.status === Status.READY && (
+            <View style={styles.podStatus}>
+                <TouchableOpacity style={styles.playButton} onPress={onPodClick}>
+                    {pod.status == Status.READY && (
                     <Entypo name="controller-play" size={24} color="#007AFF" />
                 )}
-                {pod.status === Status.PENDING && (
+                {pod.status == Status.PENDING && (
                     <ActivityIndicator size={24} color="#007AFF" />
                 )}
-                {pod.status === Status.ERROR && (
-                    <MaterialIcons name="error-outline" size={24} color="#007AFF" />
-                )}
-            </TouchableOpacity>
-            <GestureRecognizer
-                style={{flex: 1}}
-                onSwipeUp={ () => setIsPlayerModalVisible(true) }
-                onSwipeDown={ () => setIsPlayerModalVisible(false) }
-                >
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={isPlayerModalVisible}
-                // onRequestClose={() => setIsPlayerModalVisible(false)}
-            >
-                <View style={styles.modalContainer} {...panResponder.panHandlers}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.dragIndicator} />
-                        <PodPlayer pod={pod} />
-                    </View>
-                </View>
-            </Modal>
-            </GestureRecognizer>
+                {pod.status == Status.ERROR && (
+                        <MaterialIcons name="error-outline" size={24} color="#007AFF" />
+                    )}
+                </TouchableOpacity>
+            </View>
+
         </View>
     );
 };
@@ -88,10 +57,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
     },
-    songList: {
+    podList: {
         padding: 16,
     },
-    songItem: {
+    podItem: {
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 8,
@@ -100,25 +69,25 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
         borderRadius: 8,
     },
-    songCover: {
+    podCover: {
         width: 80,
         height: 80,
         borderRadius: 8,
         marginRight: 16,
     },
-    songInfo: {
-        flex: 1,
+    podInfo: {
+        flex: 9,
     },
-    songTitle: {
+    podTitle: {
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 4,
     },
-    songArtist: {
+    podArtist: {
         fontSize: 14,
         color: '#666',
     },
-    addToPlaylistButton: {
+    playButton: {
         backgroundColor: '#fff',
         padding: 8,
         borderRadius: 20,
@@ -127,9 +96,15 @@ const styles = StyleSheet.create({
             width: 0,
             height: 2,
         },
+        width: 40,
+        height: 40,
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
+        marginLeft: 20,
+    },
+    podStatus: {
+        flex: 2,
     },
     modalContainer: {
         flex: 1,

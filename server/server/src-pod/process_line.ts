@@ -64,7 +64,7 @@ export async function processCharacterLine(current_line: CharLine, prev_line: Ch
     let url = `${TEMP_DATA_PATH}/dialogue/${fileName}`;
     await saveStreamToFile(stream, url);
     let duration = await getAudioDuration(url);
-    let audio = new AudioFile(current_line.id, url, duration, runningStartTime, duration);
+    let audio = new AudioFile(current_line.id, url, runningStartTime, duration, duration);
     return audio;
 }
 
@@ -154,14 +154,14 @@ export async function processBMusicLine(music_line: MusicLine, script: Script): 
     if (line_order < script.lines.length) {
         dialogue_desc = script.lines[line_order].raw_string;
     }
-    // console.log(`dialogue_desc: ${dialogue_desc}`);
+    console.log(`dialogue_desc: ${dialogue_desc}`);
     let res = await musicChooser(music_line.music_description, dialogue_desc)
     let music_choice: { genre?: string, mood?: string } = {};
     try {
         music_choice = JSON.parse(res);
     } catch (e) {
         console.log(`error parsing music chooser result ${res}`)
-        // throw `error parsing music chooser result ${res}`;
+        throw `error parsing music chooser result ${res}`;
     }
     if ('genre' in music_choice == false) {
         music_choice.genre = "";

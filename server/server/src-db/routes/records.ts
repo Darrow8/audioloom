@@ -2,7 +2,7 @@ import express from "express";
 import { User } from "../utils.js";
 // This help convert the id from string to ObjectId for the _id.
 import { ObjectId } from "mongodb";
-import { client } from "../handle_mongo.js";
+import { client } from "../mongo_interface.js";
 import { authCheck } from "../../server.js";
 
 
@@ -11,10 +11,10 @@ import { authCheck } from "../../server.js";
 // The router will be added as a middleware and will take control of requests starting with path /record.
 export const router = express.Router();
 
-export const routerFunctions = () => {
+export async function routerFunctions() {
   // This section will help you get a single record by id
   router.get("/:col/:id", authCheck, async (req, res) => {
-    let collection = client.db("fullData").collection(req.params.col);
+    let collection = client.db("RivetAudio").collection(req.params.col);
     if (!ObjectId.isValid(req.params.id)) {
       return res.status(400).send("Invalid ID format");
     }
@@ -34,7 +34,7 @@ export const routerFunctions = () => {
         return res.status(400).send("Invalid ID format");
       }
       newDocument._id = obj_id;
-      let collection = client.db("fullData").collection(req.params.col);
+      let collection = client.db("RivetAudio").collection(req.params.col);
       let result = await collection.insertOne(newDocument);
       res.send(result).status(204);
     } catch (err) {
@@ -55,7 +55,7 @@ export const routerFunctions = () => {
       const updates = {
         $set: data,
       };
-      let collection = client.db("fullData").collection(req.params.col);
+      let collection = client.db("RivetAudio").collection(req.params.col);
       let result = await collection.updateOne(query, updates);
       res.send(result).status(200);
     } catch (err) {
@@ -73,7 +73,7 @@ export const routerFunctions = () => {
       }
       const query = { _id: obj_id };
 
-      let collection = client.db("fullData").collection(req.params.col);
+      let collection = client.db("RivetAudio").collection(req.params.col);
       let result = await collection.deleteOne(query);
 
       res.send(result).status(200);
@@ -95,7 +95,7 @@ export const routerFunctions = () => {
 
       const query = { [field as string]: value };
 
-      let collection = client.db("fullData").collection(col);
+      let collection = client.db("RivetAudio").collection(col);
       let result = await collection.findOne(query);
 
       if (result) {
@@ -107,6 +107,9 @@ export const routerFunctions = () => {
       console.error(err);
       res.status(500).send("Error retrieving record");
     }
+  });
+  return new Promise((resolve, reject) => {
+    resolve(true);
   });
 }
 

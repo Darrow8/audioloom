@@ -13,14 +13,38 @@ import { useStateContext } from '@/state/StateContext';
 import { StateProvider } from '@/state/StateContext';
 import { initUser, userStateCheck } from '@/scripts/auth';
 import { ActivityIndicator, View } from 'react-native';
+import { socket } from '@/scripts/socket';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 
 function AppContent() {
-  const { user: auth0_user, getCredentials,clearSession, clearCredentials } = useAuth0();
+  const { user: auth0_user, getCredentials,clearSession, clearCredentials, hasValidCredentials } = useAuth0();
   const { state, dispatch } = useStateContext();
   const [isLoading, setIsLoading] = useState(true);
+
+
+
+
+  useEffect(() => {
+    const handleConnect = () => {
+      console.log('Connected to socket server');
+    };
+
+    const handleDisconnect = (reason: string) => {
+      console.log('Disconnected:', reason);
+    };
+
+    const handleError = (err: Error) => {
+      console.error('Socket error:', err);
+    };
+
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    socket.on('error', handleError);
+    console.log('socket status?')
+  }, []);
+  
 
   // check if user is logged in at start of app
   useEffect(() => {
@@ -64,7 +88,7 @@ function AppContent() {
       }
     }
     checkLogin();
-  }, [auth0_user, getCredentials]);
+  }, [auth0_user, hasValidCredentials]);
 
   if (isLoading) {
     return (
