@@ -11,9 +11,14 @@ const Profile = () => {
     try {
       await clearSession();
       if (!hasValidCredentials()) {
+        console.log('clearing auth0 access token');
         await SecureStore.deleteItemAsync('auth0AccessToken');
-        dispatch({ type: 'LOGOUT' });        
+        dispatch({ type: 'LOGOUT' });    
+      }else{
+        console.log('not clearing auth0 access token');
       }
+      // temporary fix for logout
+      // window.location.reload();
     } catch (e) {
       console.log('Log out cancelled');
     }
