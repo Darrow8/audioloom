@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import auth0, { useAuth0, Auth0Provider } from 'react-native-auth0';
+import WebAuth from 'react-native-auth0/lib/typescript/src/webauth';
 import { getUserById, createUser } from '../scripts/mongoClient';
 import * as AuthSession from 'expo-auth-session';
 import * as SecureStore from 'expo-secure-store';
@@ -18,8 +19,13 @@ const LoginButton = () => {
   // when user clicks login, call auth0 to login
   const onLogin = async () => {
     try {
+
       await authorize({
-        scope: 'openid profile email prompt:select_account'
+        scope: 'openid profile email',
+        additionalParameters: {
+          prompt: 'select_account',
+          screen_hint: 'login'
+        }
       });
       
     } catch (e) {
@@ -30,7 +36,11 @@ const LoginButton = () => {
   const onSignup = async () => {
     try {
       await authorize({
-        scope: 'openid profile email prompt:select_account'
+        scope: 'openid profile email',
+        additionalParameters: {
+          prompt: 'select_account',
+          screen_hint: 'signup'
+        }
       });
       
     } catch (e) {

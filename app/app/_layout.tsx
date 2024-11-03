@@ -83,6 +83,8 @@ function AppContent() {
         clearCredentials();
         clearSession();
         console.log("User logged out");
+        // temporary fix for logout
+        window.location.reload();
       } finally {
         setIsLoading(false);
       }
