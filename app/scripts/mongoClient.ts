@@ -7,11 +7,12 @@ import { Pod } from '@shared/pods';
 import { Dispatch } from 'react';
 import { UserAction } from '@/state/userReducer';
 import { UserState } from './user';
+import { ChangeStreamUpdate, MongoChangeStreamData } from '@shared/mongodb';
 
 // User endpoints
-export const watchDocumentUser = async (documentId: string, setUser: (user: User) => void) => {
+export const watchDocumentUser = async (documentId: string, setUser: (stream_data: MongoChangeStreamData) => void) => {
     socket.emit('watchDocumentUser', documentId);
-    socket.on('userChange', (data) => {
+    socket.on('userChange', (data: MongoChangeStreamData) => {
         console.log("userChange: ", data);
         setUser(data);
     });
@@ -84,14 +85,14 @@ export const deleteUser = async (id: string) => {
 
 // Pod endpoints
 
-export const watchDocumentsPods = async (documentIds: string[], setPods: (pods: Pod[]) => void) => {
+export const watchDocumentsPods = async (documentIds: string[], setPods: (stream_data: MongoChangeStreamData) => void) => {
     socket.emit('watchDocumentsPods', documentIds);
     socket.on('podsChange', (data) => {
         console.log("podsChange: ", data);
         if (data.operationType === 'update') {
             console.log("pod updated: ", data.updateDescription.updatedFields);
             // update user state
-            setPods(data.updateDescription.updatedFields);
+            setPods(data);
         }
     });
     socket.on('podsError', (error) => {
