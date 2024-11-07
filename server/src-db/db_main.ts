@@ -3,8 +3,6 @@ import { Request as JWTRequest } from 'express-jwt';
 import { router as recordRouter } from "./routes/records.js";
 import { app, authCheck } from "../server.js";
 import { mongo_startup } from "./mongo_interface.js";
-import { Server } from "socket.io";
-
 
 
 export async function dbRoutes() {

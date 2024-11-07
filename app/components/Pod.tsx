@@ -3,27 +3,8 @@ import { StyleSheet, View, Image, Text, TouchableOpacity, ActivityIndicator, Mod
 import { Feather } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import PodPlayer from './PodPlayer';
-import GestureRecognizer from 'react-native-swipe-gestures';
+import { Pod, Status } from '@shared/pods';
 
-export interface Pod {
-    _id: string;
-    title: string;
-    author: string;
-    status: Status;
-}
-
-export enum Status {
-    READY = "ready",
-    PENDING = "pending",
-    ERROR = "error",
-}
-
-export enum StatrusToIcon {
-    READY = "check",
-    PENDING = "loading",
-    ERROR = "error",
-}
 
 
 const PodComponent: React.FC<{ pod: Pod, onPodClick: () => void }> = ({ pod, onPodClick }) => {

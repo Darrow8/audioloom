@@ -5,19 +5,21 @@
     "moduleResolution": "node",
     "strict": false,
     "esModuleInterop": true,
-    "outDir": "./dist",
-    "rootDir": "./",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "preserveConstEnums": true,
-    "sourceMap": false
+    "sourceMap": false,
+    "paths": {
+      "@shared/*": ["../shared/src"],
+      "@/*": ["./src-db/*", "./src-pod/*"]
+    },
   },
   "exclude": ["node_modules"],
   "include": [
     "server.ts",
     "src-db/**/*.ts",
     "src-pod/**/*.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
   ]
 }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { AntDesign } from '@expo/vector-icons';
-import { Pod } from './Pod';
+import { Pod } from '@shared/pods';
 
 const PodPlayer = ({pod}: {pod: Pod | null}) => {
   const [currentTime, setCurrentTime] = useState(0);

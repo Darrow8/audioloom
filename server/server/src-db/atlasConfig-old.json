@@ -1,9 +1,0 @@
-{
-    "appId": "application-0-vumyioa",
-    "appUrl": "https://services.cloud.mongodb.com/groups/6683629e93027d2ab071b21d/apps/66836a3f802ac9b0f64e5bbd",
-    "baseUrl": "https://services.cloud.mongodb.com",
-    "clientApiBaseUrl": "https://us-west-2.aws.services.cloud.mongodb.com",
-    "dataApiBaseUrl": "https://us-west-2.aws.data.mongodb-api.com",
-    "dataExplorerLink": "https://cloud.mongodb.com/links/6683629e93027d2ab071b21d/explorer/AtlasCluster/database/collection/find",
-    "dataSourceName": "mongodb-atlas"
-}

@@ -1,5 +1,5 @@
 import express from "express";
-import { User } from "../utils.js";
+import { User } from "@shared/user.js";
 // This help convert the id from string to ObjectId for the _id.
 import { ObjectId } from "mongodb";
 import { client } from "../mongo_interface.js";
