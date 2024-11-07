@@ -49,3 +49,36 @@ export interface ServerToClientEvents {
 export interface SocketData {
   changeStream?: any; // MongoDB ChangeStream type
 }
+
+export interface MongoChangeStreamData {
+  _id: {
+    _data: string;
+  };
+  clusterTime: {
+    $timestamp: string;
+  };
+  documentKey: {
+    _id: string;
+  };
+  fullDocument: {
+    _id: string;
+    author: string;
+    created_at: string;
+    status: string;
+    title: string;
+    [key: string]: any; // For any additional fields
+  };
+  ns: {
+    coll: string;
+    db: string;
+  };
+  operationType: 'insert' | 'update' | 'delete' | 'replace';
+  updateDescription: {
+    removedFields: string[];
+    truncatedArrays: any[];
+    updatedFields: {
+      [key: string]: any;
+    };
+  };
+  wallTime: string;
+}

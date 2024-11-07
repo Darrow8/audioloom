@@ -14,6 +14,7 @@ import { StateProvider } from '@/state/StateContext';
 import { initUser, userStateCheck } from '@/scripts/auth';
 import { ActivityIndicator, View } from 'react-native';
 import { socket } from '@/scripts/socket';
+import { MongoChangeStreamData } from '@shared/index';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -47,16 +48,13 @@ function AppContent() {
 
 
   const localWatchUser = (mongo_user: User) => {
-    watchDocumentUser(mongo_user._id, (data: any)=>{
-      if(state.user && state.user._id === data.documentKey._id) {
-        if (data.operationType === 'update') {
-            console.log("user updated: ", data.updateDescription.updatedFields);
-            // update user state
-            dispatch({ type: 'UPDATE_USER', payload: data.updateDescription.updatedFields });
-        }
-    }
+    watchDocumentUser(mongo_user._id, (data: MongoChangeStreamData) => {
+      if (data.operationType === 'update') {
+        console.log("user updated: ", data.updateDescription.updatedFields);
+        // update user state with the full document
+        dispatch({ type: 'UPDATE_USER', payload: data.fullDocument as Partial<User> });
+      }
     });
-  
   }
   
 
