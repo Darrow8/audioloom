@@ -12,3 +12,14 @@ export const uploadToS3 = async (file: File, userId: string) => {
     });
     return await response.json()
 }
+
+export const getAudioFromS3 = async (audio_key: string) => {
+    const response = await fetch(`${BASE_URL}db/get_audio`, {
+        method: 'POST',
+        body: JSON.stringify({ "audio_key": audio_key }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    return await response.json()
+}

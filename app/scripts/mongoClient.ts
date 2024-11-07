@@ -13,7 +13,6 @@ import { ChangeStreamUpdate, MongoChangeStreamData } from '@shared/mongodb';
 export const watchDocumentUser = async (documentId: string, setUser: (stream_data: MongoChangeStreamData) => void) => {
     socket.emit('watchDocumentUser', documentId);
     socket.on('userChange', (data: MongoChangeStreamData) => {
-        console.log("userChange: ", data);
         setUser(data);
     });
     socket.on('userError', (error) => {
@@ -87,10 +86,8 @@ export const deleteUser = async (id: string) => {
 
 export const watchDocumentsPods = async (documentIds: string[], setPods: (stream_data: MongoChangeStreamData) => void) => {
     socket.emit('watchDocumentsPods', documentIds);
-    socket.on('podsChange', (data) => {
-        console.log("podsChange: ", data);
+    socket.on('podsChange', (data: MongoChangeStreamData) => {
         if (data.operationType === 'update') {
-            console.log("pod updated: ", data.updateDescription.updatedFields);
             // update user state
             setPods(data);
         }

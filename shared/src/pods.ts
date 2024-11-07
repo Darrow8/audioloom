@@ -4,6 +4,7 @@ export interface Pod {
     author: string;
     status: Status;
     created_at: Date;
+    audio_key: string;
 }
 
 export enum Status {
