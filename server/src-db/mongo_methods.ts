@@ -1,6 +1,6 @@
-import { MongoClient, ServerApiVersion, ObjectId, Db } from "mongodb";
+import { MongoClient, ServerApiVersion, ObjectId, Db, ChangeStream } from "mongodb";
 import { app } from '../server.js'
-import { User, Pod, MongoDocument, ChangeStreamUpdate } from './utils.js';
+import { MongoDocument, ChangeStreamUpdate } from '@shared/mongodb.js';
 import { db } from './mongo_interface.js';
 import { Socket } from 'socket.io';
 export async function createMongoData(collectionName: string, data: any) {
@@ -57,8 +57,15 @@ export async function createMongoData(collectionName: string, data: any) {
       console.log(`Updated ${result.modifiedCount} document`);
       return result;
   }
-
- export async function watchDocuments(socket: Socket, collectionName: string, documentIds: string[]): Promise<void> {
+  /**
+   * Watch multiple documents in a collection
+   * @param socket 
+   * @param collectionName 
+   * @param documentIds 
+   * @param emit_name 
+   * @returns 
+   */
+ export async function watchDocuments(socket: Socket, collectionName: string, documentIds: string[], emit_name: string, callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
     try {
         // Validate IDs
         if (!documentIds.every(id => ObjectId.isValid(id))) {
@@ -83,23 +90,55 @@ export async function createMongoData(collectionName: string, data: any) {
             fullDocument: 'updateLookup'
         });
 
-        // Listen for changes
-        changeStream.on('change', (change) => {
-            socket.emit('documentChange', change);
-        });
+        callback && callback(changeStream);
 
-        // Fetch initial documents
-        const initialDocs = await collection
-            .find({ _id: { $in: objectIds } })
-            .toArray();
-        
-        socket.emit('initialDocuments', initialDocs);
-
-        // Store change stream reference for cleanup
-        socket.data.changeStream = changeStream;
 
     } catch (err) {
         console.error('Error setting up change stream:', err);
-        socket.emit('error', 'Failed to watch documents');
+        socket.emit(`${emit_name}Error`, 'Failed to watch documents');
     }
+}
+
+/**
+ * Watch a single document in a collection
+ * @param socket 
+ * @param collectionName 
+ * @param documentId 
+ * @param emit_name 
+ * @returns 
+ */
+export async function watchDocument(socket: Socket, collectionName: string, documentId: string, emit_name: string, callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
+  try {
+      // Validate ID
+      if (!ObjectId.isValid(documentId)) {
+          socket.emit('error', 'Invalid document ID');
+          return;
+      }
+      const collection = db.collection<MongoDocument>(collectionName);
+      const objectId = new ObjectId(documentId);
+
+      // Set up change stream pipeline
+      const pipeline = [{
+          $match: {
+              $and: [
+                  { "documentKey._id": objectId },
+                  { operationType: { $in: ['insert', 'update', 'delete', 'replace'] } }
+              ]
+          }
+      }];
+
+      // Create change stream
+      const changeStream = collection.watch<ChangeStreamUpdate>(pipeline, {
+          fullDocument: 'updateLookup'
+      });
+
+      callback && callback(changeStream);
+
+      // Store change stream reference for cleanup
+      socket.data.changeStream = changeStream;
+
+  } catch (err) {
+      console.error('Error setting up change stream:', err);
+      socket.emit(`${emit_name}Error`, 'Failed to watch document');
+  }
 }

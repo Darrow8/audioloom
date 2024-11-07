@@ -1,10 +1,8 @@
 import { MongoClient, ServerApiVersion, ObjectId, Db } from "mongodb";
 import { app } from '../server.js'
-import { User, Pod } from './utils.js';
-import { Server } from 'socket.io';
-import { watchDocuments } from './mongo_methods.js';
+import { Server, Socket } from 'socket.io';
+import { watchDocuments, watchDocument } from './mongo_methods.js';
 import { io } from '../server.js';
-
 export let client: MongoClient = undefined
 export let uri: string = undefined;
 export let db: Db = undefined;
@@ -39,26 +37,54 @@ export async function mongo_startup() {
     throw error;
   }
 
-  
+
 }
 
 export function setupSocketIO() {
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
-  
-    socket.on('watchDocuments', (collectionName: string, documentIds: string[]) => {
-      console.log("watchDocuments: ", collectionName, documentIds);
-      watchDocuments(socket, collectionName, documentIds);
-    });
-  
+
+    watchDocumentPods(socket);
+    watchDocumentUser(socket);
+
     socket.on('disconnect', async () => {
-      // if (socket.data.changeStream) {
-      //   await socket.data.changeStream.close();
-      // }
       console.log('Client disconnected:', socket.id);
     });
   });
 }
+
+export function watchDocumentPods(socket: Socket) {
+  socket.on('watchDocumentsPods', (documentIds: string[]) => {
+    console.log("watchDocumentsPods: ", documentIds);
+    let emit_name = 'pods';
+    watchDocuments(socket, 'pods', documentIds, emit_name, (changeStream) => {
+      console.log("pods change: ", changeStream);
+      // Listen for changes
+      changeStream.on('change', (change) => {
+        socket.emit(`${emit_name}Change`, change);
+      });
+
+      socket.data.changeStream = changeStream;
+    });
+  });
+}
+
+export function watchDocumentUser(socket: Socket) {
+  socket.on('watchDocumentUser', (documentId: string) => {
+    console.log("watchDocumentUser: ", documentId);
+    let emit_name = 'user';
+    watchDocument(socket, 'users', documentId, emit_name, (changeStream) => {
+      console.log("user change: ", changeStream);
+      // Listen for changes
+      changeStream.on('change', (change) => {
+        socket.emit(`${emit_name}Change`, change);
+      });
+
+      socket.data.changeStream = changeStream;
+    });
+  });
+}
+
 
 // Graceful shutdown function
 export async function closeMongoConnection() {

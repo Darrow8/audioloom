@@ -1,7 +1,25 @@
 import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection, getRecordByField } from './mongoHandle';
 import { isValidPod } from './validateData';
 import { User } from './user';
+import { socket } from './socket';
+import { useStateContext } from '@/state/StateContext';
+import { Pod } from '@shared/pods';
+import { Dispatch } from 'react';
+import { UserAction } from '@/state/userReducer';
+import { UserState } from './user';
+
 // User endpoints
+export const watchDocumentUser = async (documentId: string, setUser: (user: User) => void) => {
+    socket.emit('watchDocumentUser', documentId);
+    socket.on('userChange', (data) => {
+        console.log("userChange: ", data);
+        setUser(data);
+    });
+    socket.on('userError', (error) => {
+        console.error("Error watching user:", error);
+    });
+}
+
 
 export const getAllUsers = async () => {
     const users = await getRecordsByCollection('users');
@@ -65,6 +83,21 @@ export const deleteUser = async (id: string) => {
 }
 
 // Pod endpoints
+
+export const watchDocumentsPods = async (documentIds: string[], setPods: (pods: Pod[]) => void) => {
+    socket.emit('watchDocumentsPods', documentIds);
+    socket.on('podsChange', (data) => {
+        console.log("podsChange: ", data);
+        if (data.operationType === 'update') {
+            console.log("pod updated: ", data.updateDescription.updatedFields);
+            // update user state
+            setPods(data.updateDescription.updatedFields);
+        }
+    });
+    socket.on('podsError', (error) => {
+        console.error("Error watching pods:", error);
+    });
+}
 
 export const getAllPods = async () => {
     const pods = await getRecordsByCollection('pods');

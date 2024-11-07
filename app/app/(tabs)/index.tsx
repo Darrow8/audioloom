@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Modal, StyleSheet, View, ScrollView, PanResponder } from 'react-native';
 import UploadButton from '../../components/UploadButton';
-import PodComponent, { Pod } from '../../components/Pod';
+import PodComponent from '../../components/Pod';
+// import { Pod } from '@shared/types/pod';
 import PodPlayer from '@/components/PodPlayer';
 import { useStateContext } from '@/state/StateContext';
 import { getRecordById } from '@/scripts/mongoHandle';
 import SoundPlayer from 'react-native-sound-player'
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { socket } from '@/scripts/socket';
+import { getAllPods, watchDocumentsPods } from '@/scripts/mongoClient';
+import { Pod } from '@shared/pods';
 
 const Listen = () => {
   const [uploadVisible, setUploadVisible] = useState(false);
@@ -24,24 +27,20 @@ const Listen = () => {
   let pod_ids = state.user.pods;
 
   useEffect(() => {
-    // let updated_pods = pod_ids.map(async (id) => {
-    //   const pod = await getRecordById('pods', id);
-    //   return pod as Pod;
-    // });
     // sending the pods ids to watch
     pod_ids = state.user?.pods ?? [];
-    if (pod_ids.length > 0) {
-      socket.emit('watchDocuments', 'pods', pod_ids, (data: any) => {
-        console.log("data: ", data);
-      });
-      socket.on('initialDocuments', (data, callback) => {
-        console.log("initialDocuments: ", data);
-      });
-      socket.on('documentChange', (data, callback) => {
-        // Process data
-        console.log("documentChange: ", data);
-      });
-    }
+    console.log("pod_ids: ", pod_ids);
+    // get initial pods
+    Promise.all(pod_ids.map(async (id) => {
+      const pod = await getRecordById('pods', id);
+      return pod as Pod | null;
+    })).then(resolvedPods => {
+      const validPods = resolvedPods.filter((pod): pod is Pod => pod !== null);
+        setPods(validPods);
+    });
+    watchDocumentsPods(pod_ids, (pods) => {
+      setPods(pods);
+    });
     socket.on('error', (data, callback) => {
       // Process data
       console.log("error: ", data);

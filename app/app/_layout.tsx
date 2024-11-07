@@ -7,7 +7,7 @@ import * as config from "../auth0_config";
 import Landing from './landing';
 import { Auth0Provider, useAuth0 } from 'react-native-auth0';
 import * as SecureStore from 'expo-secure-store';
-import { getUserBySub } from '../scripts/mongoClient';
+import { getUserBySub, watchDocumentUser } from '../scripts/mongoClient';
 import { User } from '@/scripts/user';
 import { useStateContext } from '@/state/StateContext';
 import { StateProvider } from '@/state/StateContext';
@@ -44,6 +44,20 @@ function AppContent() {
     socket.on('error', handleError);
     console.log('socket status?')
   }, []);
+
+
+  const localWatchUser = (mongo_user: User) => {
+    watchDocumentUser(mongo_user._id, (data: any)=>{
+      if(state.user && state.user._id === data.documentKey._id) {
+        if (data.operationType === 'update') {
+            console.log("user updated: ", data.updateDescription.updatedFields);
+            // update user state
+            dispatch({ type: 'UPDATE_USER', payload: data.updateDescription.updatedFields });
+        }
+    }
+    });
+  
+  }
   
 
   // check if user is logged in at start of app
@@ -57,15 +71,19 @@ function AppContent() {
           if (credentials && credentials.accessToken) {
             await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
             console.log('Access Token stored securely from _layout.tsx');
+            // get user from mongo
             let mongo_user = await getUserBySub(auth0_user.sub);
             console.log("mongo_user: ", mongo_user);
             if (mongo_user != undefined && mongo_user != false) {
+              // watch user
+              localWatchUser(mongo_user);
               dispatch({ type: 'LOGIN', payload: mongo_user });
-              await userStateCheck(mongo_user, auth0_user, dispatch);
             }else{
               if (auth0_user.email && auth0_user.name) {
                 // make new user
                 let new_user = await initUser(auth0_user);
+                // watch user
+                localWatchUser(new_user);
                 dispatch({ type: 'LOGIN', payload: new_user });
               }else{
                 throw new Error('User email and name are required');

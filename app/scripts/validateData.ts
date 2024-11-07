@@ -1,4 +1,4 @@
-import { Pod } from "@/components/Pod";
+import { Pod } from "@/types/pod";
 
 
 export function isValidPod(pod: any): pod is Pod {

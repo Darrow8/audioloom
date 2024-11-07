@@ -45,21 +45,3 @@ export async function userStateCheck(mongo_user: User, auth0_user: Partial<User>
         }
     }
 }
-
-
-
-function is24CharHexString(input: string): boolean {
-    // Check if the input is a string
-    if (typeof input !== 'string') {
-      return false;
-    }
-  
-    // Check if the length is exactly 24
-    if (input.length !== 24) {
-      return false;
-    }
-  
-    // Use a regular expression to check if all characters are hexadecimal
-    const hexRegex = /^[0-9A-Fa-f]{24}$/;
-    return hexRegex.test(input);
-  }

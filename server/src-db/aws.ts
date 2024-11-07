@@ -1,6 +1,5 @@
 import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
 import dotenv from 'dotenv';
-import { Readable } from "stream";
 
 dotenv.config();
 const s3 = new S3Client(

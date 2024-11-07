@@ -40,7 +40,7 @@ export class Script {
 }
 
 
-
+// TODO: delete and replace with @shared/pod.js
 export class Podcast {
     clips: Clip[];
     title: string;
