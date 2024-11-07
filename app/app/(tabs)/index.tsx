@@ -25,7 +25,6 @@ const Listen = () => {
     if (!state.user) return;
 
     const pod_ids = state.user.pods ?? [];
-    console.log("pod_ids: ", pod_ids);
     // get initial pods
     Promise.all(pod_ids.map(async (id) => {
       const pod = await getRecordById('pods', id);
@@ -50,16 +49,10 @@ const Listen = () => {
       // Process data
       console.log("error: ", data);
     });
-
-    console.log("pods: ", pod_ids);
   }, [state.user?.pods]);
   
 
-  // let url = 'https://main-server.s3.us-west-1.amazonaws.com/pod-audio/16f035b0-c660-41d0-ac2a-6089e8e744f3.wav?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIA36WXSAYK3JZVHAPD%2F20241030%2Fus-west-1%2Fs3%2Faws4_request&X-Amz-Date=20241030T233432Z&X-Amz-Expires=300&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEAgaCXVzLXdlc3QtMSJHMEUCIF1cNHG8LhZ8F72xseRlWqnKgVeewjh8Ft4%2BgJSfksvjAiEAx4fnQrwrgrct5n8ig4EEOpxLWEf0TvyKnY7tEIFw0Mkq9QIIgf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARADGgw4MjE4NjQ1NjQyNDUiDBTs6%2BXaEAINMhz2VCrJApIFDUJvEhCR5K5nQqnUHIGTp7OhIbfUXtQ0%2FZpW9XbLZECSr7lyetd4F4RTjwr%2BEczmeIA7nmdo1c005nleJzu63f9xXjqDHCtf3wwmhrjUEnecFn3CUrBjiIucETpOsL3ktYAAvYr%2FhoJb3y90pEBjlCUVl4XGO836XsjQlnulX7GqD3uE%2FmcFN1cdBZxe%2BWJ2Q61v3P8j1R5XGWNo1dDE741m6nOMNsGwHf7AlwF7MglKpxOux5H%2FXH%2FzX9DhzCeDpLomzP883HkJtb8gNdH3P82V0b4I9hU8CMNH6aC%2FPag0XOXwpE36vhphbS5NVXj1Jv9BEIStr47HuDT%2FoxhdETW%2FguaIbQ0c9VDF3AULUqURl4Y4cO9%2FphDfFo6sokT05wLkpgAbJQnBWt%2FTt44EVdo6LGmpLKx31XJZZ1Zap8RrEqSOieZPMPuEi7kGOrMC83%2BbWXDKKdrED0EnNIBw2EI%2BpskSAB0p%2F7qWXFFSHGR9Ns6K7rKz1bZfAOy6mCGElYg%2F04UGq9ejaWVMia0bCuees9SiBjaCcv0cCOkGDhvcUjN5D4lazpxY1hYPeApW0vPVYUkdR04XysP%2FRxdnH%2BLEZrw%2FkGtkKegI8nMpG2VykhcLBWS%2FByfnVx6KzwC10%2BmSNr9fin7V5G7vyAoLudO%2Bfdf7aOSmBbnXwzxA2QikNsb0cQCwrgSNPok1JMXeqMRt9ZFC5qfWjMGrSqxn85%2F7yuzZsqIL3lng6G%2B%2Bm3MVeaIoQWr1UAwz9BRGDGC00d4184ukkYVu%2FtQ9JI7RNyirWIlbbxqZvUcZcJxJfHw6vlCoIRxjiJ8GXbX%2FnYnJb%2FqB5o9DXyIX0Zjwtu%2BFPVXgpg%3D%3D&X-Amz-Signature=7a3306fea3ebcc4a218cdcdc90ff6dcc88f470cab3510603ad2456a251c10c58&X-Amz-SignedHeaders=host&response-content-disposition=inline';
-  // SoundPlayer.playUrl(url)
-
   const handlePodClick = (pod: Pod) => {
-    console.log("pod clicked: ", pod);
     setCurrentPod(pod);
     setIsPlayerModalVisible(true);
   }
@@ -105,20 +98,21 @@ const Listen = () => {
             onSwipeUp={ () => setIsPlayerModalVisible(true) }
             onSwipeDown={ () => setIsPlayerModalVisible(false) }
           >
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={isPlayerModalVisible}
-                        // onRequestClose={() => setIsPlayerModalVisible(false)}
-                    >
-                        <View style={styles.modalContainer} {...panResponder.panHandlers}>
-                            <View style={styles.modalContent}>
-                                <View style={styles.dragIndicator} />
-                                <PodPlayer pod={currentPod ?? null} />
-                            </View>
-                        </View>
-                    </Modal>
-                    </GestureRecognizer>
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={isPlayerModalVisible}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer} {...panResponder.panHandlers}>
+                  <View style={styles.modalContent}>
+                    <View style={styles.dragIndicator} />
+                    <PodPlayer pod={currentPod ?? null} />
+                  </View>
+                </View>
+              </View>
+            </Modal>
+          </GestureRecognizer>
         </>
       ) : null}
     </View>
@@ -133,24 +127,37 @@ const styles = StyleSheet.create({
   songList: {
     padding: 16,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-end',
   },
   modalContent: {
-      backgroundColor: 'white',
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      padding: 20,
-      height: '90%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    height: '40%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    // marginBottom: 10,
   },
   dragIndicator: {
-      width: 40,
-      height: 5,
-      backgroundColor: '#ccc',
-      borderRadius: 3,
-      alignSelf: 'center',
-      marginBottom: 10,
+    width: 40,
+    height: 5,
+    backgroundColor: '#ccc',
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginBottom: 10,
   },
 });
 

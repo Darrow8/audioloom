@@ -1,4 +1,6 @@
-import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { AudioUrlTransporter } from "@shared/*";
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -15,7 +17,7 @@ const s3 = new S3Client(
  * @param {string} fileName - The key (path) of the file in the S3 bucket
  * @returns {Promise<Buffer>} - A promise that resolves to the file data
  */
-export async function getFileFromS3(fileName) : Promise<string> {
+export async function getFileFromS3(fileName:string) : Promise<string> {
     // Create a command to retrieve the object
     const command = new GetObjectCommand({
         Bucket: 'main-server',
@@ -42,6 +44,36 @@ export async function getFileFromS3(fileName) : Promise<string> {
         console.error("Error getting file from S3:", err);
         throw err;
     }
+};
+/**
+ * Retrieve a file from an S3 bucket
+ * @param {string} fileName - The key (path) of the file in the S3 bucket
+ * @returns {Promise<Buffer>} - A promise that resolves to the file data
+ */
+export async function getAudioURLFromS3(fileName:string) : Promise<AudioUrlTransporter> {
+  // Create a command to retrieve the object
+  const command = new GetObjectCommand({
+      Bucket: 'main-server',
+      Key: fileName,
+  });
+
+
+  try {
+      // Generate a signed URL that expires in 1 hour (3600 seconds)
+      let expiresIn = 36000; // 100 hours
+      const signedUrl = await getSignedUrl(s3, command, { expiresIn: expiresIn });
+
+      return {
+        audio_key: fileName,
+        audio_url: signedUrl,
+        created_at: new Date(),
+        expires_at: new Date(Date.now() + expiresIn * 1000)
+      };
+  } catch (err) {
+      console.error("Error getting signed URL from S3:", err);
+      throw err;
+  }
+
 };
 
 
