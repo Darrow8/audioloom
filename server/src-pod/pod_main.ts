@@ -5,7 +5,7 @@ import multer from 'multer';
 import path from 'path';
 import { processArticles, uploadArticleToS3 } from './process_articles.js';
 import { startup } from './init.js';
-import { createPodcast, createPodInParallel } from './process_pod.js';
+import { createPodInParallel } from './process_pod.js';
 import { createScript, saveScriptToS3 } from './process_script.js';
 import { ObjectId } from 'mongodb';
 import { ProcessingStep } from './util_processing.js';
@@ -17,10 +17,6 @@ const supportedTypes = {
 };
 
 export const STORAGE_PATH = 'uploads';
-
-export function sum(a: number, b: number) {
-  return a + b;
-}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -99,7 +95,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
       articlePath = articleProcessResponse.file_path;
       let articleMessage: ProcessingStep = {
         step: "article",
-        status: ProcessingStatus.SUCCESS,
+        status: ProcessingStatus.IN_PROGRESS,
         file_path: articlePath
       }
       res.write(JSON.stringify(articleMessage));
@@ -111,8 +107,8 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     let scriptPath: string;
     try {
       const scriptResponse = await createScript(articlePath);
-      if (scriptResponse.status !== "success") {
-        throw new Error(scriptResponse.message);
+      if (scriptResponse.status === ProcessingStatus.ERROR) {
+        return res.status(500).json(scriptResponse);
       }
       scriptPath = scriptResponse.message;
     } catch (error) {

@@ -71,13 +71,15 @@ async function promptCleaner(local_file_path:string, articleContent:string): Pro
   let instructions = buildIntructions(articleContent, InstructionType.CLEAN);
   const cleanerModel: GPTModel = { version: 'gpt-4o', tokenLimit: 128000 };
 
-  let intructionsTokens = countTokens(instructions, cleanerModel.version);
-  if (intructionsTokens > cleanerModel.tokenLimit) {
+  let intructionTokens = countTokens(instructions, cleanerModel.version);
+  console.log(`intructionTokens: ${intructionTokens}`);
+  if (intructionTokens > cleanerModel.tokenLimit) {
     // Article + intructions has exceeded token limit, must split into batches
     return {
       status: ProcessingStatus.ERROR,
       step: "cleaner",
-      message: "Article + intructions has exceeded token limit, must split into batches"
+      message: "Article + intructions has exceeded token limit, must split into batches",
+      instructions: intructionTokens
     } as ProcessingStep;
   } else {
     let clean_file_path = await cleaner(local_file_path, articleContent, instructions, cleanerModel);
@@ -130,9 +132,7 @@ export async function scriptwriter(articleName:string, instructions: string, mod
         role: "system",
         content: instructions
       }],
-      model: model.version,
-      max_tokens: model.tokenLimit,
-    })
+      model: model.version  });
     let result = completion.choices[0].message.content;
 
     // save to file
@@ -167,9 +167,7 @@ async function cleaner(articleName: string, articleContent: string, instructions
 
       }
     ],
-    model: model.version,
-    max_tokens: model.tokenLimit,
-  });
+    model: model.version  });
   let result = completion.choices[0].message.content;
 
   // save to file

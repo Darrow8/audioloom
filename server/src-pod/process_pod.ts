@@ -2,7 +2,7 @@ import { uploadFileToS3, getFileFromS3, uploadAudioToS3 } from './pass_files.js'
 import { CharLine, Clip, MusicLine, Script, createClips, Line, AudioFile, createClip } from './util_pod.js';
 import { v4 as uuidv4 } from 'uuid';
 import { getTempChar, getTempMusic, temp_result_file } from './temp.js';
-import { processCharacterLines, processMusicLines, processMusicLine, processCharacterLine, prevAndNextCharLines } from './process_line.js';
+import { processCharacterLines, processMusicLines, processMusicLine, processCharacterLine, prevAndNextCharLines, processLine } from './process_line.js';
 import { deleteAllFilesInFolder, saveAsJson } from './local.js';
 import { TEMP_DATA_PATH } from './init.js';
 import { addInMusic, checkStartTime, spliceAudioFiles } from './process_audio.js';
@@ -15,35 +15,6 @@ import { saveClipToLogs } from './local.js'; // Add this import at the top of th
 import { Request, Response, Express } from 'express';
 import fsPromises from 'fs/promises';
 import { ProcessingStatus, ProcessingStep } from './util_processing.js';
-
-/**
- * proccess_pod
- * Main function to process script
- */
-export async function createPodcast(scriptName: string) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let script_data = await getScript(scriptName,scriptName,false);
-            let script = script_data.script;
-            // final result file name
-            let resultFileName = `${uuidv4()}`;
-            if (process.env.RUN_TEMP == "true") {
-                resultFileName = temp_result_file;
-            }
-            let char_clips: Clip[] = await getCharClips(resultFileName, script);
-            let music_clips: Clip[] = await getMusicClips(script);
-            // combine clips and save in ./result
-            await addInMusic(resultFileName, char_clips, music_clips, resultFileName);
-
-            await uploadAudioToS3(resultFileName);
-            // deleteTempFiles()
-            resolve(resultFileName);
-        } catch (err) {
-            console.error('Error in process_pod:', err);
-            reject(err);
-        }
-    });
-}
 
 /**
  * createPodcastInParallel
@@ -140,46 +111,6 @@ export async function createPodInParallel(script_path: string, res: Response) {
     }
 }
 
-async function processLine(
-    line: Line, 
-    script: Script, 
-    characters: Character[], 
-    runningTime: number
-): Promise<Clip | null> {
-    if ((line as CharLine).dialogue?.length > 0) {
-        return await processCharacterLineWithRetry(line as CharLine, script, characters, runningTime);
-    } else if ('type' in line) {
-        return await processMusicLineWithRetry(line as MusicLine, script);
-    }
-    return null;
-}
-
-async function processCharacterLineWithRetry(
-    line: CharLine, 
-    script: Script, 
-    characters: Character[], 
-    runningTime: number,
-    maxRetries = 3
-): Promise<Clip> {
-    let lastError: Error;
-    for (let i = 0; i < maxRetries; i++) {
-        try {
-            const current_character = characters.find((char) => char.name === line.character);
-            if (!current_character) {
-                throw new Error(`Character ${line.character} not found`);
-            }
-            
-            const pn_chars = prevAndNextCharLines(line, script);
-            const audio = await processCharacterLine(line, pn_chars.prev, pn_chars.next, current_character, runningTime);
-            return createClip(audio, line);
-        } catch (error) {
-            lastError = error;
-            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
-        }
-    }
-    throw lastError;
-}
-
 async function mergeAndCleanup(
     clips: Clip[], 
     resultFileName: string, 
@@ -234,36 +165,6 @@ function shouldMergeClips(clips: Clip[]): boolean {
     return clips.length > 0 && 
            'dialogue' in clips[clips.length - 1].line &&
            (clips[clips.length - 1].line as CharLine).dialogue?.length > 0;
-}
-
-/**
- * convert char line into char clip 
- */
-async function getCharClip(line: CharLine, script: Script, characters: Character[], runningStartTime: number): Promise<Clip> {
-    if (process.env.RUN_TEMP == "true") {
-        let clips: Clip[] = getTempChar();
-        let clip = clips.find((clip) => clip.line.order == line.order);
-        return clip;
-    }
-    let pn_chars = prevAndNextCharLines(line, script);
-    let current_character = characters.find((char) => char.name == line.character);
-    let audio = await processCharacterLine(line, pn_chars.prev, pn_chars.next, current_character, runningStartTime);
-    let clip = createClip(audio, line);
-    return clip;
-}
-
-/**
- * get music clip 
- */
-async function getMusicClip(line: MusicLine, script: Script): Promise<Clip> {
-    if (process.env.RUN_TEMP == "true") {
-        let clips: Clip[] = getTempMusic();
-        let clip = clips.find((clip) => clip.line.order == line.order);
-        return clip;
-    }
-    let music_processed = await processMusicLine(line, script);
-    let music_clip = createClip(music_processed, line);
-    return music_clip;
 }
 
 
@@ -359,24 +260,4 @@ async function getScript(scriptName: string, localPath: string, isLocal: boolean
         message: "",
         script: script
     };
-}
-
-async function processMusicLineWithRetry(
-    line: MusicLine, 
-    script: Script,
-    maxRetries = 3
-): Promise<Clip> {
-    let lastError: Error;
-    for (let i = 0; i < maxRetries; i++) {
-        try {
-            const music_processed = await processMusicLine(line, script);
-            return createClip(music_processed, line);
-        } catch (error) {
-            console.error(`Attempt ${i + 1} failed for music line ${line.order}:`, error);
-            lastError = error;
-            // Exponential backoff
-            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
-        }
-    }
-    throw new Error(`Failed to process music line after ${maxRetries} attempts: ${lastError.message}`);
 }
