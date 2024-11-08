@@ -97,11 +97,6 @@ export const watchDocumentsPods = async (documentIds: string[], setPods: (stream
     });
 }
 
-export const getAllPods = async () => {
-    const pods = await getRecordsByCollection('pods');
-    return pods;
-}
-
 export const createPod = async (data: any) => {
     if (isValidPod(data)) {
         await createRecord('pods', data).catch((error) => {
@@ -143,10 +138,25 @@ export const updatePod = async (id: string, data: any) => {
 
 export const deletePod = async (id: string) => {
     if (id) {
+        // Delete the pod
         await deleteRecord('pods', id).catch((error) => {
             console.error('Error deleting pod:', error);
             return false;
         });
+
+        // Get all users who have this pod
+        const users = await getRecordsByCollection('users');
+        const usersWithPod = users.filter(user => user.pods?.includes(id));
+
+        // Remove pod from each user's pods array
+        await Promise.all(usersWithPod.map(async user => {
+            const updatedPods = user.pods.filter((podId: string) => podId !== id);
+            await updateRecord('users', user._id, { pods: updatedPods }).catch((error) => {
+                console.error('Error updating user pods:', error);
+                return false;
+            });
+        }));
+
         return true;
     } else {
         console.error('Invalid pod id:', id);

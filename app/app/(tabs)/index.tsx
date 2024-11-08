@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, StyleSheet, View, ScrollView, PanResponder } from 'react-native';
+import { Modal, StyleSheet, View, ScrollView, PanResponder, Text } from 'react-native';
 import UploadButton from '../../components/UploadButton';
 import PodComponent from '../../components/Pod';
-// import { Pod } from '@shared/types/pod';
 import PodPlayer from '@/components/PodPlayer';
 import { useStateContext } from '@/state/StateContext';
 import { getRecordById } from '@/scripts/mongoHandle';
-import SoundPlayer from 'react-native-sound-player'
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { socket } from '@/scripts/socket';
-import { getAllPods, watchDocumentsPods } from '@/scripts/mongoClient';
+import { watchDocumentsPods } from '@/scripts/mongoClient';
 import { Pod } from '@shared/pods';
 import { MongoChangeStreamData } from '@shared/mongodb';
 
@@ -19,7 +17,10 @@ const Listen = () => {
   const [pods, setPods] = useState<Pod[]>([]); // Add Pod type to useState
   const [isPlayerModalVisible, setIsPlayerModalVisible] = useState(false);
   const [currentPod, setCurrentPod] = useState<Pod>();
-  
+  const [toast, setToast] = useState<{message: string, visible: boolean}>({
+    message: '',
+    visible: false
+  });
 
   useEffect(() => {
     if (!state.user) return;
@@ -27,11 +28,16 @@ const Listen = () => {
     const pod_ids = state.user.pods ?? [];
     // get initial pods
     Promise.all(pod_ids.map(async (id) => {
-      const pod = await getRecordById('pods', id);
-      return pod as Pod | null;
+      try {
+        const pod = await getRecordById('pods', id);
+        return pod as Pod | null;
+      } catch (error) {
+        setToast({message: 'Failed to load pod', visible: true});
+        return null;
+      }
     })).then(resolvedPods => {
       const validPods = resolvedPods.filter((pod): pod is Pod => pod !== null);
-        setPods(validPods);
+      setPods(validPods);
     });
     watchDocumentsPods(pod_ids, (stream_data: MongoChangeStreamData) => {
       setPods(currentPods => currentPods.map((pod) => {
@@ -45,12 +51,20 @@ const Listen = () => {
         return pod;
       }));
     });
-    socket.on('error', (data, callback) => {
-      // Process data
+    socket.on('error', (data) => {
       console.log("error: ", data);
+      setToast({message: 'Connection error occurred', visible: true});
     });
   }, [state.user?.pods]);
-  
+
+  useEffect(() => {
+    if (toast.visible) {
+      const timer = setTimeout(() => {
+        setToast(prev => ({...prev, visible: false}));
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.visible]);
 
   const handlePodClick = (pod: Pod) => {
     setCurrentPod(pod);
@@ -113,6 +127,11 @@ const Listen = () => {
               </View>
             </Modal>
           </GestureRecognizer>
+          {toast.visible && (
+            <View style={styles.toast}>
+              <Text style={styles.toastText}>{toast.message}</Text>
+            </View>
+          )}
         </>
       ) : null}
     </View>
@@ -158,6 +177,20 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     alignSelf: 'center',
     marginBottom: 10,
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 10,
+    borderRadius: 8,
+    zIndex: 1000,
+  },
+  toastText: {
+    color: 'white',
+    textAlign: 'center',
   },
 });
 

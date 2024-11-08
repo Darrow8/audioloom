@@ -6,6 +6,7 @@ import { Pod } from '@shared/pods';
 import { getAudioFromS3 } from '@/scripts/s3';
 import { AudioUrlTransporter } from '@shared/s3';
 import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
+import { Marquee } from '@animatereactnative/marquee';
 
 const PodPlayer = ({ pod }: { pod: Pod | null }) => {
   const [currentTime, setCurrentTime] = useState(0);
@@ -32,11 +33,11 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
   useEffect(() => {
     let subscription: any;
     if (audioUrlData) {
-      loadAudio().then((sub) => {
+      loadAudio().then(async (sub) => {
         subscription = sub;
       });
     }
-    
+
     return () => {
       if (subscription) {
         subscription.remove();
@@ -47,6 +48,7 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
   useEffect(() => {
     const setupAudio = async () => {
       try {
+        
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
           staysActiveInBackground: true,
@@ -81,7 +83,7 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
 
       const { sound: newSound } = await Audio.Sound.createAsync(
         { uri: audioUrlData?.audio_url ?? '' },
-        { shouldPlay: false }
+        { shouldPlay: true }
       );
 
       const statusSubscription = newSound.setOnPlaybackStatusUpdate((status) => {
@@ -93,6 +95,7 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
 
       setSound(newSound);
       setIsLoading(false);
+      setIsPlaying(true);
 
       return statusSubscription;
     } catch (err) {
@@ -108,11 +111,8 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
         await loadAudio();
       }
       if(sound) {
-
-      await sound.playAsync();
+        await sound.playAsync();
         setIsPlaying(true);
-      }else{
-        setError('Failed to play audio');
       }
     } catch (err) {
       setError('Failed to play audio');
@@ -135,11 +135,17 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
     try {
       setCurrentTime(value);
       if (sound) {
+        const wasPlaying = isPlaying;
+        if (wasPlaying) {
+          await sound.pauseAsync();
+        }
         await sound.setPositionAsync(value * 1000); // Convert seconds to milliseconds
+        if (wasPlaying) {
+          await sound.playAsync();
+        }
       }
     } catch (err) {
-      setError('Failed to seek audio');
-      console.error('Error seeking audio:', err);
+      console.log('Error seeking audio:', err);
     }
   };
 
@@ -186,10 +192,16 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
       ) : (
         <View style={styles.container}>
           <View style={styles.header}>
-            <Text style={styles.podcastTitle}>{pod.title}</Text>
-            <Text style={styles.podcastDescription}>
-              {pod.author}
-            </Text>
+            {/* <Marquee
+              speed={0.5}
+              spacing={2}> */}
+             <Text numberOfLines={1} style={styles.podcastTitle}>{pod.title}</Text>
+            {/* </Marquee>
+            <Marquee
+              speed={0.5}
+              spacing={2}> */}
+                <Text numberOfLines={1} style={styles.podcastAuthor}>{pod.author}</Text>
+            {/* </Marquee> */}
           </View>
 
           <View style={styles.controls}>
@@ -258,8 +270,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
-  podcastDescription: {
+  podcastAuthor: {
     fontSize: 16,
+    fontWeight: 'regular',
+    marginBottom: 0,
     color: '#666',
   },
   controls: {
