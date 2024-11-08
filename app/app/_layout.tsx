@@ -43,14 +43,12 @@ function AppContent() {
     socket.on('connect', handleConnect);
     socket.on('disconnect', handleDisconnect);
     socket.on('error', handleError);
-    console.log('socket status?')
   }, []);
 
 
   const localWatchUser = (mongo_user: User) => {
     watchDocumentUser(mongo_user._id, (data: MongoChangeStreamData) => {
       if (data.operationType === 'update') {
-        console.log("user updated: ", data.updateDescription.updatedFields);
         // update user state with the full document
         dispatch({ type: 'UPDATE_USER', payload: data.fullDocument as Partial<User> });
       }
@@ -64,14 +62,11 @@ function AppContent() {
       try {
         setIsLoading(true);
         if (auth0_user) {
-          console.log("auth0_user: ", auth0_user);
           const credentials = await getCredentials();
           if (credentials && credentials.accessToken) {
             await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
-            console.log('Access Token stored securely from _layout.tsx');
             // get user from mongo
             let mongo_user = await getUserBySub(auth0_user.sub);
-            console.log("mongo_user: ", mongo_user);
             if (mongo_user != undefined && mongo_user != false) {
               // watch user
               localWatchUser(mongo_user);
@@ -99,8 +94,8 @@ function AppContent() {
         clearCredentials();
         clearSession();
         console.log("User logged out");
-        // temporary fix for logout
-        window.location.reload();
+        // // temporary fix for logout
+        // window.location.reload();
       } finally {
         setIsLoading(false);
       }
@@ -169,16 +164,4 @@ export default function RootLayout() {
       </StateProvider>
     </Auth0Provider>
   );
-}
-
-async function testPublic() {
-  await fetch('https://api.rivetaudio.com/public')
-    .then(response => response.text())
-    .then(data => {
-      console.log('Public data:', data);
-    })
-    .catch(error => {
-      console.error('Error fetching public data:', error);
-    });
-
 }

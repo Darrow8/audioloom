@@ -8,7 +8,6 @@ const RIVET_API_KEY = '1023hfiudobf023rhnqwof18ihr0oqefbu2rt0243heirhbnqpofb2u09
 
 export const makeAuthenticatedRequest = async (url: string, method: string = 'GET', body?: any, retries = 3): Promise<any> => {
   const accessToken = await SecureStore.getItemAsync('auth0AccessToken');
-  console.log('calling...')
   if (!accessToken) {
     throw new Error('No access token available');
   }

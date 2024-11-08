@@ -13,7 +13,7 @@ let DB_BASE_URL = BASE_URL + 'db/records/'
 export async function getRecordsByCollection(collection: string): Promise<any[]> {
   try {
     const records = await makeAuthenticatedRequest(DB_BASE_URL + collection);
-    console.log(`Successfully fetched ${records.length} records`);
+    // console.log(`Successfully fetched ${records.length} records`);
     return records;
   } catch (error) {
     console.error('Error fetching all records:', error);
@@ -33,7 +33,7 @@ export async function getRecordsByCollection(collection: string): Promise<any[]>
 export async function getRecordById(collection: string, id: string): Promise<any> {
   try {
     const record = await makeAuthenticatedRequest(DB_BASE_URL + `${collection}/${id}`);
-    console.log(`Successfully fetched record with ID ${id} from collection ${collection}`);
+    // console.log(`Successfully fetched record with ID ${id} from collection ${collection}`);
     return record;
   } catch (error) {
     console.error(`Error fetching record with ID ${id} from collection ${collection}:`, error);
@@ -54,7 +54,7 @@ export async function getRecordById(collection: string, id: string): Promise<any
 export async function getRecordByField(collection: string, field: string, value: string): Promise<any> {
   try {
     const record = await makeAuthenticatedRequest(DB_BASE_URL + `${collection}?field=${field}&value=${value}`);
-    console.log(`Successfully fetched record with ${field} ${value} from collection ${collection}`);
+    // console.log(`Successfully fetched record with ${field} ${value} from collection ${collection}`);
     return record;
   } catch (error) {
     console.error(`Error fetching record with ${field} ${value} from collection ${collection}:`, error);

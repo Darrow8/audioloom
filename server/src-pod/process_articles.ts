@@ -8,65 +8,62 @@ import { upload, STORAGE_PATH } from './pod_main.js';
 import { getMongoDataById, updateMongoData, createMongoData, updateMongoArrayDoc } from '../src-db/mongo_methods.js';
 import { ObjectId } from 'mongodb';
 import fs from 'fs';
+import { ProcessingStatus, ProcessingStep } from './util_processing.js';
 
-export const processArticles = () => {
+/**
+ * processArticles: saving articles to s3 and mongo
+ * 1. upload file to s3
+ * 2. create article in mongo
+ * 3. return fileKey and file_path
+ */
+export const processArticles = async (file: Express.Multer.File, _id: string) => {
+  let originalPath = file.path;
+  let file_path;
+  if (file.mimetype != 'text/plain') {
+    let convert_txt_resp = await convertToTXT(file, `${STORAGE_PATH}`);
+    if (convert_txt_resp == null) {
+      throw new Error('Failed to convert file, try again');
+    }
+    file = convert_txt_resp.updated_file;
+    file_path = convert_txt_resp.path;
+    console.log("updated file path: " + file_path);
+  } else {
+    file_path = originalPath;
+    console.log("original file path: " + file_path);
+  }
 
-  // upload file to s3
-  app.post('/pod/file/upload', upload.single('file'), async (req: Request & { file?: Express.Multer.File }, res: Response) => {
-    console.log('Received file:', req.file);
-    if (!req.file || !req.body._id) {
-      return res.status(400).json({ message: 'No file uploaded or no user id' });
-    }
-    let file = req.file;
-    let originalMimetype = file.mimetype;
-    let originalSize = file.size;
-    let originalPath = file.path;
+  // upload to s3
 
-    if(file.mimetype != 'text/plain'){
-      file = await convertToTXT(req.file, `${STORAGE_PATH}`);
-      if (!file) {
-        return res.status(500).json({ message: 'Failed to convert file, try again' });
-      }
-    }
+  return {
+    status: ProcessingStatus.IN_PROGRESS,
+    step:"article",
+    file_path: file_path,
+  } as ProcessingStep;
+};
 
-    // upload to s3
-    let articleId = new ObjectId();
-    let articleKey = `articles/${articleId.toString()}.txt`;
-    let uploadDetails = {
-      Bucket: 'main-server',
-      Key: articleKey,
-      Body: file.buffer,
-      ContentType: originalMimetype
+export async function uploadArticleToS3(local_file_path: string, _id: string) {
+  const articleId = new ObjectId();
+  const articleKey = `articles/${articleId.toString()}.txt`;
+  let file = fs.readFileSync(local_file_path);
+  let uploadDetails = {
+    Bucket: 'main-server',
+    Key: articleKey,
+    Body: file
+  }
+  const uploadResponse = await uploadFileToS3(uploadDetails);
+  if (uploadResponse.statusCode === 200) {
+    let articleData = {
+      _id: articleId,
+      key: articleKey,
+      uploadedAt: new Date(),
+      uploadedBy: (_id)
     }
-    const uploadResponse = await uploadFileToS3(uploadDetails);
-    if (uploadResponse.statusCode === 200) {
-      try{
-        let articleData = {
-            _id: articleId,
-            key: articleKey,
-            type: originalMimetype,
-            size: originalSize,
-            uploadedAt: new Date(),
-            uploadedBy: (req.body._id)
-        }
-        let articleResult = await createMongoData('articles', articleData);
-        await updateMongoArrayDoc('users', req.body._id, "articles",  articleId);
-        // delete the file from local storage in /uploads
-        fs.unlinkSync(originalPath);
-      res.status(200).json({
-        message: 'File uploaded successfully',
-        fileKey: uploadDetails.Key
-      });
-    } catch(e) {
-      console.error(e);
-      res.status(500).json({message: "Internal Error relating to uploading and updating user data", error: e})
-    }
+    let articleResult = await createMongoData('articles', articleData);
+    if (articleResult) {
+      await updateMongoArrayDoc('users', _id, "articles", articleId);
     } else {
-      res.status(uploadResponse.statusCode).json({
-        message: uploadResponse.message,
-        error: uploadResponse.error
-      });
+      throw new Error('Failed to create article in mongo');
     }
-  });
-
+    fs.unlinkSync(local_file_path);
+  }
 }
