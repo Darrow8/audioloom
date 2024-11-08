@@ -1,4 +1,4 @@
-import { AudioFile, CharLine, MusicLine, MusicType } from './util_pod.js';
+import { AudioFile, CharLine, Clip, createClip, Line, MusicLine, MusicType } from './util_pod.js';
 import { textToSpeech, processCharacterVoices } from './pass_voice.js';
 import { musicChooser } from './process_track.js';
 import { getAudioDuration } from './process_audio.js';
@@ -182,4 +182,66 @@ export async function processBMusicLine(music_line: MusicLine, script: Script): 
 export async function processSFXMusicLine(music_line: MusicLine): Promise<AudioFile> {
     let tracks: usefulTrack[] = await fetchEpidemicSFX(music_line.music_description);
     return await saveMusicAsAudio(tracks, music_line.id);
+}
+
+
+export async function processLine(
+    line: Line, 
+    script: Script, 
+    characters: Character[], 
+    runningTime: number
+): Promise<Clip | null> {
+    if ((line as CharLine).dialogue?.length > 0) {
+        return await processCharacterLineWithRetry(line as CharLine, script, characters, runningTime);
+    } else if ('type' in line) {
+        return await processMusicLineWithRetry(line as MusicLine, script);
+    }
+    return null;
+}
+
+export async function processCharacterLineWithRetry(
+    line: CharLine, 
+    script: Script, 
+    characters: Character[], 
+    runningTime: number,
+    maxRetries = 3
+): Promise<Clip> {
+    let lastError: Error;
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const current_character = characters.find((char) => char.name === line.character);
+            if (!current_character) {
+                throw new Error(`Character ${line.character} not found`);
+            }
+            
+            const pn_chars = prevAndNextCharLines(line, script);
+            const audio = await processCharacterLine(line, pn_chars.prev, pn_chars.next, current_character, runningTime);
+            return createClip(audio, line);
+        } catch (error) {
+            lastError = error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        }
+    }
+    throw lastError;
+}
+
+
+async function processMusicLineWithRetry(
+    line: MusicLine, 
+    script: Script,
+    maxRetries = 3
+): Promise<Clip> {
+    let lastError: Error;
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const music_processed = await processMusicLine(line, script);
+            return createClip(music_processed, line);
+        } catch (error) {
+            console.error(`Attempt ${i + 1} failed for music line ${line.order}:`, error);
+            lastError = error;
+            // Exponential backoff
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+        }
+    }
+    throw new Error(`Failed to process music line after ${maxRetries} attempts: ${lastError.message}`);
 }
