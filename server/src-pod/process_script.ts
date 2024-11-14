@@ -4,7 +4,7 @@ import { encoding_for_model, TiktokenModel } from "tiktoken";
 import { openaiClient } from "./init.js";
 import { buildIntructions, GPTModel, InstructionType } from "./util_script.js";
 import { ChatModel } from "openai/resources/index.js";
-import { ProcessingStatus, ProcessingStep } from "./util_processing.js";
+import { ProcessingStatus, ProcessingStep } from "../../shared/src/processing.js";
 
 /**
  * Start with reading that has been uploaded earlier, ends with script in S3

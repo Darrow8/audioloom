@@ -55,10 +55,8 @@ export function setupSocketIO() {
 
 export function watchDocumentPods(socket: Socket) {
   socket.on('watchDocumentsPods', (documentIds: string[]) => {
-    console.log("watchDocumentsPods: ", documentIds);
     let emit_name = 'pods';
     watchDocuments(socket, 'pods', documentIds, emit_name, (changeStream) => {
-      console.log("pods change: ", changeStream);
       // Listen for changes
       changeStream.on('change', (change) => {
         socket.emit(`${emit_name}Change`, change);
@@ -71,10 +69,8 @@ export function watchDocumentPods(socket: Socket) {
 
 export function watchDocumentUser(socket: Socket) {
   socket.on('watchDocumentUser', (documentId: string) => {
-    console.log("watchDocumentUser: ", documentId);
     let emit_name = 'user';
     watchDocument(socket, 'users', documentId, emit_name, (changeStream) => {
-      console.log("user change: ", changeStream);
       // Listen for changes
       changeStream.on('change', (change) => {
         socket.emit(`${emit_name}Change`, change);

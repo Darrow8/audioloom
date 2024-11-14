@@ -1,4 +1,4 @@
-import { User, initialState, UserState } from "../scripts/user";
+import { User, UserState } from "@shared/user";
 
 export type UserAction =
     | { type: 'LOGIN'; payload: User }

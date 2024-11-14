@@ -11,7 +11,7 @@
     "preserveConstEnums": true,
     "sourceMap": false,
     "paths": {
-      "@shared/*": ["../shared/src"],
+      "@shared/*": ["../shared/src/*"],
       "@/*": ["./src-db/*", "./src-pod/*"]
     },
   },
@@ -21,5 +21,6 @@
     "src-db/**/*.ts",
     "src-pod/**/*.ts",
     "**/*.test.ts",
+    "../shared/src/**/*"
   ]
 }

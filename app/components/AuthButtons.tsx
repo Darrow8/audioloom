@@ -7,19 +7,17 @@ import * as AuthSession from 'expo-auth-session';
 import * as SecureStore from 'expo-secure-store';
 import jwtDecode from 'jwt-decode';
 import { v4 as uuidv4 } from 'uuid';
+import { debounce } from 'lodash';
 
-
-const LoginButton = () => {
-  const { authorize, clearSession, isLoading,  } = useAuth0();
-
+const AuthButtons = () => {
+  const { authorize, isLoading, user } = useAuth0();
 
   if (isLoading) {
     return <View><Text>Loading...</Text></View>;
   }
-  // when user clicks login, call auth0 to login
-  const onLogin = async () => {
-    try {
 
+  const debouncedLogin = debounce(async () => {
+    try {
       await authorize({
         scope: 'openid profile email',
         additionalParameters: {
@@ -27,13 +25,12 @@ const LoginButton = () => {
           screen_hint: 'login'
         }
       });
-      
     } catch (e) {
       console.log(e);
     }
-  };
+  }, 1000);
 
-  const onSignup = async () => {
+  const debouncedSignup = debounce(async () => {
     try {
       await authorize({
         scope: 'openid profile email',
@@ -42,25 +39,23 @@ const LoginButton = () => {
           screen_hint: 'signup'
         }
       });
-      
+      await SecureStore.setItemAsync('signingUp', 'true');
     } catch (e) {
       console.log(e);
     }
-  };
-
+  }, 1000);
 
   return (
     <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.button} onPress={onLogin}>
+      <TouchableOpacity style={styles.button} onPress={debouncedLogin}>
         <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={onSignup}>
+      <TouchableOpacity style={styles.button} onPress={debouncedSignup}>
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   buttonContainer: {
@@ -84,4 +79,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default LoginButton;
+export default AuthButtons;

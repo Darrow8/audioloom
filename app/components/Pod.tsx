@@ -3,7 +3,7 @@ import { StyleSheet, View, Image, Text, TouchableOpacity, ActivityIndicator, Mod
 import { Feather } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Pod, Status } from '@shared/pods';
+import { Pod, PodStatus } from '@shared/pods';
 
 
 
@@ -17,13 +17,13 @@ const PodComponent: React.FC<{ pod: Pod, onPodClick: () => void }> = ({ pod, onP
             </View>
             <View style={styles.podStatus}>
                 <TouchableOpacity style={styles.playButton} onPress={onPodClick}>
-                    {pod.status == Status.READY && (
+                    {pod.status == PodStatus.READY && (
                     <Entypo name="controller-play" size={24} color="#007AFF" />
                 )}
-                {pod.status == Status.PENDING && (
+                {pod.status == PodStatus.PENDING && (
                     <ActivityIndicator size={24} color="#007AFF" />
                 )}
-                {pod.status == Status.ERROR && (
+                {pod.status == PodStatus.ERROR && (
                         <MaterialIcons name="error-outline" size={24} color="#007AFF" />
                     )}
                 </TouchableOpacity>

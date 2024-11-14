@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, Dispatch } from 'react';
 import { UserAction, userReducer } from './userReducer';
-import { initialState, UserState } from '../scripts/user';
+import { initialState, UserState } from '@shared/user';
 
 interface StateContextType {
   state: UserState;
