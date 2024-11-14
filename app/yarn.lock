@@ -1976,7 +1976,7 @@
     "@babel/runtime" "^7.13.10"
     "@radix-ui/react-compose-refs" "1.0.0"
 
-"@react-native-async-storage/async-storage@1.23.1":
+"@react-native-async-storage/async-storage@^1.21.0", "@react-native-async-storage/async-storage@1.23.1":
   version "1.23.1"
   resolved "https://registry.npmjs.org/@react-native-async-storage/async-storage/-/async-storage-1.23.1.tgz"
   integrity sha512-Qd2kQ3yi6Y3+AcUlrHxSLlnBvpdCEMVGFlVBneVOjaFaPU61g1huc38g339ysXspwY1QZA2aNhrk/KlHGO+ewA==
@@ -2618,6 +2618,11 @@
   version "7.0.15"
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.15.tgz"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
+
+"@types/lodash@^4.17.13":
+  version "4.17.13"
+  resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.17.13.tgz"
+  integrity sha512-lfx+dftrEZcdBPczf9d0Qv0x+j/rfNCMuC6OcfXmO8gkfeNAY88PgKUbvG56whcN23gc27yenwF6oJZXGFpYxg==
 
 "@types/node-forge@^1.3.0":
   version "1.3.11"
@@ -6378,6 +6383,11 @@ kleur@^3.0.3:
   resolved "https://registry.npmjs.org/kleur/-/kleur-3.0.3.tgz"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
+launchdarkly-eventsource@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.npmjs.org/launchdarkly-eventsource/-/launchdarkly-eventsource-2.0.3.tgz"
+  integrity sha512-VhFjppK7jXlcEKaS7bxdoibB5j01NKyeDR7a8XfssdDGNWCTsbF0/5IExSmPi44eDncPhkoPNxlSZhEZvrbD5w==
+
 leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.npmjs.org/leven/-/leven-3.1.0.tgz"
@@ -6928,6 +6938,14 @@ minizlib@^2.1.1:
   dependencies:
     minipass "^3.0.0"
     yallist "^4.0.0"
+
+mixpanel-react-native@^3.0.7:
+  version "3.0.7"
+  resolved "https://registry.npmjs.org/mixpanel-react-native/-/mixpanel-react-native-3.0.7.tgz"
+  integrity sha512-LZKxY1hdGWswAV9xY4Cv460B8QuhhDYVit4tbQcdT71oUreuBFfUqgJrE1VRelr/9N+BK/esqH6eJPxgihnpCA==
+  dependencies:
+    "@react-native-async-storage/async-storage" "^1.21.0"
+    uuid "3.3.2"
 
 mkdirp@^0.5.1, mkdirp@~0.5.1:
   version "0.5.6"
@@ -7913,6 +7931,11 @@ react-native-sound-player@^0.14.3:
   version "0.14.3"
   resolved "https://registry.npmjs.org/react-native-sound-player/-/react-native-sound-player-0.14.3.tgz"
   integrity sha512-I5VeG8YuwTTMX6CPkZfNL6lWay6GmR3HzuxXjhhpUKHV5K2XWXKJ+YKJAz6dBnJoNshl4EQOo4ox8bQD6/+zPA==
+
+react-native-sse@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.npmjs.org/react-native-sse/-/react-native-sse-1.2.1.tgz"
+  integrity sha512-zejanlScF+IB9tYnbdry0MT34qjBXbiV/E72qGz33W/tX1bx8MXsbB4lxiuPETc9v/008vYZ60yjIstW22VlVg==
 
 react-native-svg@*:
   version "15.4.0"
@@ -9499,6 +9522,11 @@ uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
+
+uuid@3.3.2:
+  version "3.3.2"
+  resolved "https://registry.npmjs.org/uuid/-/uuid-3.3.2.tgz"
+  integrity sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==
 
 v8-to-istanbul@^9.0.1:
   version "9.3.0"

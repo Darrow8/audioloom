@@ -41,7 +41,7 @@ export class Script {
 
 
 // TODO: delete and replace with @shared/pod.js
-export class Podcast {
+export class InternalPod {
     clips: Clip[];
     title: string;
     authors: string[]

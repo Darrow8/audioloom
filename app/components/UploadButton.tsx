@@ -9,7 +9,8 @@ import {
 } from "@robinbobin/react-native-google-drive-api-wrapper";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DriveList from './DriveList';
-import { triggerPodCreation } from '../scripts/s3';
+import { connectToSSE } from '../scripts/s3';
+import { ProcessingStatus } from '@shared/processing';
 
 GoogleSignin.configure({
   scopes: ['https://www.googleapis.com/auth/drive.readonly'], // what API you want to access on behalf of the user, default is email and profile
@@ -32,8 +33,12 @@ const UploadButton: React.FC<{ userId: string }> = ({ userId }) => {
     console.log('ready to upload!')
     // step 1: upload to s3
     async function getS3Url() {
-      const s3Response = await triggerPodCreation(file, userId)
-      console.log('s3Response', s3Response)
+      const sse = connectToSSE(file, userId, (update) => {
+        console.log('update', update)
+        if(update.status === ProcessingStatus.COMPLETED){
+          console.log('completed!')
+        }
+      })
     }
     getS3Url()
   }, [file, userId])

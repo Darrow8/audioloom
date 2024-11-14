@@ -5,28 +5,22 @@ import React, { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import * as config from "../auth0_config";
 import Landing from './landing';
+import Auth0 from 'react-native-auth0';
 import { Auth0Provider, useAuth0 } from 'react-native-auth0';
-import * as SecureStore from 'expo-secure-store';
-import { getUserBySub, watchDocumentUser } from '../scripts/mongoClient';
-import { User } from '@/scripts/user';
+import { User } from '@shared/user';
 import { useStateContext } from '@/state/StateContext';
 import { StateProvider } from '@/state/StateContext';
-import { initUser, userStateCheck } from '@/scripts/auth';
+import { checkLogin, initUser } from '@/scripts/auth';
 import { ActivityIndicator, View } from 'react-native';
 import { socket } from '@/scripts/socket';
-import { MongoChangeStreamData } from '@shared/index';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
 
 function AppContent() {
   const { user: auth0_user, getCredentials,clearSession, clearCredentials, hasValidCredentials } = useAuth0();
   const { state, dispatch } = useStateContext();
   const [isLoading, setIsLoading] = useState(true);
-
-
-
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
     const handleConnect = () => {
       console.log('Connected to socket server');
@@ -44,64 +38,34 @@ function AppContent() {
     socket.on('disconnect', handleDisconnect);
     socket.on('error', handleError);
   }, []);
-
-
-  const localWatchUser = (mongo_user: User) => {
-    watchDocumentUser(mongo_user._id, (data: MongoChangeStreamData) => {
-      if (data.operationType === 'update') {
-        // update user state with the full document
-        dispatch({ type: 'UPDATE_USER', payload: data.fullDocument as Partial<User> });
-      }
-    });
-  }
   
+  async function handleCheckLogin(auth0_user: Partial<User>){
+    let credentials = await getCredentials();
+    if(credentials){
+      let resp = await checkLogin(auth0_user, dispatch, credentials);
+      setIsLoading(false);
+      if(resp){
+        setIsLoggedIn(true);
+      }else{
+        setIsLoggedIn(false);
+      }
+    }
+  }
+
 
   // check if user is logged in at start of app
   useEffect(() => {
-    async function checkLogin() {
-      try {
-        setIsLoading(true);
-        if (auth0_user) {
-          const credentials = await getCredentials();
-          if (credentials && credentials.accessToken) {
-            await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
-            // get user from mongo
-            let mongo_user = await getUserBySub(auth0_user.sub);
-            if (mongo_user != undefined && mongo_user != false) {
-              // watch user
-              localWatchUser(mongo_user);
-              dispatch({ type: 'LOGIN', payload: mongo_user });
-            }else{
-              if (auth0_user.email && auth0_user.name) {
-                // make new user
-                let new_user = await initUser(auth0_user);
-                // watch user
-                localWatchUser(new_user);
-                dispatch({ type: 'LOGIN', payload: new_user });
-              }else{
-                throw new Error('User email and name are required');
-              }
-            }
-          } else {
-            throw new Error('Error getting credentials');
-          }
-        }
-      } catch (error) {
-        console.error("Error checking login status:", error);
-        // full sign out
-        await SecureStore.deleteItemAsync('auth0AccessToken');
-        dispatch({ type: 'LOGOUT' });
-        clearCredentials();
-        clearSession();
-        console.log("User logged out");
-        // // temporary fix for logout
-        // window.location.reload();
-      } finally {
-        setIsLoading(false);
-      }
+    if(auth0_user){
+      handleCheckLogin(auth0_user);
+    }else{
+      setIsLoading(false);
     }
-    checkLogin();
-  }, [auth0_user, hasValidCredentials]);
+  }, [auth0_user]);
+
+  useEffect(() => {
+    console.log("State changed for user login status:", state.isLoggedIn);
+    setIsLoggedIn(state.isLoggedIn);
+  }, [state]);
 
   if (isLoading) {
     return (
@@ -112,7 +76,7 @@ function AppContent() {
   }
 
   return (
-    state.isLoggedIn ? (
+    isLoggedIn ? (
       <Stack screenOptions={{
         headerStyle: {
           backgroundColor: '#f4511e',

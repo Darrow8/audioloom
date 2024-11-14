@@ -1,13 +1,13 @@
 import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection, getRecordByField } from './mongoHandle';
 import { isValidPod } from './validateData';
-import { User } from './user';
+import { User } from '@shared/user';
 import { socket } from './socket';
 import { useStateContext } from '@/state/StateContext';
 import { Pod } from '@shared/pods';
 import { Dispatch } from 'react';
 import { UserAction } from '@/state/userReducer';
 import { UserState } from './user';
-import { ChangeStreamUpdate, MongoChangeStreamData } from '@shared/mongodb';
+import { ChangeStreamUpdate, DocumentCreated, MongoChangeStreamData } from '@shared/mongodb';
 
 // User endpoints
 export const watchDocumentUser = async (documentId: string, setUser: (stream_data: MongoChangeStreamData) => void) => {
@@ -26,16 +26,16 @@ export const getAllUsers = async () => {
     return users;
 }
 
-export const createUser = async (data: Partial<User>) => {
+export const createUser = async (data: Partial<User>) : Promise<DocumentCreated | false> => {
     // Add created_at timestamp
     data.created_at = new Date().toISOString();
     data.updated_at = data.created_at;
 
-    await createRecord('users', data).catch((error) => {
+    let new_data = await createRecord('users', data).catch((error) => {
         console.error('Error creating user:', error);
-        return undefined;
+        return false;
     });
-    return data as User;
+    return new_data as DocumentCreated | false;
 }
 
 export const getUserById = async (id: string) => {
@@ -50,7 +50,7 @@ export const getUserById = async (id: string) => {
     }
 }
 
-export const getUserBySub = async (sub: string | undefined) => {
+export const getUserBySub = async (sub: string) => {
     if (sub) {
         const user = await getRecordByField('users', 'sub', sub);
         return user;

@@ -52,7 +52,7 @@ export interface SocketData {
 
 export interface MongoChangeStreamData {
   _id: {
-    _data: string;
+    _data: ObjectId;
   };
   clusterTime: {
     $timestamp: string;
@@ -61,7 +61,7 @@ export interface MongoChangeStreamData {
     _id: string;
   };
   fullDocument: {
-    _id: string;
+    _id: ObjectId;
     author: string;
     created_at: string;
     status: string;
@@ -81,4 +81,9 @@ export interface MongoChangeStreamData {
     };
   };
   wallTime: string;
+}
+
+export interface DocumentCreated {
+  acknowledged: boolean;
+  insertedId: string;
 }

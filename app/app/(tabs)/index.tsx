@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, StyleSheet, View, ScrollView, PanResponder, Text } from 'react-native';
+import { Modal, StyleSheet, View, ScrollView, PanResponder, Text, Button } from 'react-native';
 import UploadButton from '../../components/UploadButton';
 import PodComponent from '../../components/Pod';
 import PodPlayer from '@/components/PodPlayer';
@@ -8,8 +8,9 @@ import { getRecordById } from '@/scripts/mongoHandle';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import { socket } from '@/scripts/socket';
 import { watchDocumentsPods } from '@/scripts/mongoClient';
-import { Pod } from '@shared/pods';
+import { Pod, PodStatus } from '@shared/pods';
 import { MongoChangeStreamData } from '@shared/mongodb';
+import { connectToSSE } from '@/scripts/s3';
 
 const Listen = () => {
   const [uploadVisible, setUploadVisible] = useState(false);
@@ -36,12 +37,12 @@ const Listen = () => {
         return null;
       }
     })).then(resolvedPods => {
-      const validPods = resolvedPods.filter((pod): pod is Pod => pod !== null);
+      const validPods = resolvedPods.filter((pod) => pod != null);
       setPods(validPods);
     });
     watchDocumentsPods(pod_ids, (stream_data: MongoChangeStreamData) => {
       setPods(currentPods => currentPods.map((pod) => {
-        if (pod._id === stream_data.documentKey._id) {
+        if (pod._id.toString() === stream_data.documentKey._id.toString()) {
           const fullDoc = stream_data.fullDocument;
           return {
             ...fullDoc,
@@ -67,8 +68,12 @@ const Listen = () => {
   }, [toast.visible]);
 
   const handlePodClick = (pod: Pod) => {
-    setCurrentPod(pod);
-    setIsPlayerModalVisible(true);
+    if(pod.status == PodStatus.READY){
+      setCurrentPod(pod);
+      setIsPlayerModalVisible(true);
+    }else{
+      setToast({message: 'Pod is not ready yet', visible: true});
+    }
   }
 
 
@@ -100,12 +105,15 @@ const Listen = () => {
           <ScrollView contentContainerStyle={styles.songList}>
             {pods.map((pod) => (
               <PodComponent 
-                key={pod._id} 
+                key={(pod._id).toString()} 
                 pod={pod}
                 onPodClick={() => handlePodClick(pod)}
               />
             ))}
           </ScrollView>
+          <Button title="Test" onPress={() => connectToSSE((update) => {
+            console.log('update', update)
+          })}/>
           <UploadButton userId={state.user._id}/>
           <GestureRecognizer
             style={{flex: 1}}

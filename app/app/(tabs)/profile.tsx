@@ -10,19 +10,17 @@ const Profile = () => {
   const onLogout = async () => {
     try {
       await clearSession();
-      if (!hasValidCredentials()) {
-        console.log('clearing auth0 access token');
-        await SecureStore.deleteItemAsync('auth0AccessToken');
-        dispatch({ type: 'LOGOUT' });    
-      }else{
-        console.log('not clearing auth0 access token');
-      }
-      // temporary fix for logout
-      // window.location.reload();
+      await SecureStore.deleteItemAsync('auth0AccessToken');
+      await SecureStore.deleteItemAsync('signingUp');
+      dispatch({ type: 'LOGOUT' });
     } catch (e) {
       console.log('Log out cancelled');
     }
   };
+  if(state.user == undefined) {
+    return <Text>Loading...</Text>
+  }
+
 
   return (
     <View style={styles.container}>
@@ -34,14 +32,14 @@ const Profile = () => {
         {
           state.user?.email == state.user?.name ? 
           <>
-            {state.user?.nickname && <Text style={styles.name}>{state.user.nickname}</Text>}
+            {state.user?.name && <Text style={styles.name}>{state.user.name}</Text>}
             {state.user?.email && <Text style={styles.username}>{state.user.email}</Text>}
           </>
           : <>
             {state.user?.name && <Text style={styles.name}>{state.user.name}</Text>}
             {state.user?.email ?  
             <Text style={styles.username}>{state.user.email}</Text>
-            : <Text style={styles.username}>{state.user?.nickname}</Text>
+            : <Text style={styles.username}>{state.user?.name}</Text>
             }
           </>
         }

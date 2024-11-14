@@ -8,7 +8,7 @@ import { upload, STORAGE_PATH } from './pod_main.js';
 import { getMongoDataById, updateMongoData, createMongoData, updateMongoArrayDoc } from '../src-db/mongo_methods.js';
 import { ObjectId } from 'mongodb';
 import fs from 'fs';
-import { ProcessingStatus, ProcessingStep } from './util_processing.js';
+import { ProcessingStatus, ProcessingStep } from '../../shared/src/processing.js';
 
 /**
  * processArticles: saving articles to s3 and mongo

@@ -14,13 +14,14 @@ import fs from 'fs';
 import { saveClipToLogs } from './local.js'; // Add this import at the top of the file
 import { Request, Response, Express } from 'express';
 import fsPromises from 'fs/promises';
-import { ProcessingStatus, ProcessingStep } from './util_processing.js';
+import { ProcessingStatus, ProcessingStep } from '../../shared/src/processing.js';
+import { updateMongoData } from '@/mongo_methods.js';
 
 /**
  * createPodcastInParallel
  * In each iteration, process a character line and music line to update audio file
  */
-export async function createPodInParallel(script_path: string, res: Response) {
+export async function createPodInParallel(script_path: string, pod_id: string, res: Response) {
     const tempFiles: string[] = [];
     try {
         // Validate script path
@@ -42,7 +43,6 @@ export async function createPodInParallel(script_path: string, res: Response) {
         }
 
         const script = script_data.script;
-        const resultFileName = `${uuidv4()}`;
         
         // Process characters with validation
         const characters_str = new Set(script.getCharLines().map(line => line.character));
@@ -77,7 +77,7 @@ export async function createPodInParallel(script_path: string, res: Response) {
                 }
 
                 if (shouldMergeClips(cur_clips)) {
-                    runningTime = await mergeAndCleanup(cur_clips, resultFileName, runningTime, script, res);
+                    runningTime = await mergeAndCleanup(cur_clips, pod_id, runningTime, script, res);
                     cur_clips = [];
                 }
             } catch (error) {
@@ -88,14 +88,14 @@ export async function createPodInParallel(script_path: string, res: Response) {
 
         // Final merge if there are remaining clips
         if (cur_clips.length > 0) {
-            runningTime = await mergeAndCleanup(cur_clips, resultFileName, runningTime, script, res);
+            runningTime = await mergeAndCleanup(cur_clips, pod_id, runningTime, script, res);
         }
 
         return {
             status: ProcessingStatus.SUCCESS,
             step: "podcast",
             duration: runningTime,
-            filename: `${resultFileName}.wav`
+            filename: `${pod_id}.wav`
         } as ProcessingStep;
 
     } catch (error) {
@@ -134,7 +134,10 @@ async function mergeAndCleanup(
         }
 
         await uploadAudioToS3(`${resultFileName}.wav`);
-        
+        await updateMongoData('pods', {
+            _id: resultFileName,
+            audio_key: `${resultFileName}.wav`
+        });
         res.write(JSON.stringify({
             status: ProcessingStatus.IN_PROGRESS,
             step: "podcast",

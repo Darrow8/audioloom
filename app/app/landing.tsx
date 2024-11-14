@@ -1,6 +1,6 @@
-import LoginButton from '@/components/LoginButton';
+import AuthButtons from '@/components/AuthButtons';
 import React from 'react'
-import { View, Text, StyleSheet, Image, Button } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 
 const Landing = () => {
 
@@ -10,9 +10,9 @@ const Landing = () => {
                 source={require("../assets/images/walk2.png")}
                 style={styles.heroImage}
             />
-            <Text style={styles.title}>Rivet Audio</Text>
+            <Text style={styles.title}>Audioloom</Text>
             <Text style={styles.subtitle}>Finish your readings as you walk to class</Text>
-            <LoginButton />
+            <AuthButtons />
         </View>
     )
 }

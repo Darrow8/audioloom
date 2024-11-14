@@ -54,7 +54,7 @@ export async function getRecordById(collection: string, id: string): Promise<any
 export async function getRecordByField(collection: string, field: string, value: string): Promise<any> {
   try {
     const record = await makeAuthenticatedRequest(DB_BASE_URL + `${collection}?field=${field}&value=${value}`);
-    // console.log(`Successfully fetched record with ${field} ${value} from collection ${collection}`);
+    console.log(`Successfully fetched record with ${field} ${value} from collection ${collection}`);
     return record;
   } catch (error) {
     console.error(`Error fetching record with ${field} ${value} from collection ${collection}:`, error);
@@ -70,10 +70,11 @@ export async function getRecordByField(collection: string, field: string, value:
  * @returns {Promise<void>} A promise that resolves when the record is successfully created.
  * @throws Will throw an error if the request fails.
  */
-export async function createRecord(collection: string, obj: any): Promise<void> {
+export async function createRecord(collection: string, obj: any): Promise<any> {
   try {
-    await makeAuthenticatedRequest(DB_BASE_URL + `${collection}`, 'POST', obj);
+    let new_obj = await makeAuthenticatedRequest(DB_BASE_URL + `${collection}`, 'POST', obj);
     console.log(`Successfully created new record in collection ${collection}`);
+    return new_obj;
   } catch (error) {
     console.error(`Error creating new record in collection ${collection}:`, error);
     // Alert.alert('Error', `Failed to create record in ${collection}. Please try again later.`);
