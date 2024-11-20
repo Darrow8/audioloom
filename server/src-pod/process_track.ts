@@ -1,9 +1,9 @@
 import OpenAI from "openai";
 import { openaiClient } from "./init";
-import { genres, moods } from "./util_music";
+import { genres, moods } from "@shared/music";
 
 
-export async function musicChooser(music_description: string, next_dialogue: string): Promise<string> {
+export async function musicChooser(music_description: string, next_dialogue: string): Promise<{ genre?: string, mood?: string }> {
   console.log(`musicChooser: music_description: ${music_description}`);
   const completion = await openaiClient.chat.completions.create({
     messages: [
@@ -14,13 +14,7 @@ export async function musicChooser(music_description: string, next_dialogue: str
             You will be given a description for background music and dialogue that will be spoken while the music is playing.
             You can choose 0 or 1 genres and 0 or 1 moods for the music choice among the following: 
             moods = [${moods}]
-            genres = [${genres}]
-            Please return your choice in the following JSON form:
-            {
-            "genre" : "western",
-            "mood" : "happy"
-            } 
-            `
+            genres = [${genres}]`
       },
       {
         role: 'user',
@@ -31,10 +25,29 @@ export async function musicChooser(music_description: string, next_dialogue: str
 
       }
     ],
-    model: "gpt-4o-mini",
+    model: "gpt-4",
+    tools: [{
+      type: "function",
+      function: {
+        name: "set_music",
+        parameters: {
+          type: "object",
+          properties: {
+            genre: { type: "string", enum: genres },
+            mood: { type: "string", enum: moods }
+          },
+          required: []
+        }
+      }
+    }],
+    tool_choice: { type: "function", function: { name: "set_music" } }
   });
-  // TODO: write error handling code in case we get a bad response
-  console.log(`musicChooser: completion: ${completion.choices[0].message.content}`);
-  return completion.choices[0].message.content as string;
+  const functionCall = completion.choices[0].message.tool_calls?.[0];
+  if (functionCall?.function) {
+    console.log(`musicChooser: functionCall: ${functionCall.function.arguments}`);
+    return JSON.parse(functionCall.function.arguments);
+  }
+  
+  return {};
 }
 

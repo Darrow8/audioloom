@@ -1,5 +1,6 @@
-import { ObjectId, Document } from 'mongodb';
+import { Document, Collection } from 'mongodb';
 import { Socket } from 'socket.io';
+import { ObjectId } from 'bson';
 
 export interface WatchOptions<T extends MongoDocument> {
   collection: string;
@@ -52,13 +53,13 @@ export interface SocketData {
 
 export interface MongoChangeStreamData {
   _id: {
-    _data: ObjectId;
+    _data: string;
   };
   clusterTime: {
     $timestamp: string;
   };
   documentKey: {
-    _id: string;
+    _id: ObjectId;
   };
   fullDocument: {
     _id: ObjectId;

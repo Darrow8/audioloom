@@ -1,7 +1,7 @@
 import express from "express";
 import { User } from "@shared/user.js";
 // This help convert the id from string to ObjectId for the _id.
-import { ObjectId } from "mongodb";
+  import { ObjectId } from "bson";
 import { client } from "../mongo_interface.js";
 import { authCheck } from "../../server.js";
 
@@ -28,13 +28,15 @@ export async function routerFunctions() {
   // This section will help you create a new record.
   router.post("/:col", authCheck, async (req, res) => {
     try {
-      let newDocument = req.body as User;
-      let obj_id = new ObjectId(newDocument._id);
+      let newDocument : any = req.body as User;
+      console.log('newDocument', newDocument);
+      let obj_id = new ObjectId();
       if (!ObjectId.isValid(obj_id)) {
         return res.status(400).send("Invalid ID format");
       }
       newDocument._id = obj_id;
       let collection = client.db("RivetAudio").collection(req.params.col);
+
       let result = await collection.insertOne(newDocument);
       res.send(result).status(204);
     } catch (err) {

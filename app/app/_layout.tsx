@@ -17,7 +17,7 @@ import { socket } from '@/scripts/socket';
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-  const { user: auth0_user, getCredentials,clearSession, clearCredentials, hasValidCredentials } = useAuth0();
+  const { user: auth0_user, getCredentials, clearSession, clearCredentials, hasValidCredentials } = useAuth0();
   const { state, dispatch } = useStateContext();
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,26 +38,34 @@ function AppContent() {
     socket.on('disconnect', handleDisconnect);
     socket.on('error', handleError);
   }, []);
-  
-  async function handleCheckLogin(auth0_user: Partial<User>){
-    let credentials = await getCredentials();
-    if(credentials){
-      let resp = await checkLogin(auth0_user, dispatch, credentials);
-      setIsLoading(false);
-      if(resp){
-        setIsLoggedIn(true);
-      }else{
-        setIsLoggedIn(false);
+
+  async function handleCheckLogin(auth0_user: Partial<User>) {
+    try {
+      let credentials = await getCredentials();
+      if (credentials) {
+        console.log('auth0_user', auth0_user);
+        let resp = await checkLogin(auth0_user, dispatch, credentials);
+        setIsLoading(false);
+        if (resp) {
+          setIsLoggedIn(true);
+        } else {
+          clearSession();
+          setIsLoggedIn(false);
+        }
       }
+    } catch (error) {
+      console.error("Error checking login status:", error);
+      clearSession();
+      setIsLoading(false);
     }
   }
 
 
   // check if user is logged in at start of app
   useEffect(() => {
-    if(auth0_user){
+    if (auth0_user) {
       handleCheckLogin(auth0_user);
-    }else{
+    } else {
       setIsLoading(false);
     }
   }, [auth0_user]);

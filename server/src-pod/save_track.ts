@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { usefulTrack, Segment } from './util_music';
-import { AudioFile } from './util_pod';
+import { usefulTrack, Segment } from '@shared/music';
+import { AudioFile } from '@shared/line';
 import ffmpeg from 'fluent-ffmpeg';
 import { getAudioDuration, round } from './process_audio';
 import { TEMP_DATA_PATH } from './init';

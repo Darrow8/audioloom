@@ -1,61 +1,40 @@
-import { usefulTrack } from './util_music';
+import { usefulTrack } from './music';
+import { z } from "zod";
 
-/**
- * Represents a script containing various lines, a title, and authors.
- */
-export class Script {
-    lines: Line[];
-    title: string;
-    authors: string[];
-    lineCount: number;
+// Base Line schema
+export const LineSchema = z.object({
+  id: z.string(),
+  raw_string: z.string(),
+  order: z.number(),
+});
 
-    /**
-     * Creates an instance of the Script class.
-     * @param lines - An array of Line objects that make up the script.
-     * @param title - The title of the script.
-     * @param authors - An array of authors of the script.
-     */
-    constructor(lines: Line[], title: string, authors: string[]) {
-        this.lines = lines;
-        this.title = title;
-        this.authors = authors;
-        this.lineCount = lines.length;
-    }
+// CharLine schema with discriminator
+export const CharLineSchema = z.object({
+  kind: z.literal("character"),  // Discriminator first!
+  id: z.string(),
+  raw_string: z.string(),
+  order: z.number(),
+  character: z.string(),
+  raw_dialogue: z.string(),
+  dialogue: z.string(),
+  adjective: z.string(),
+});
 
-    /**
-     * Gets all music lines from the script.
-     * @returns An array of MusicLine objects.
-     */
-    getMusicLines(): MusicLine[] {
-        return this.lines.filter(obj => obj instanceof MusicLine) as MusicLine[];
-    }
+// MusicLine schema with discriminator
+export const MusicLineSchema = z.object({
+  kind: z.literal("music"),  // Discriminator first!
+  id: z.string(),
+  raw_string: z.string(),
+  order: z.number(),
+  type: z.enum(["Background Music", "Sound Effect"]),
+  music_description: z.string(),
+});
 
-    /**
-     * Gets all character lines from the script.
-     * @returns An array of CharLine objects.
-     */
-    getCharLines(): CharLine[] {
-        return this.lines.filter(obj => obj instanceof CharLine) as CharLine[];
-    }
-}
-
-
-// TODO: delete and replace with @shared/pod.js
-export class InternalPod {
-    clips: Clip[];
-    title: string;
-    authors: string[]
-    /**
-     * Creates an instance of the Script class.
-     * @param title - The title of the script.
-     * @param authors - An array of authors of the script.
-     */
-    constructor(title: string, authors: string[], clips: Clip[]) {
-        this.clips = clips;
-        this.title = title;
-        this.authors = authors;
-    }
-}
+// Union type for Line types (now using 'kind' as discriminator)
+export const LineUnionSchema = z.discriminatedUnion("kind", [
+  CharLineSchema,
+  MusicLineSchema
+]);
 
 /**
  * Represents a basic line in the script.
@@ -64,16 +43,18 @@ export class Line {
     id: string;
     raw_string: string;
     order: number;
+    kind: "character" | "music";
 
     /**
      * Creates an instance of the Line class.
      * @param raw_string - The raw string from the script.
      * @param order - The order of the line in the script.
      */
-    constructor(raw_string: string, order: number, id: string) {
+    constructor(raw_string: string, order: number, id: string, kind: "character" | "music") {
         this.raw_string = raw_string;
         this.order = order;
         this.id = id;
+        this.kind = kind;
     }
 }
 
@@ -92,8 +73,8 @@ export class CharLine extends Line {
      * @param raw_string - The raw string from the script.
      * @param order - The order of the line in the script.
      */
-    constructor(raw_string: string, order: number, id: string) {
-        super(raw_string, order, id);
+    constructor(raw_string: string, order: number, id: string, kind: "character") {
+        super(raw_string, order, id, kind);
         let i = raw_string.indexOf(':');
         this.character = (raw_string.slice(0, i)).trim();
         this.raw_dialogue = (raw_string.slice(i + 1)).trim();
@@ -119,6 +100,7 @@ export class Clip {
         this.id = id;
     }
 }
+
 
 /**
  * createClips
@@ -176,8 +158,8 @@ export class MusicLine extends Line {
      * @param raw_string - The raw string from the script.
      * @param order - The order of the line in the script.
      */
-    constructor(raw_string: string, order: number, id: string) {
-        super(raw_string, order, id);
+    constructor(raw_string: string, order: number, id: string, kind: "music") {
+        super(raw_string, order, id, kind);
         let msg = removeFirstAndLastBrackets(raw_string);
         let i = msg.indexOf(':');
         let raw_type = (msg.slice(0, i)).trim();

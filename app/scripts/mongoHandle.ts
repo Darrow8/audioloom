@@ -2,6 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Alert, Platform } from 'react-native';
 import { makeAuthenticatedRequest } from './mongoSecurity';
 import { BASE_URL } from './mongoSecurity';
+import { ObjectId } from 'bson';
 
 let DB_BASE_URL = BASE_URL + 'db/records/'
 /**
@@ -30,9 +31,9 @@ export async function getRecordsByCollection(collection: string): Promise<any[]>
  * @returns {Promise<any>} A promise that resolves to the record object.
  * @throws Will throw an error if the request fails or the record is not found.
  */
-export async function getRecordById(collection: string, id: string): Promise<any> {
+export async function getRecordById(collection: string, id: ObjectId): Promise<any> {
   try {
-    const record = await makeAuthenticatedRequest(DB_BASE_URL + `${collection}/${id}`);
+    const record = await makeAuthenticatedRequest(DB_BASE_URL + `${collection}/${id.toString()}`);
     // console.log(`Successfully fetched record with ID ${id} from collection ${collection}`);
     return record;
   } catch (error) {
@@ -91,9 +92,9 @@ export async function createRecord(collection: string, obj: any): Promise<any> {
  * @returns {Promise<void>} A promise that resolves when the record is successfully updated.
  * @throws Will throw an error if the request fails.
  */
-export async function updateRecord(collection: string, id: string, obj: any): Promise<void> {
+export async function updateRecord(collection: string, id: ObjectId, obj: any): Promise<void> {
   try {
-    await makeAuthenticatedRequest(DB_BASE_URL + `${collection}/${id}`, 'PATCH', obj);
+    await makeAuthenticatedRequest(DB_BASE_URL + `${collection}/${id.toString()}`, 'PATCH', obj);
     console.log(`Successfully updated record with ID ${id} in collection ${collection}`);
   } catch (error) {
     console.error(`Error updating record with ID ${id} in collection ${collection}:`, error);
@@ -110,9 +111,9 @@ export async function updateRecord(collection: string, id: string, obj: any): Pr
  * @returns {Promise<void>} A promise that resolves when the record is successfully deleted.
  * @throws Will throw an error if the request fails.
  */
-export async function deleteRecord(collection: string, id: string): Promise<void> {
+export async function deleteRecord(collection: string, id: ObjectId): Promise<void> {
   try {
-    await makeAuthenticatedRequest(DB_BASE_URL +`${collection}/${id}`, 'DELETE');
+    await makeAuthenticatedRequest(DB_BASE_URL +`${collection}/${id.toString()}`, 'DELETE');
     console.log(`Successfully deleted record with ID ${id} from collection ${collection}`);
   } catch (error) {
     console.error(`Error deleting record with ID ${id} from collection ${collection}:`, error);

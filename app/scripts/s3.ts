@@ -1,89 +1,108 @@
 import { BASE_URL } from './mongoSecurity';
 import { ProcessingStep } from '../../shared/src/processing';
+import { socket } from './socket';
+import { ObjectId } from 'bson';
+import { FileAsset } from '@shared/iosfilesystem';
+import * as FileSystem from 'expo-file-system';
 
-interface SSEListener {
-    close: () => void;
-}
-
-export const connectToSSE = (
-    file: File,
-    userId: string,
+export const connectToPodGen = async (
+    fileAsset: FileAsset,
+    userId: ObjectId,
+    new_pod_id: ObjectId,
     onUpdate: (update: ProcessingStep) => void
-): Promise<SSEListener> => {
-    return new Promise(async (resolve, reject) => {
-        const formData = new FormData();
-        // formData.append("file", file);
-        // formData.append("_id", userId);
-
-        try {
-            const response = await fetch('http://localhost:3000/pod/test', {
-                method: 'GET',
-                // body: formData,
-                // headers: {
-                //     'Content-Type': 'application/json',
-                //     'Accept': 'text/event-stream',
-                // },
-            });
-
-            if (!response.body) {
-                throw new Error('No response body');
+) => {
+    try {
+        listenToPodGen(new_pod_id, onUpdate);
+        console.log('sending to podgen')
+        const response = await FileSystem.uploadAsync(`${BASE_URL}pod/trigger_creation`, fileAsset.uri, {
+            uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+            fieldName: 'file',
+            parameters: {
+                user_id: userId.toString(),
+                new_pod_id: new_pod_id.toString()
+            },
+            headers: {
+                'Content-Type': 'multipart/form-data'
             }
+        });
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
+        if (response.status !== 200) {
+            throw new Error(`Upload failed with status ${response.status}`);
+        }
 
-            const readStream = async () => {
-                try {
-                    while (true) {
-                        const { done, value } = await reader.read();
+        return JSON.parse(response.body);
+    } catch (error) {
+        console.error('Upload error:', error);
+        throw error;
+    }
+    // try {
+    //     listenToPodGen(new_pod_id, onUpdate);
+    //     const response = await fetch(`${BASE_URL}pod/trigger_creation`, {
+    //         method: 'POST',
+    //         body: formData,
+    //         headers: {
+    //             // Don't set Content-Type header - browser will set it with boundary
+    //             'Accept': 'application/json',
+    //         },
+    //     });
 
-                        if (done) {
-                            console.log('Stream complete');
-                            break;
-                        }
+    //     if (!response.ok) {
+    //         throw new Error(`HTTP error! status: ${response.status}`);
+    //     }
 
-                        // Decode the chunk and add it to our buffer
-                        buffer += decoder.decode(value, { stream: true });
+        
 
-                        // Process any complete messages in the buffer
-                        const messages = buffer.split('\n\n');
-                        buffer = messages.pop() || ''; // Keep the last incomplete chunk in the buffer
+    //     return true;
+    // } catch (error) {
+    //     console.error('Connection error:', error);    
+    //     socket.off(`pod:${new_pod_id.toString()}:status`);
+    //     return false;    
+    // }
+};
 
-                        messages
-                            .map(msg => msg.replace(/^data: /, ''))
-                            .filter(msg => msg.trim())
-                            .forEach(msg => {
-                                try {
-                                    const data = JSON.parse(msg);
-                                    onUpdate(data as ProcessingStep);
-                                } catch (e) {
-                                    console.warn('Failed to parse message:', msg);
-                                }
-                            });
-                    }
-                } catch (error) {
-                    console.error('Stream error:', error);
-                    reject(error);
-                }
-            };
 
-            // Start reading the stream
-            readStream();
+export const uploadWithFileSystem = async (fileAsset: FileAsset, userId: string, podId: string) => {
+    try {
+        const response = await FileSystem.uploadAsync(`${BASE_URL}pod/trigger_creation`, fileAsset.uri, {
+            uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+            fieldName: 'file',
+            parameters: {
+                user_id: userId,
+                new_pod_id: podId
+            },
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
 
-            // Return an object with methods to control the connection
-            resolve({
-                close: () => {
-                    reader.cancel();
-                }
-            });
+        if (response.status !== 200) {
+            throw new Error(`Upload failed with status ${response.status}`);
+        }
 
-        } catch (error) {
-            console.error('Connection error:', error);
-            reject(error);
+        return JSON.parse(response.body);
+    } catch (error) {
+        console.error('Upload error:', error);
+        throw error;
+    }
+};
+
+
+export function listenToPodGen(pod_id: ObjectId, onUpdate: (update: ProcessingStep) => void) {
+    const eventName = `pod:${pod_id.toString()}:status`;
+    
+    // Remove any existing listeners first to prevent duplicates
+    socket.off(eventName);
+    
+    // Add new listener
+    socket.on(eventName, (update: ProcessingStep) => {
+        console.log('Received update:', update); // Add debugging
+        onUpdate(update);
+        
+        if (update.status === 'completed') {
+            socket.off(eventName);
         }
     });
-};
+}
 
 export const getAudioFromS3 = async (audio_key: string) => {
     const response = await fetch(`${BASE_URL}db/get_audio`, {

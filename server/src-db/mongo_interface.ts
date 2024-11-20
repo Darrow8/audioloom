@@ -40,21 +40,10 @@ export async function mongo_startup() {
 
 }
 
-export function setupSocketIO() {
-  io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
 
-    watchDocumentPods(socket);
-    watchDocumentUser(socket);
-
-    socket.on('disconnect', async () => {
-      console.log('Client disconnected:', socket.id);
-    });
-  });
-}
 
 export function watchDocumentPods(socket: Socket) {
-  socket.on('watchDocumentsPods', (documentIds: string[]) => {
+  socket.on('watchDocumentsPods', (documentIds: ObjectId[]) => {
     let emit_name = 'pods';
     watchDocuments(socket, 'pods', documentIds, emit_name, (changeStream) => {
       // Listen for changes
@@ -68,7 +57,7 @@ export function watchDocumentPods(socket: Socket) {
 }
 
 export function watchDocumentUser(socket: Socket) {
-  socket.on('watchDocumentUser', (documentId: string) => {
+  socket.on('watchDocumentUser', (documentId: ObjectId) => {
     let emit_name = 'user';
     watchDocument(socket, 'users', documentId, emit_name, (changeStream) => {
       // Listen for changes

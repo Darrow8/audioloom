@@ -8,7 +8,7 @@ import { upload, STORAGE_PATH } from './pod_main.js';
 import { getMongoDataById, updateMongoData, createMongoData, updateMongoArrayDoc } from '../src-db/mongo_methods.js';
 import { ObjectId } from 'mongodb';
 import fs from 'fs';
-import { ProcessingStatus, ProcessingStep } from '../../shared/src/processing.js';
+import { ProcessingStatus, ProcessingStep } from '@shared/processing.js';
 
 /**
  * processArticles: saving articles to s3 and mongo
@@ -16,7 +16,8 @@ import { ProcessingStatus, ProcessingStep } from '../../shared/src/processing.js
  * 2. create article in mongo
  * 3. return fileKey and file_path
  */
-export const processArticles = async (file: Express.Multer.File, _id: string) => {
+export const processArticles = async (file: Express.Multer.File) => {
+  console.log('processArticles file: ' + file)
   let originalPath = file.path;
   let file_path;
   if (file.mimetype != 'text/plain') {
@@ -41,7 +42,7 @@ export const processArticles = async (file: Express.Multer.File, _id: string) =>
   } as ProcessingStep;
 };
 
-export async function uploadArticleToS3(local_file_path: string, _id: string) {
+export async function uploadArticleToS3(local_file_path: string, _id: ObjectId) {
   const articleId = new ObjectId();
   const articleKey = `articles/${articleId.toString()}.txt`;
   let file = fs.readFileSync(local_file_path);

@@ -3,7 +3,7 @@ import { Request as JWTRequest } from 'express-jwt';
 import { router as recordRouter } from "./routes/records.js";
 import { app, authCheck } from "../server.js";
 import { mongo_startup } from "./mongo_interface.js";
-import { getAudioURLFromS3, getFileFromS3 } from './aws.js';
+import { getAudioURLFromS3 } from './aws.js';
 
 
 export async function dbRoutes() {

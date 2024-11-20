@@ -14,8 +14,8 @@ import { podRoutes } from './src-pod/pod_main.js';
 import { dbRoutes } from './src-db/db_main.js';
 import { routerFunctions } from './src-db/routes/records.js';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
-import { mongo_startup, setupSocketIO } from './src-db/mongo_interface.js';
+import { Server, Socket } from 'socket.io';
+import { mongo_startup, watchDocumentPods, watchDocumentUser } from './src-db/mongo_interface.js';
 
 dotenv.config();
 
@@ -34,8 +34,8 @@ export const io = new Server(httpServer, {
 
 
 
-app.use(express.json({limit: '50mb'}));
-app.use(express.urlencoded({limit: '50mb'}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb' }));
 app.use(helmet());
 app.use(cors());
 
@@ -87,7 +87,7 @@ const apiKeyCheck = (req: Request, res: Response, next: NextFunction) => {
 
 // Combine JWT and API key checks
 export const authCheck = (req: Request, res: Response, next: NextFunction) => {
-    if(process.env.NODE_ENV == 'development'){
+    if (process.env.NODE_ENV == 'development') {
         return next();
     }
 
@@ -105,36 +105,48 @@ export const authCheck = (req: Request, res: Response, next: NextFunction) => {
 };
 
 async function startServer() {
-  try {
-    // Initialize all routes
-    await routerFunctions();
-    await podRoutes();
-    await dbRoutes(); // This includes mongo_startup()
+    try {
+        // Initialize all routes
+        await routerFunctions();
+        await podRoutes();
+        await dbRoutes(); // This includes mongo_startup()
 
-    // Setup Socket.IO after MongoDB is connected
-    console.log('Setting up Socket.IO...');
-    setupSocketIO();
-    
-    // Error handling middleware
-    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-      if (err.name === 'UnauthorizedError') {
-        console.log('Unauthorized access attempt');
-        return res.status(401).json({ error: 'Unauthorized: Invalid token or API key', message: err.message });
-      }
-      console.log(err);
-      res.status(500).json({ error: 'Internal Server Error' });
-    });
+        // Setup Socket.IO after MongoDB is connected
+        console.log('Setting up Socket.IO...');
+        setupSocketIO();
 
-    // Start the server last
-    httpServer.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
+        // Error handling middleware
+        app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+            if (err.name === 'UnauthorizedError') {
+                console.log('Unauthorized access attempt');
+                return res.status(401).json({ error: 'Unauthorized: Invalid token or API key', message: err.message });
+            }
+            console.log(err);
+            res.status(500).json({ error: 'Internal Server Error' });
+        });
+
+        // Start the server last
+        httpServer.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
 }
 
+
+function setupSocketIO() {
+    io.on('connection', (socket) => {
+        console.log('Client connected:', socket.id);
+        watchDocumentPods(socket);
+        watchDocumentUser(socket);
+
+        socket.on('disconnect', async () => {
+            console.log('Client disconnected:', socket.id);
+        });
+    });
+}
 // Start the server
 startServer();
 

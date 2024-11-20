@@ -1,10 +1,9 @@
-import { ObjectId } from 'mongodb';
-
+import { ObjectId } from 'bson';
 // Class that Mongo Accepts
 export class User {
-    _id: string; // mongo ID
+    _id: ObjectId; // mongo ID
     name: string;
-    pods: string[];
+    pods: ObjectId[];
     articles: string[];
     user_id: string; // auth0 ID
     created_at: string;
@@ -23,9 +22,9 @@ export class User {
     user_metadata?: UserMetadata;
 
     constructor(data: {
-        _id: string;
+        _id: ObjectId;
         name: string;
-        pods: string[];
+        pods: ObjectId[];
         user_id: string;
         articles: string[];
         created_at: string;

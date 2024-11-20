@@ -7,26 +7,28 @@ import { useStateContext } from "@/state/StateContext";
 import { MongoChangeStreamData } from "@shared/mongodb";
 import { Dispatch } from "react";
 import * as config from "../auth0_config";
+import { ObjectId } from "bson";
+import { User as Auth0User } from "react-native-auth0";
 
 /**
  * Initialize a new user in the database
  */
-export async function initUser(auth0_user: Partial<User>) : Promise<User | false> {
+export async function initUser(auth0_user: Auth0User) : Promise<User | false> {
   let partial_user = {
     ...auth0_user,
     name: auth0_user.name,
-    pods: [],
+    pods: [new ObjectId('6727006b22da058cbd4d4665')],
     email: auth0_user.email,
-    email_verified: auth0_user.email_verified || false,
+    email_verified: auth0_user.email_verified,
     picture: auth0_user.picture,
     created_at: new Date().toISOString(),
     articles: [],
-  };
+  } as Partial<User>;
   let insertion_message = await createUser(partial_user)
-  if (insertion_message) {
+  if (insertion_message) { 
     let new_user = {
       ...partial_user,
-      _id: insertion_message.insertedId
+      _id: new ObjectId(insertion_message.insertedId)
     } as User;
     return new_user;
   } else {
@@ -35,7 +37,7 @@ export async function initUser(auth0_user: Partial<User>) : Promise<User | false
 }
 
 
-export async function checkLogin(auth0_user: Partial<User>, dispatch: Dispatch<UserAction>, credentials: Credentials) {
+export async function checkLogin(auth0_user: Auth0User, dispatch: Dispatch<UserAction>, credentials: Credentials) {
   try {
     if (auth0_user) {      
       if (credentials && credentials.accessToken && auth0_user.sub) {
@@ -46,12 +48,18 @@ export async function checkLogin(auth0_user: Partial<User>, dispatch: Dispatch<U
         }
 
         let signingUp = await SecureStore.getItemAsync('signingUp');
+        console.log('signingUp', signingUp);
         if (signingUp == 'false' || logins_count > 1) {
           // watch user
           let mongo_user = await getUserBySub(auth0_user.sub);
-          let mongo_id = mongo_user._id.toString();
-          watchAndDeploy(mongo_id, mongo_user, dispatch);
-          return true;
+          console.log("mongo_user", mongo_user);
+          if(mongo_user){
+            let mongo_id = mongo_user._id.toString();
+            watchAndDeploy(mongo_id, mongo_user, dispatch);
+            return true;
+          }else{
+            throw new Error('User not found');
+          }
         }else if(signingUp == 'true' || logins_count == 1){
           if(logins_count == -1 || signingUp == undefined || signingUp == null){
             // this looks a bit strange, just to make sure try finding user
@@ -59,7 +67,7 @@ export async function checkLogin(auth0_user: Partial<User>, dispatch: Dispatch<U
             let mongo_user = await getUserBySub(auth0_user.sub);
             if(mongo_user){
               await SecureStore.setItemAsync('signingUp', 'false');
-              return checkLogin(auth0_user, dispatch, credentials);
+              checkLogin(auth0_user, dispatch, credentials);
             }
           }
           if (auth0_user.email && auth0_user.name) {
@@ -68,7 +76,7 @@ export async function checkLogin(auth0_user: Partial<User>, dispatch: Dispatch<U
             if (new_user) {
               // signing up is done
               await SecureStore.setItemAsync('signingUp', 'false');
-              watchAndDeploy(new_user._id, new_user, dispatch);
+              watchAndDeploy(new_user._id.toString(), new_user, dispatch);
               return true;
             }else{
               throw new Error('Error getting new user id');
@@ -102,7 +110,7 @@ const localWatchUser = (mongo_id: string, dispatch: Dispatch<UserAction>) => {
           // Convert _id to string and spread the rest of the document
           const updatedUser = {
           ...data.fullDocument,
-            _id: data.fullDocument._id.toString()
+            _id: data.fullDocument._id
           };
           dispatch({ type: 'UPDATE_USER', payload: updatedUser as Partial<User> });
         }
