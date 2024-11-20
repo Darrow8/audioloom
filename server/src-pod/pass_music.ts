@@ -1,4 +1,4 @@
-import {DataStructure, Track, usefulTrack, TrackMap, genres, moods, Hit} from './util_music';
+import {DataStructure, Track, usefulTrack, TrackMap, genres, moods, Hit} from '@shared/music';
 import fetch from 'node-fetch';
 
 
@@ -35,12 +35,15 @@ export function convertMapToArray(trackMap: TrackMap, hits: Hit[]): Track[] {
 }
 
 export async function fetchTracks(genre:string, mood:string) : Promise<usefulTrack[]> {
+  console.log(`fetchTracks: ${genre}, ${mood}`);
   let result = await fetchEpidemicTracks(genre,mood);
   if(result.length == 0 || result == undefined){
+    console.log(`fetchTracks: no result, trying default mood`);
     result = await fetchEpidemicTracks(genre,"");
   }
   // if result is 0 again
   if(result.length == 0 || result == undefined){
+    console.log(`fetchTracks: no result, trying default genre`);
     result = await fetchEpidemicTracks("",mood);
   }
 

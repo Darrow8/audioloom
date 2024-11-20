@@ -10,10 +10,14 @@ import { socket } from '@/scripts/socket';
 import { watchDocumentsPods } from '@/scripts/mongoClient';
 import { Pod, PodStatus } from '@shared/pods';
 import { MongoChangeStreamData } from '@shared/mongodb';
-import { connectToSSE } from '@/scripts/s3';
+import { connectToPodGen } from '@/scripts/s3';
+import { ObjectId } from 'bson';
+import { Audio } from 'expo-av';
 
 const Listen = () => {
+  const [sound, setSound] = useState<Audio.Sound>();
   const [uploadVisible, setUploadVisible] = useState(false);
+  const [showProcessingBanner, setShowProcessingBanner] = useState(false);
   const { state } = useStateContext();
   const [pods, setPods] = useState<Pod[]>([]); // Add Pod type to useState
   const [isPlayerModalVisible, setIsPlayerModalVisible] = useState(false);
@@ -26,31 +30,47 @@ const Listen = () => {
   useEffect(() => {
     if (!state.user) return;
 
-    const pod_ids = state.user.pods ?? [];
+    const pod_ids = state.user.pods.map((id) => new ObjectId(id));
     // get initial pods
+
     Promise.all(pod_ids.map(async (id) => {
       try {
         const pod = await getRecordById('pods', id);
-        return pod as Pod | null;
+        if(pod) {
+          return pod as Pod;
+        } else {
+          return undefined;
+        }
       } catch (error) {
         setToast({message: 'Failed to load pod', visible: true});
-        return null;
+        return undefined;
       }
     })).then(resolvedPods => {
-      const validPods = resolvedPods.filter((pod) => pod != null);
-      setPods(validPods);
+      const validPods = resolvedPods.filter((pod) => pod != undefined);
+      // Sort pods by created_at date, newest first
+      const sortedPods = validPods.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      console.log(`validPods: ${sortedPods}`);
+      setPods(sortedPods);
     });
     watchDocumentsPods(pod_ids, (stream_data: MongoChangeStreamData) => {
-      setPods(currentPods => currentPods.map((pod) => {
-        if (pod._id.toString() === stream_data.documentKey._id.toString()) {
-          const fullDoc = stream_data.fullDocument;
-          return {
-            ...fullDoc,
-            created_at: new Date(fullDoc.created_at)
-          } as Pod;
-        }
-        return pod;
-      }));
+      setPods(currentPods => {
+        const updatedPods = currentPods.map((pod) => {
+          if (pod._id.toString() === stream_data.documentKey._id.toString()) {
+            const fullDoc = stream_data.fullDocument;
+            return {
+              ...fullDoc,
+              created_at: new Date(fullDoc.created_at)
+            } as Pod;
+          }
+          return pod;
+        });
+        // Sort pods by created_at date, newest first
+        return updatedPods.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      });
     });
     socket.on('error', (data) => {
       console.log("error: ", data);
@@ -69,6 +89,9 @@ const Listen = () => {
 
   const handlePodClick = (pod: Pod) => {
     if(pod.status == PodStatus.READY){
+      if(currentPod?._id.toString() != pod._id.toString() && sound) {
+        sound.unloadAsync();
+      }
       setCurrentPod(pod);
       setIsPlayerModalVisible(true);
     }else{
@@ -76,6 +99,9 @@ const Listen = () => {
     }
   }
 
+  const handleCloseToast = () => {
+    setToast(prev => ({...prev, visible: false}));
+  };
 
     const panResponder = useRef(
         PanResponder.create({
@@ -102,19 +128,31 @@ const Listen = () => {
               setUploadVisible(!uploadVisible);
             }}>
           </Modal>
+          {showProcessingBanner && (
+            <View style={styles.banner}>
+              <Text style={styles.bannerText}>Processing...</Text>
+            </View>
+          )}
           <ScrollView contentContainerStyle={styles.songList}>
-            {pods.map((pod) => (
-              <PodComponent 
-                key={(pod._id).toString()} 
-                pod={pod}
-                onPodClick={() => handlePodClick(pod)}
-              />
-            ))}
+            {pods.map((pod: Pod) => 
+              pod.status != PodStatus.ERROR && (
+                <View key={(pod._id).toString()}>
+                  <PodComponent 
+                    pod={pod}
+                    onPodClick={() => handlePodClick(pod)}
+                  />
+                </View>
+              )
+            )}
           </ScrollView>
-          <Button title="Test" onPress={() => connectToSSE((update) => {
-            console.log('update', update)
-          })}/>
-          <UploadButton userId={state.user._id}/>
+
+          <UploadButton 
+            userId={state.user._id} 
+            showProcessingBanner={showProcessingBanner}
+            setShowProcessingBanner={setShowProcessingBanner}
+            toast={toast}
+            setToast={setToast}
+          />
           <GestureRecognizer
             style={{flex: 1}}
             onSwipeUp={ () => setIsPlayerModalVisible(true) }
@@ -129,7 +167,7 @@ const Listen = () => {
                 <View style={styles.modalContainer} {...panResponder.panHandlers}>
                   <View style={styles.modalContent}>
                     <View style={styles.dragIndicator} />
-                    <PodPlayer pod={currentPod ?? null} />
+                    <PodPlayer pod={currentPod ?? null} sound={sound} setSound={setSound} />
                   </View>
                 </View>
               </View>
@@ -137,7 +175,10 @@ const Listen = () => {
           </GestureRecognizer>
           {toast.visible && (
             <View style={styles.toast}>
-              <Text style={styles.toastText}>{toast.message}</Text>
+              <View style={styles.toastContent}>
+                <Text style={styles.toastText}>{toast.message}</Text>
+                <Text style={styles.closeButton} onPress={handleCloseToast}>✕</Text>
+              </View>
             </View>
           )}
         </>
@@ -189,16 +230,50 @@ const styles = StyleSheet.create({
   toast: {
     position: 'absolute',
     bottom: 100,
-    left: 20,
-    right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 10,
-    borderRadius: 8,
+    left: '50%',
+    transform: [{ translateX: -150 }],
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    padding: 16,
+    borderRadius: 12,
     zIndex: 1000,
+    width: 300,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  toastContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   toastText: {
     color: 'white',
+    flex: 1,
     textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '500',
+    marginRight: 8,
+  },
+  closeButton: {
+    color: 'white',
+    fontSize: 16,
+    padding: 4,
+  },
+  banner: {
+    backgroundColor: '#007AFF',
+    padding: 8,
+    marginBottom: 8,
+  },
+  bannerText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

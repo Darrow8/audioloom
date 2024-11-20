@@ -1,15 +1,15 @@
-import { AudioFile, CharLine, Clip, createClip, Line, MusicLine, MusicType } from './util_pod.js';
+import { AudioFile, CharLine, Clip, createClip, Line, MusicLine, MusicType } from '@shared/line';
 import { textToSpeech, processCharacterVoices } from './pass_voice.js';
 import { musicChooser } from './process_track.js';
 import { getAudioDuration } from './process_audio.js';
-import { usefulTrack } from './util_music.js';
-import { saveMusicAsAudio } from './util_track.js';
+import { usefulTrack } from '@shared/music.js';
+import { saveMusicAsAudio } from './save_track.js';
 import { fetchTracks, fetchEpidemicSFX } from './pass_music.js';
 import { Readable } from 'stream';
 import { saveStreamToFile } from './local.js';
 import { TEMP_DATA_PATH } from './init.js';
-import { Character } from './util_voice.js';
-import { Script } from './util_pod.js';
+import { Character } from '@shared/voice.js';
+import { ScriptType, Script } from '@shared/script';
 
 /** 
  * processCharacterLines
@@ -156,21 +156,14 @@ export async function processBMusicLine(music_line: MusicLine, script: Script): 
         dialogue_desc = script.lines[line_order].raw_string;
     }
     console.log(`dialogue_desc: ${dialogue_desc}`);
-    let res = await musicChooser(music_line.music_description, dialogue_desc)
-    let music_choice: { genre?: string, mood?: string } = {};
-    try {
-        music_choice = JSON.parse(res);
-    } catch (e) {
-        console.log(`error parsing music chooser result ${res}`)
-        throw `error parsing music chooser result ${res}`;
-    }
-    if ('genre' in music_choice == false) {
-        music_choice.genre = "";
-    }
-    if ('mood' in music_choice == false) {
-        music_choice.mood = "";
-    }
-    let tracks: usefulTrack[] = await fetchTracks(music_choice['genre'], music_choice['mood']);
+    let music_choice = await musicChooser(music_line.music_description, dialogue_desc)
+    // if ('genre' in music_choice == false) {
+    //     music_choice.genre = "";
+    // }
+    // if ('mood' in music_choice == false) {
+    //     music_choice.mood = "";
+    // }
+    let tracks: usefulTrack[] = await fetchTracks(music_choice.genre, music_choice.mood);
 
     return await saveMusicAsAudio(tracks, music_line.id);
 }
@@ -191,12 +184,13 @@ export async function processLine(
     characters: Character[], 
     runningTime: number
 ): Promise<Clip | null> {
-    if ((line as CharLine).dialogue?.length > 0) {
+    if (line.kind == "character") {
         return await processCharacterLineWithRetry(line as CharLine, script, characters, runningTime);
-    } else if ('type' in line) {
+    } else if (line.kind == "music") {
         return await processMusicLineWithRetry(line as MusicLine, script);
+    } else {
+        throw `error, found line with bad kind: ${line}`;
     }
-    return null;
 }
 
 export async function processCharacterLineWithRetry(

@@ -8,14 +8,13 @@ import { AudioUrlTransporter } from '@shared/s3';
 import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
 import { Marquee } from '@animatereactnative/marquee';
 
-const PodPlayer = ({ pod }: { pod: Pod | null }) => {
+const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sound | undefined, setSound: (sound: Audio.Sound | undefined) => void }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(3600);
   const [audioUrlData, setAudioUrlData] = useState<AudioUrlTransporter | null>(null);
   const [position, setPosition] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sound, setSound] = useState<Audio.Sound>();
   const [isPlaying, setIsPlaying] = useState(false);
 
   if (pod == null) {
@@ -33,6 +32,9 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
   useEffect(() => {
     let subscription: any;
     if (audioUrlData) {
+      if (sound) {
+        sound.unloadAsync();
+      }
       loadAudio().then(async (sub) => {
         subscription = sub;
       });
@@ -41,6 +43,9 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
     return () => {
       if (subscription) {
         subscription.remove();
+      }
+      if (sound) {
+        sound.unloadAsync();
       }
     };
   }, [audioUrlData]);
@@ -77,9 +82,11 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
       setIsLoading(true);
       setError(null);
 
-      if (sound) {
-        await sound.unloadAsync();
-      }
+      // if (sound) {
+      //   await sound.stopAsync();
+      //   await sound.unloadAsync();
+      //   setSound(undefined);
+      // }
 
       const { sound: newSound } = await Audio.Sound.createAsync(
         { uri: audioUrlData?.audio_url ?? '' },
@@ -200,7 +207,9 @@ const PodPlayer = ({ pod }: { pod: Pod | null }) => {
             <Marquee
               speed={0.5}
               spacing={2}> */}
+              {(pod.author && pod.author !== "Unknown" && pod.author !== "unknown") && (
                 <Text numberOfLines={1} style={styles.podcastAuthor}>{pod.author}</Text>
+              )}
             {/* </Marquee> */}
           </View>
 

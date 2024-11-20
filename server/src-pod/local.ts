@@ -2,8 +2,8 @@ import * as fs from "fs";
 import path from "path";
 import { PassThrough, Readable, pipeline } from 'stream';
 import { TEMP_DATA_PATH } from './init';
-import { Clip, Line } from "./util_pod";
-
+import { Clip, Line } from "@shared/line";
+import { Script } from "@shared/script";
 
 
 export async function saveClipToLogs(data: Clip, folderPath: string, fileName: string){
@@ -22,8 +22,6 @@ export async function saveClipToLogs(data: Clip, folderPath: string, fileName: s
     } else{
         await saveAsJson([data], folderPath, fileName);
     }
-    
-
 }
 
 
@@ -179,4 +177,22 @@ export function ensureRequiredFolders(): void {
             }
         }
     });
+}
+
+export async function saveScriptToLogs(data: Script, folderPath: string, fileName: string) {
+    // Ensure the folder exists
+    if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+    }
+
+    // Create the full file path
+    const filePath = `${folderPath}/${fileName}.json`;
+
+    // Check if the file exists
+    if (fs.existsSync(filePath)) {
+        await addToJsonArray(filePath, data);
+        console.log(`Script appended to existing file: ${filePath}`);
+    } else {
+        await saveAsJson([data], folderPath, fileName);
+    }
 }

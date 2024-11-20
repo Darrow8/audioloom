@@ -12,8 +12,18 @@ const PodComponent: React.FC<{ pod: Pod, onPodClick: () => void }> = ({ pod, onP
         <View style={styles.podItem}>
             {/* <Image source={{ uri: pod.coverImage }} style={styles.podCover} /> */}
             <View style={styles.podInfo}>  
-                <Text style={styles.podTitle}>{pod.title}</Text>
-                <Text style={styles.podArtist}>{pod.author}</Text>
+                <Text style={styles.podTitle}>
+                    {pod.title.split(' ').length > 15 
+                        ? pod.title.split(' ').slice(0, 10).join(' ') + '...'
+                        : pod.title}
+                </Text>
+                <Text style={styles.podArtist}>
+                    {(pod.author && pod.author !== "Unknown" && pod.author !== "unknown") && (
+                        pod.author.split(' ').length > 15 
+                            ? pod.author.split(' ').slice(0, 10).join(' ') + '...'
+                            : pod.author
+                    )}
+                </Text>
             </View>
             <View style={styles.podStatus}>
                 <TouchableOpacity style={styles.playButton} onPress={onPodClick}>

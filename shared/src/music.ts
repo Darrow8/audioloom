@@ -1,5 +1,3 @@
-
-
 export interface TrackMap {
   [key: number]: Track;
 }

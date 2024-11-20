@@ -2,13 +2,8 @@ import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCo
 import { isValidPod } from './validateData';
 import { User } from '@shared/user';
 import { socket } from './socket';
-import { useStateContext } from '@/state/StateContext';
-import { Pod } from '@shared/pods';
-import { Dispatch } from 'react';
-import { UserAction } from '@/state/userReducer';
-import { UserState } from './user';
 import { ChangeStreamUpdate, DocumentCreated, MongoChangeStreamData } from '@shared/mongodb';
-
+import { ObjectId } from 'bson';
 // User endpoints
 export const watchDocumentUser = async (documentId: string, setUser: (stream_data: MongoChangeStreamData) => void) => {
     socket.emit('watchDocumentUser', documentId);
@@ -30,7 +25,7 @@ export const createUser = async (data: Partial<User>) : Promise<DocumentCreated 
     // Add created_at timestamp
     data.created_at = new Date().toISOString();
     data.updated_at = data.created_at;
-
+    console.log('data', data);
     let new_data = await createRecord('users', data).catch((error) => {
         console.error('Error creating user:', error);
         return false;
@@ -38,9 +33,9 @@ export const createUser = async (data: Partial<User>) : Promise<DocumentCreated 
     return new_data as DocumentCreated | false;
 }
 
-export const getUserById = async (id: string) => {
+export const getUserById = async (id: ObjectId) => {
     if (id) {
-        const user = await getRecordById('users', id.toString()).catch((error) => {
+        const user = await getRecordById('users', id).catch((error) => {
             console.error('Error getting user:', error);
             return false;
         });
@@ -59,7 +54,7 @@ export const getUserBySub = async (sub: string) => {
     }
 }
 
-export const updateUser = async (id: string, data: any) => {
+export const updateUser = async (id: ObjectId, data: any) => {
     data.updated_at = new Date().toISOString();
     await updateRecord('users', id, data).catch((error) => {
         console.error('Error updating user:', error);
@@ -69,7 +64,7 @@ export const updateUser = async (id: string, data: any) => {
 
 }
 
-export const deleteUser = async (id: string) => {
+export const deleteUser = async (id: ObjectId) => {
     if (id) {
         await deleteRecord('users', id).catch((error) => {
             console.error('Error deleting user:', error);
@@ -84,7 +79,7 @@ export const deleteUser = async (id: string) => {
 
 // Pod endpoints
 
-export const watchDocumentsPods = async (documentIds: string[], setPods: (stream_data: MongoChangeStreamData) => void) => {
+export const watchDocumentsPods = async (documentIds: ObjectId[], setPods: (stream_data: MongoChangeStreamData) => void) => {
     socket.emit('watchDocumentsPods', documentIds);
     socket.on('podsChange', (data: MongoChangeStreamData) => {
         if (data.operationType === 'update') {
@@ -110,7 +105,7 @@ export const createPod = async (data: any) => {
     }
 }
 
-export const getPod = async (id: string) => {
+export const getPod = async (id: ObjectId) => {
     if (id) {
         const pod = await getRecordById('pods', id).catch((error) => {
             console.error('Error getting pod:', error);
@@ -123,7 +118,7 @@ export const getPod = async (id: string) => {
     }
 }
 
-export const updatePod = async (id: string, data: any) => {
+export const updatePod = async (id: ObjectId, data: any) => {
     if (isValidPod(data) && id) {
         await updateRecord('pods', id, data).catch((error) => {
             console.error('Error updating pod:', error);
@@ -136,7 +131,7 @@ export const updatePod = async (id: string, data: any) => {
     }
 }
 
-export const deletePod = async (id: string) => {
+export const deletePod = async (id: ObjectId) => {
     if (id) {
         // Delete the pod
         await deleteRecord('pods', id).catch((error) => {
@@ -150,7 +145,7 @@ export const deletePod = async (id: string) => {
 
         // Remove pod from each user's pods array
         await Promise.all(usersWithPod.map(async user => {
-            const updatedPods = user.pods.filter((podId: string) => podId !== id);
+            const updatedPods = user.pods.filter((podId: ObjectId) => podId !== id);
             await updateRecord('users', user._id, { pods: updatedPods }).catch((error) => {
                 console.error('Error updating user pods:', error);
                 return false;

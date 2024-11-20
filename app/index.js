@@ -1,5 +1,6 @@
 import { registerRootComponent } from 'expo';
 // import { PlaybackService } from './scripts';
+import 'react-native-get-random-values'
 
 import App from './App';
 

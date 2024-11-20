@@ -11,11 +11,18 @@
     "preserveConstEnums": true,
     "sourceMap": false,
     "paths": {
-      "@shared/*": ["../shared/src/*"],
-      "@/*": ["./src-db/*", "./src-pod/*"]
+      "@shared/*": [
+        "../shared/src/*"
+      ],
+      "@/*": [
+        "./src-db/*",
+        "./src-pod/*"
+      ]
     },
   },
-  "exclude": ["node_modules"],
+  "exclude": [
+    "node_modules"
+  ],
   "include": [
     "server.ts",
     "src-db/**/*.ts",

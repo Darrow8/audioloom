@@ -10,7 +10,12 @@ import { ConvertAPI } from 'convertapi';
 export async function convertToTXT(file: Express.Multer.File, save_path: string): Promise<{ path: string, updated_file: any }> {
   const convertapi = new ConvertAPI(process.env.CONVERT_API_SECRET);
 
-  let result = await convertapi.convert('txt', { File: file.path })
+  let result = await convertapi.convert('txt', { File: file.path }).catch((error) => {
+    console.log('Error converting file: ' + error);
+    return {
+      file: null
+    };
+  });
   // get converted file url
   console.log("Converted file url: " + result.file.url);
 

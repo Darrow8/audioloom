@@ -3,7 +3,30 @@ import { app } from '../server.js'
 import { MongoDocument, ChangeStreamUpdate } from '@shared/mongodb.js';
 import { db } from './mongo_interface.js';
 import { Socket } from 'socket.io';
-export async function createMongoData(collectionName: string, data: any) {
+import { Document } from 'bson';
+
+
+/**
+ * Checks if a document with the given _id exists in the specified collection
+ * @param collectionName - Name of the MongoDB collection
+ * @param id - The _id to check (can be string or ObjectId)
+ * @returns Promise<boolean> - True if document exists, false otherwise
+ */
+export async function doesIdExist(collectionName: string, id: ObjectId): Promise<boolean> {
+  try {
+      // Convert string ID to ObjectId if necessary
+      
+      const collection = db.collection(collectionName);
+      const document = await collection.findOne({ _id: id }, { projection: { _id: 1 } });
+      
+      return document !== null;
+  } catch (error) {
+      console.error(`Error checking if _id exists in ${collectionName}:`, error);
+      throw error;
+  }
+}
+
+export async function createMongoData(collectionName: string, data: Document) {
     try {
       const collection = db.collection(collectionName);
       const result = await collection.insertOne(data);
@@ -29,7 +52,7 @@ export async function createMongoData(collectionName: string, data: any) {
     }
   }
   
-  export async function updateMongoData(collectionName: string, data: any) {
+  export async function updateMongoData(collectionName: string, data: Document) {
     try {
       const collection = db.collection(collectionName);
       const result = await collection.updateOne({ _id: data._id }, { $set: data });
@@ -45,12 +68,12 @@ export async function createMongoData(collectionName: string, data: any) {
     }
   }
   
-  export async function updateMongoArrayDoc<T extends Document>(collectionName: string, documentId: string,  arrayField: any,
+  export async function updateMongoArrayDoc<T extends Document>(collectionName: string, documentId: ObjectId,  arrayField: any,
     newItem: any){
     const collection = db.collection(collectionName);
   
       const result = await collection.updateOne(
-        { _id: new ObjectId(documentId) },
+        { _id: documentId },
         { $push: { [arrayField]: newItem } as any }
       );
   
@@ -65,7 +88,7 @@ export async function createMongoData(collectionName: string, data: any) {
    * @param emit_name 
    * @returns 
    */
- export async function watchDocuments(socket: Socket, collectionName: string, documentIds: string[], emit_name: string, callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
+ export async function watchDocuments(socket: Socket, collectionName: string, documentIds: ObjectId[], emit_name: string, callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
     try {
         // Validate IDs
         if (!documentIds.every(id => ObjectId.isValid(id))) {
@@ -107,7 +130,7 @@ export async function createMongoData(collectionName: string, data: any) {
  * @param emit_name 
  * @returns 
  */
-export async function watchDocument(socket: Socket, collectionName: string, documentId: string, emit_name: string, callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
+export async function watchDocument(socket: Socket, collectionName: string, documentId: ObjectId, emit_name: string, callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
   try {
       // Validate ID
       if (!ObjectId.isValid(documentId)) {

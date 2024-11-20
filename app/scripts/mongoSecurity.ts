@@ -26,7 +26,7 @@ export const makeAuthenticatedRequest = async (url: string, method: string = 'GE
       'Content-Type': 'application/json',
       'X-API-Key': RIVET_API_KEY,
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: JSON.stringify(body)
   };
 
   // For iOS in development, ignore SSL certificate errors
@@ -46,6 +46,7 @@ export const makeAuthenticatedRequest = async (url: string, method: string = 'GE
 
     return await response.json();
   } catch (error) {
+    console.log('url', url);
     console.log('error', error);
   }
 };

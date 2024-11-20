@@ -1,15 +1,80 @@
 import fs from "fs";
 import * as aws from "./pass_files.js";
 import { encoding_for_model, TiktokenModel } from "tiktoken";
-import { openaiClient } from "./init.js";
-import { buildIntructions, GPTModel, InstructionType } from "./util_script.js";
+import { openaiClient, TEMP_DATA_PATH } from "./init.js";
 import { ChatModel } from "openai/resources/index.js";
-import { ProcessingStatus, ProcessingStep } from "../../shared/src/processing.js";
+import { ProcessingStatus, ProcessingStep } from "@shared/processing.js";
+import { promptLLM, localInstructions } from "./process_prompt.js";
+import { FullLLMPrompt, FullPrompts, PromptLLM, RawPrompts, ScriptType } from "@shared/script.js";
+import { Pod } from "@shared/index.js";
+import { createMongoData } from "@/mongo_methods.js";
+import { updateMongoArrayDoc } from "@/mongo_methods.js";
+import { ObjectId } from "mongodb";
+import { base_instructions } from "./pod_main.js";
+import { Script } from "@shared/script.js";
+import crypto from "crypto";
+import { saveScriptToLogs } from "./local.js";
+import path from "path";
+// step 1: get instructions
+export async function getInstructions(articleContent: string): Promise<FullPrompts>{
+  let fullInstructions: FullPrompts = {} as FullPrompts;
+  for(let key of Object.keys(base_instructions)){
+    let prompt = base_instructions[key] as PromptLLM;
+    fullInstructions[key] = {
+      instructions: prompt.raw_instructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END',
+      response_type: prompt.response_type,
+      GPTModel: prompt.GPTModel,
+      type: prompt.type
+    } as FullLLMPrompt;
+  }
+  return fullInstructions;
+}
 
-/**
- * Start with reading that has been uploaded earlier, ends with script in S3
-*/
-export async function createScript(local_file_path: string): Promise<ProcessingStep> {
+// step 2: clean article
+export async function cleanArticle(articleName:string, instructions: FullLLMPrompt): Promise<ProcessingStep>{
+  let clean_file_path = await promptLLM(articleName, instructions);
+  return clean_file_path as ProcessingStep;
+}
+
+// step 3: get title
+export async function getTitle(articleName:string, instructions: FullLLMPrompt): Promise<ProcessingStep>{
+  let title = await promptLLM(articleName, instructions);
+  return title as ProcessingStep;
+}
+// step 4: get author
+export async function getAuthor(articleName:string, instructions: FullLLMPrompt): Promise<ProcessingStep>{
+  let author = await promptLLM(articleName, instructions);
+  return author as ProcessingStep;
+}
+//step 5: create script
+export async function scriptwriter(articleName: string, instructions: FullLLMPrompt): Promise<ProcessingStep>{
+  let response = await promptLLM(articleName, instructions);
+  if (response.status != ProcessingStatus.ERROR) {
+    let script = response.data.script as ScriptType;
+    // Ensure required properties are present before creating Script
+    const validatedLines = script.lines.map(line => ({
+      ...line,
+      id: line.id || crypto.randomUUID(),
+      raw_string: line.raw_string,
+      order: line.order,
+      kind: line.kind 
+    }));
+    const newScript = new Script(validatedLines, script.title, script.authors);
+    saveScriptToLogs(newScript, './logs', crypto.randomUUID().toString());
+    return {
+      status: ProcessingStatus.IN_PROGRESS,
+      step: "script",
+      message: "Script created",
+      script: newScript
+    } as ProcessingStep;
+  }
+  return response;
+}
+
+// /**
+//  * Start with reading that has been uploaded earlier, ends with script in S3
+// */
+export async function createScript(local_file_path: string, newPod: Partial<Pod>, user_id: ObjectId): Promise<ProcessingStep> {
   try {
     // Validate file extension
     if (!local_file_path.match(/\.(txt)$/i)) {
@@ -17,7 +82,7 @@ export async function createScript(local_file_path: string): Promise<ProcessingS
         status: ProcessingStatus.ERROR,
         step: "script",
         message: "Unsupported file format"
-      } as ProcessingStep;
+      };
     }
 
     let articleContent = fs.readFileSync(local_file_path, 'utf8');
@@ -26,160 +91,54 @@ export async function createScript(local_file_path: string): Promise<ProcessingS
         status: ProcessingStatus.ERROR,
         step: "script",
         message: "File is empty"
-      } as ProcessingStep;
+      };
     }
 
+    let instructions = await getInstructions(articleContent);
+    // Process each step and check for errors
+    const cleanStep = await cleanArticle(local_file_path, instructions.clean);
+    if (cleanStep.status === ProcessingStatus.ERROR) return cleanStep;
+    console.log(cleanStep)
+    const titleStep = await getTitle(local_file_path, instructions.title);
+    if (titleStep.status === ProcessingStatus.ERROR) return titleStep;
+    console.log(titleStep)
+    const authorStep = await getAuthor(local_file_path, instructions.author);
+    if (authorStep.status === ProcessingStatus.ERROR) return authorStep;
+    console.log(authorStep)
+
+    const scriptStep = await scriptwriter(local_file_path, instructions.podcast);
+    if (scriptStep.status === ProcessingStatus.ERROR) return scriptStep;
+    console.log(scriptStep)
+    // Safely update pod with new data
     try {
-      let cleaner_response = await promptCleaner(local_file_path, articleContent);
-      console.log(`Successfully cleaned file to ${cleaner_response}`);
-
-      if (cleaner_response.status === ProcessingStatus.IN_PROGRESS) {
-        let cleanArticle = fs.readFileSync(cleaner_response.message, 'utf8');
-        let scriptwriter_response = await promptScriptwriter(local_file_path, cleanArticle);
-        
-        // Cleanup temporary cleaned file
-        fs.unlinkSync(cleaner_response.message);
-        
-        return scriptwriter_response as ProcessingStep;
-      }
-      return cleaner_response as ProcessingStep;
-
-    } catch (error) {
-      // Cleanup any temporary files that might have been created
-      const cleanedPath = `${local_file_path}_cleaned.txt`;
-      if (fs.existsSync(cleanedPath)) {
-        fs.unlinkSync(cleanedPath);
-      }
-      throw error;
+      newPod.author = authorStep.data.author || "Unknown Author";
+      newPod.title = titleStep.data.title || "Untitled";
+      newPod.created_at = new Date();
+      console.log(newPod)
+      await createMongoData('pods', newPod);
+      await updateMongoArrayDoc('users', user_id, 'pods', newPod._id);
+    } catch (dbError) {
+      return {
+        status: ProcessingStatus.ERROR,
+        step: "script",
+        message: "Failed to update database: " + dbError.message
+      };
     }
-
+    return scriptStep;
   } catch (error) {
-    console.error('Error in createScript:', error);
     return {
       status: ProcessingStatus.ERROR,
       step: "script",
       message: error.message || "Error processing script"
-    } as ProcessingStep;
+    };
   }
-}
-
-/**
- * remove unnecessary things in article and trim whitespace
- */ 
-async function promptCleaner(local_file_path:string, articleContent:string): Promise<ProcessingStep>{
-  // manually clean reading through basic methods
-  let instructions = buildIntructions(articleContent, InstructionType.CLEAN);
-  const cleanerModel: GPTModel = { version: 'gpt-4o', tokenLimit: 128000 };
-
-  let intructionTokens = countTokens(instructions, cleanerModel.version);
-  console.log(`intructionTokens: ${intructionTokens}`);
-  if (intructionTokens > cleanerModel.tokenLimit) {
-    // Article + intructions has exceeded token limit, must split into batches
-    return {
-      status: ProcessingStatus.ERROR,
-      step: "cleaner",
-      message: "Article + intructions has exceeded token limit, must split into batches",
-      instructions: intructionTokens
-    } as ProcessingStep;
-  } else {
-    let clean_file_path = await cleaner(local_file_path, articleContent, instructions, cleanerModel);
-    return {
-      status: ProcessingStatus.IN_PROGRESS,
-      step: "cleaner",
-      message: clean_file_path
-    } as ProcessingStep;
-  }
-}
-
-async function promptScriptwriter(articleName: string, articleContent: string): Promise<ProcessingStep>{
-  // get instructions which incorporate articleContent
-  let instructions = buildIntructions(articleContent, InstructionType.PODCAST);
-  const screenwriterModel: GPTModel = { version: 'gpt-4o', tokenLimit: 128000 };
-
-  let intructionsTokens = countTokens(instructions, screenwriterModel.version);
-
-  if (intructionsTokens > screenwriterModel.tokenLimit) {
-    // Article + intructions has exceeded token limit, must split into batches
-    return {
-      status: ProcessingStatus.ERROR,
-      step: "scriptwriter",
-      message: "Article + intructions has exceeded token limit, must split into batches"
-    } as ProcessingStep;
-  } else {
-    let scriptwriter_response = await scriptwriter(articleName, instructions, screenwriterModel);
-    if(typeof scriptwriter_response == "string"){
-      return {
-        status: ProcessingStatus.IN_PROGRESS,
-        step: "scriptwriter",
-        message: scriptwriter_response
-      } as ProcessingStep;
-    }else{
-      return scriptwriter_response as ProcessingStep;
-    }
-  }
-
-}
-
-
-/**
- * Uses OpenAI API to generate script for podcast
- */
-export async function scriptwriter(articleName:string, instructions: string, model: GPTModel) {
-  try {
-
-    const completion: any = await openaiClient.chat.completions.create({
-      messages: [{
-        role: "system",
-        content: instructions
-      }],
-      model: model.version  });
-    let result = completion.choices[0].message.content;
-
-    // save to file
-    let new_name = `${articleName}_script.txt`;
-    fs.writeFileSync(new_name, result);
-    return new_name;
-  } catch (error) {
-    return {
-      status: ProcessingStatus.ERROR,
-      step: "scriptwriter",
-      message: "Error generating script in scriptwriter"
-    } as ProcessingStep;
-  }
-}
-
-/**
- * Uses OpenAI API to clean article
- */
-async function cleaner(articleName: string, articleContent: string, instructions: string, model: GPTModel) {
-  const completion = await openaiClient.chat.completions.create({
-    messages: [{
-      role: "system",
-      content: instructions
-    },
-      {
-        role: 'user',
-        content: `Please process this:
-            DOCUMENT_START
-            ${articleContent}
-            DOCUMENT_END
-            `,
-
-      }
-    ],
-    model: model.version  });
-  let result = completion.choices[0].message.content;
-
-  // save to file
-  let new_name = `${articleName}_cleaned.txt`;
-  fs.writeFileSync(new_name, result);
-  return new_name;
 }
 
 /**
  * Counts the number of tokens in a message based on the AI model
  */
-function countTokens(message: string, model: ChatModel): number {
+export function countTokens(message: string, model: ChatModel): number {
+  console.log('countTokens', model)
   const enc = encoding_for_model(model as TiktokenModel);
   const tokens = enc.encode(message);
   enc.free();
@@ -187,6 +146,7 @@ function countTokens(message: string, model: ChatModel): number {
 }
 
 export async function saveScriptToS3(script_path: string){
+
     const uploadDetails = {
       Key: `pod-scripts/${script_path}`,
       Body: fs.readFileSync(script_path),
@@ -200,4 +160,22 @@ export async function saveScriptToS3(script_path: string){
       })
       .catch(error => console.error(error));
     fs.unlinkSync(script_path);
+}
+
+export async function saveFileToS3(file_path: string){
+  const fileName = path.basename(file_path);
+
+  const uploadDetails = {
+    Key: `pod-scripts/${fileName}`,
+    Body: fs.readFileSync(file_path),
+    ContentType: 'text/plain',
+    Bucket: 'main-server',
+  };
+
+  await aws.uploadFileToS3(uploadDetails)
+    .then(response => {
+      console.log(response)
+    })
+    .catch(error => console.error(error));
+  fs.unlinkSync(file_path);
 }

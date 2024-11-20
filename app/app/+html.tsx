@@ -2,6 +2,7 @@ import { ScrollViewStyleReset } from 'expo-router/html';
 import { type PropsWithChildren } from 'react';
 import {useAuth0, Auth0Provider} from 'react-native-auth0';
 import * as config from "../auth0_config";
+import 'react-native-get-random-values'
 
 /**
  * This file is web-only and used to configure the root HTML for every web page during static rendering.

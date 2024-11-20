@@ -1,12 +1,18 @@
 import { Readable } from 'stream';
-import { Character, masculine_voices, feminine_voices } from "./util_voice";
+import { Character, Voices } from "@shared/voice";
 import { elevenlabsClient, openaiClient } from './init';
+import { RawPrompts } from '@shared/script';
+import fs from 'fs';
+import { base_voices } from './pod_main';
 
 
+export async function getVoices() {
+  const rawData = fs.readFileSync('prompts/model_voices.json', 'utf8');
+  return JSON.parse(rawData) as Voices;
+}
 
 export async function textToSpeech(voice: string, text: string, prev_text: string, next_text: string, emotion: string): Promise<Readable> {
   let model = 'eleven_multilingual_v2';
-
   let formatted_text;
   if (emotion == "") {
     formatted_text = text;
@@ -43,18 +49,18 @@ export async function processCharacterVoices(characters: string[]): Promise<Char
 export async function processCharacterVoice(char_name: string): Promise<Character> {
   let char = new Character(char_name, "", "");
   if (char_name == "Adam Page") {
-    char.voice_model = "pNInz6obpgDQGcFmaJgB"; // Adam Page voice
+    char.voice_model = base_voices.host_voice; // Adam Page voice
   } else {
     let guess_gender = await determineFemMasc(char_name);
     if (guess_gender == 'masculine') {
-      char.voice_model = getRandomElement(masculine_voices);
+      char.voice_model = getRandomElement(base_voices.masculine_voices);
     } else if (guess_gender == 'feminine') {
-      char.voice_model = getRandomElement(feminine_voices);
+      char.voice_model = getRandomElement(base_voices.feminine_voices);
 
     } else {
       console.error('No voice recieved!')
       // just do all random for now
-      char.voice_model = getRandomElement([...masculine_voices, ...feminine_voices])
+      char.voice_model = getRandomElement([...base_voices.masculine_voices, ...base_voices.feminine_voices])
     }
 
   }

@@ -3,3 +3,8 @@ export * from './pods';
 export * from './user';
 export * from './s3';
 export * from './processing';
+export * from './line';
+export * from './script';
+export * from './iosfilesystem';
+export * from './voice';
+export * from './music';

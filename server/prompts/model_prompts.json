@@ -1,0 +1,38 @@
+{
+    "podcast": {
+        "type": "podcast",
+        "raw_instructions": "You will receive a document that contains an informative article. \nThe document starts at \"DOCUMENT_START\" and ends at \"DOCUMENT_END\".\nYour job is to convert this article into a script for a podcast that discusses the article. The podcast is called Audioloom and the podcast host is Adam Page. The listener understands the necessary prerequisites of the topic so cover the main ideas in the article and discuss each of those ideas holistically. The host should ask questions to podcast guests and discuss each main idea in an open ended format. Include sound effects and background music cues to make the podcast more entertaining.\nTo add sound effects, follow this format: \"[Sound Effect: Description]\". \nTo add background music, follow this format: \"[Background Music: Description]\". \nWhen a new character is going to speak, the host should introduce them by their name and credentials. When a character has a speaking line, start with their name and then optionally add an adjective to describe their emotions: \"Speaker Name: [Optional Adjective] Dialogue\". \nEach line in the script should be either sound effect, background music, or a person speaking.\nBelow is the article.\n",
+        "response_type": "file",
+        "GPTModel": {
+            "version": "gpt-4o",
+            "tokenLimit": 128000
+        }
+    },
+    "clean": {
+        "type": "clean",
+        "raw_instructions": "You will receive a document that contains an informative article. \nThe document starts at 'DOCUMENT_START' and ends at 'DOCUMENT_END'.\nYour job is to remove any table of contents, graphs, images, citations, or other information that does not relate to the text of the article. \nRemove unnecessary blank lines, gibberish, or other non-text content as well.\nDo not remove any content from the document, only the things listed above. \nBelow is the article.\n",
+        "response_type": "file",
+        "GPTModel": {
+            "version": "gpt-4o-mini",
+            "tokenLimit": 128000
+        }
+    },
+    "title": {
+        "type": "title",
+        "raw_instructions": "You will receive a document that contains an informative article. \nThe document starts at 'DOCUMENT_START' and ends at 'DOCUMENT_END'. Your job is to create a short and exciting title for the article up to 15 words. \nBelow is the article.\n",
+        "response_type": "string",
+        "GPTModel": {
+            "version": "gpt-4o-mini",
+            "tokenLimit": 128000
+        }
+    },
+    "author": {
+        "type": "author",
+        "raw_instructions": "You will receive a document that contains an informative article. \nThe document starts at 'DOCUMENT_START' and ends at 'DOCUMENT_END'. Your job is to return the author or authors of the article. Only return the authors names, no other text. Only write up to 15 words. If you cannot determine the author, return “Unknown”.\nBelow is the article.\n",
+        "response_type": "string",
+        "GPTModel": {
+            "version": "gpt-4o-mini",
+            "tokenLimit": 128000
+        }
+    }
+}   
