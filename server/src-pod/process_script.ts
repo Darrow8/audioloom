@@ -15,17 +15,29 @@ import { Script } from "@shared/script.js";
 import crypto from "crypto";
 import { saveScriptToLogs } from "./local.js";
 import path from "path";
+import { deleteTempFiles } from "./process_pod.js";
 // step 1: get instructions
 export async function getInstructions(articleContent: string): Promise<FullPrompts>{
   let fullInstructions: FullPrompts = {} as FullPrompts;
   for(let key of Object.keys(base_instructions)){
+
     let prompt = base_instructions[key] as PromptLLM;
     fullInstructions[key] = {
-      instructions: prompt.raw_instructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END',
       response_type: prompt.response_type,
       GPTModel: prompt.GPTModel,
       type: prompt.type
     } as FullLLMPrompt;
+    if (key === 'podcast') {
+      // Get word count to help ensure podcast length
+      const wordCount = articleContent.trim().split(/\s+/).length;
+      let minCount = Math.ceil(wordCount / 150);
+      // Add word count context to help GPT generate appropriate length podcast
+      let additionalInstructions = `\nThe article is ${wordCount} words long. Please ensure the podcast script has enough content and discussion to fill at least ${minCount} minutes.`;
+      console.log(additionalInstructions)
+      fullInstructions[key].instructions = prompt.raw_instructions + additionalInstructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
+    } else {
+      fullInstructions[key].instructions = prompt.raw_instructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
+    }
   }
   return fullInstructions;
 }
@@ -117,6 +129,7 @@ export async function createScript(local_file_path: string, newPod: Partial<Pod>
       console.log(newPod)
       await createMongoData('pods', newPod);
       await updateMongoArrayDoc('users', user_id, 'pods', newPod._id);
+      deleteTempFiles()
     } catch (dbError) {
       return {
         status: ProcessingStatus.ERROR,

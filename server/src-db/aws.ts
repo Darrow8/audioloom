@@ -2,7 +2,10 @@ import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, Hea
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { AudioUrlTransporter } from "@shared/s3";
 import dotenv from 'dotenv';
-
+import { S3 } from 'aws-sdk';
+import { scheduleJob, Job } from 'node-schedule';
+import { S3ServiceException } from '@aws-sdk/client-s3';
+import { HeadObjectCommandInput } from '@aws-sdk/client-s3';
 dotenv.config();
 const s3 = new S3Client(
     { region: "us-west-1",
@@ -12,39 +15,6 @@ const s3 = new S3Client(
         }
  });
 
-// /**
-//  * Retrieve a file from an S3 bucket
-//  * @param {string} fileName - The key (path) of the file in the S3 bucket
-//  * @returns {Promise<Buffer>} - A promise that resolves to the file data
-//  */
-// export async function getFileFromS3(fileName:string) : Promise<string> {
-//     // Create a command to retrieve the object
-//     const command = new GetObjectCommand({
-//         Bucket: 'main-server',
-//         Key: fileName,
-//     });
-
-//     try {
-//         // Send the command to S3
-//         const { Body } = await s3.send(command);
-
-//         // Convert the response stream to a string
-//         const streamToString = (stream) =>
-//         new Promise((resolve, reject) => {
-//             const chunks = [];
-//             stream.on("data", (chunk) => chunks.push(chunk));
-//             stream.on("error", reject);
-//             stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-//         });
-
-//         const fileContent = await streamToString(Body);
-
-//         return fileContent as string;
-//     } catch (err) {
-//         console.error("Error getting file from S3:", err);
-//         throw err;
-//     }
-// };
 /**
  * Retrieve a file from an S3 bucket
  * @param {string} fileName - The key (path) of the file in the S3 bucket
@@ -76,46 +46,117 @@ export async function getAudioURLFromS3(fileName:string) : Promise<AudioUrlTrans
 
 };
 
+// interface SizeChangeEvent {
+//     previousSize: number;
+//     currentSize: number;
+//     timestamp: Date;
+//     difference: number;
+// }
 
-// /**
-//  * Function to upload a file to an S3 bucket using the @aws-sdk/client-s3 package.
-//  * 
-//  * @param {Object} uploadDetails - The object containing file upload details.
-//  * @param {string} uploadDetails.bucketName - The name of the S3 bucket.
-//  * @param {string} uploadDetails.key - The key (file name) for the uploaded file.
-//  * @param {string|Buffer|Uint8Array|Blob} uploadDetails.body - The content of the file.
-//  * @param {string} uploadDetails.contentType - The MIME type of the file.
-//  * @returns {Object} Response object with status code and message.
-//  */
-// export async function uploadFileToS3(uploadDetails) {
-//     try {
-//       const { key, body, contentType } = uploadDetails;
-  
-//       const params = {
-//         Bucket: 'main-server',
-//         Key: key,
-//         Body: body,
-//         ContentType: contentType,
-//       };
-  
-//       const command = new PutObjectCommand(params);
-//       const data = await s3.send(command);
-  
-//       // console.log('Successfully uploaded file:', data);
-  
-//       return {
-//         statusCode: 200,
-//         message: 'File uploaded successfully',
-//         data: data
-//       };
-//     } catch (error) {
-//       console.error('Error uploading file:', error);
-  
-//       return {
-//         statusCode: 500,
-//         message: 'Failed to upload file',
-//         error: error.message
-//       };
+// type SizeChangeListener = (event: SizeChangeEvent) => void;
+
+// interface MonitorConfig {
+//     fileKey: string;
+//     intervalSeconds?: number;
+//     region?: string;
+// }
+
+// export class S3WavMonitor {
+//     private fileKey: string;
+//     private intervalSeconds: number;
+//     private lastSize: number | null;
+//     private job: Job | null;
+//     private listeners: SizeChangeListener[];
+
+//     constructor(config: MonitorConfig) {
+//         this.fileKey = config.fileKey;
+//         this.intervalSeconds = config.intervalSeconds || 10;
+//         this.lastSize = null;
+//         this.job = null;
+//         this.listeners = [];
 //     }
-//   }
 
+//     private async getFileSize(): Promise<number | null> {
+//         try {
+//             const params: HeadObjectCommandInput = {
+//                 Bucket: 'main-server',
+//                 Key: this.fileKey
+//             };
+
+//             const command = new HeadObjectCommand(params);
+//             const response = await s3.send(command);
+            
+//             return response.ContentLength ?? null;
+//         } catch (error) {
+//             if (error instanceof S3ServiceException) {
+//                 if (error.name === 'NotFound') {
+//                     return null;
+//                 }
+//             }
+//             throw error;
+//         }
+//     }
+
+//     private async checkForChanges(): Promise<void> {
+//         try {
+//             const currentSize = await this.getFileSize();
+            
+//             if (currentSize === null) {
+//                 console.log('File not found');
+//                 return;
+//             }
+
+//             if (this.lastSize !== null && currentSize !== this.lastSize) {
+//                 const changeEvent: SizeChangeEvent = {
+//                     previousSize: this.lastSize,
+//                     currentSize,
+//                     timestamp: new Date(),
+//                     difference: currentSize - this.lastSize
+//                 };
+
+//                 this.listeners.forEach(listener => listener(changeEvent));
+//             }
+
+//             this.lastSize = currentSize;
+//         } catch (error) {
+//             console.error('Error checking file size:', error);
+//         }
+//     }
+
+//     public onSizeChange(listener: SizeChangeListener): void {
+//         this.listeners.push(listener);
+//     }
+
+//     public removeSizeChangeListener(listener: SizeChangeListener): void {
+//         const index = this.listeners.indexOf(listener);
+//         if (index > -1) {
+//             this.listeners.splice(index, 1);
+//         }
+//     }
+
+//     public start(): void {
+//         if (this.job) {
+//             console.warn('Monitor is already running');
+//             return;
+//         }
+
+//         this.job = scheduleJob(`*/${this.intervalSeconds} * * * * *`, 
+//             () => this.checkForChanges()
+//         );
+
+//         console.log(`Started monitoring ${this.fileKey}`);
+//     }
+
+//     public stop(): void {
+//         if (this.job) {
+//             this.job.cancel();
+//             this.job = null;
+//             console.log('Monitoring stopped');
+//         }
+//     }
+
+//     public async destroy(): Promise<void> {
+//         this.stop();
+//         this.listeners = [];
+//     }
+// }

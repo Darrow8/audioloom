@@ -133,12 +133,15 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
     let musicVolume = 0;
     // duration should be -1 right now, raw duration is only existing value
     let durationMs = -1;
+    console.log('raw duration for ', mclip.line.order, mclip.audio.rawDuration)
+    console.log('duration for ', mclip.line.order, mclip.audio.duration)
+    console.log('nearestCharDuration for ', mclip.line.order, nearestCharDuration)
     if(mclip.audio.rawDuration && mclip.audio.rawDuration > 0){
         durationMs = (mclip.audio.rawDuration * 1000);
     }else if(mclip.audio.duration && mclip.audio.duration > 0){
-        durationMs = (mclip.audio.duration * 1000);
+        durationMs = (mclip.audio.duration * 1000) + 10000;
     }else{
-        durationMs = (nearestCharDuration * 1000);
+        durationMs = (nearestCharDuration * 1000) + 10000;
     }
     let fade = getFadeInAndOutDuration(durationMs);
 
@@ -148,14 +151,14 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
         // if the next line is a character line, then we need to make sure the music clip is longer than the character line
         let next_line = script.lines.find((line) => line.order == mclip.line.order + 1);        
         if (next_line && 'character' in next_line) {
-            // cap at 20 seconds extra
-            if (durationMs > nearestCharDuration + 20000) {
-                durationMs = nearestCharDuration + 20000;
+            // cap at 45 seconds extra
+            if (durationMs > nearestCharDuration + 45000) {
+                durationMs = nearestCharDuration + 45000;
             }
         } else {
-            // cap at 5 seconds extra
-            if (durationMs > nearestCharDuration + 5000) {
-                durationMs = nearestCharDuration + 5000;
+            // cap at 10 seconds extra
+            if (durationMs > nearestCharDuration + 10000) {
+                durationMs = nearestCharDuration + 10000;
             }
         }
         musicVolume = char_volume * 0.4;
@@ -177,27 +180,14 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
 }
 
 /*
- Only add fade in and fade out if the duration is longer than 5 seconds
+ Only add fade in and fade out if the duration is longer than 10 seconds
 */
 function getFadeInAndOutDuration(durationMs: number) {
-    if (durationMs < 5000) {
+    if (durationMs < 10000) {
         return '';
     }
-    const fadeInDuration = Math.min(1000, durationMs / 10);
-    const fadeOutDuration = Math.min(1000, durationMs / 10);
+    const fadeInDuration = Math.min(3000, durationMs / 10);
+    const fadeOutDuration = Math.min(3000, durationMs / 10);
     const fadeOutStart = durationMs - fadeOutDuration;
     return `afade=t=in:st=0:d=${(fadeInDuration / 1000).toFixed(2)},afade=t=out:st=${(fadeOutStart / 1000).toFixed(2)}:d=${(fadeOutDuration / 1000).toFixed(2)}`;
-}
-
-/**
- * create a new audio stream
- */
-async function createAudioStream(url: string) {
-    try {
-        await fs.promises.writeFile(url, '');
-        return url;
-    } catch (error) {
-        console.error('Error creating audio stream:', error);
-        throw error;
-    }
 }

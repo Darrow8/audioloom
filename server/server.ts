@@ -16,6 +16,7 @@ import { routerFunctions } from './src-db/routes/records.js';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { mongo_startup, watchDocumentPods, watchDocumentUser } from './src-db/mongo_interface.js';
+// import { watchS3Wav } from '@/s3_wav.js';
 
 dotenv.config();
 
@@ -141,6 +142,7 @@ function setupSocketIO() {
         console.log('Client connected:', socket.id);
         watchDocumentPods(socket);
         watchDocumentUser(socket);
+        // watchS3Wav(socket);
 
         socket.on('disconnect', async () => {
             console.log('Client disconnected:', socket.id);
