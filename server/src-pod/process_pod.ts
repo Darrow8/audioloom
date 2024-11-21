@@ -32,17 +32,6 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
                 message: "Invalid script path. Must be a .txt file"
             } as ProcessingStep;
         }
-
-        // const script_data = await getScript(script_path, script_path, true);
-        // if (script_data.status === ProcessingStatus.ERROR || !script_data.script) {
-        //     return {
-        //         status: ProcessingStatus.ERROR,
-        //         step: "podcast",
-        //         message: script_data.message
-        //     } as ProcessingStep;
-        // }
-
-        // const script = script_data.script;
         
         // Process characters with validation
         const characters_str = new Set(script.getCharLines().map(line => line.character));
@@ -141,7 +130,7 @@ async function mergeAndCleanup(
         await updateMongoData('pods', {
             _id: new ObjectId(resultFileName),
             audio_key: `pod-audio/${resultFileName}.wav`,
-            status: PodStatus.READY
+            status: PodStatus.PENDING
         });
         res.write(JSON.stringify({
             status: ProcessingStatus.IN_PROGRESS,
@@ -180,10 +169,12 @@ function shouldMergeClips(clips: Clip[]): boolean {
  * Delete temp files that are used in processing
  */
 export function deleteTempFiles() {
-    deleteAllFilesInFolder(TEMP_DATA_PATH + '/dialogue');
-    deleteAllFilesInFolder(TEMP_DATA_PATH + '/character');
-    deleteAllFilesInFolder(TEMP_DATA_PATH + '/character-temp');
-    deleteAllFilesInFolder(TEMP_DATA_PATH + '/music');
-    deleteAllFilesInFolder(TEMP_DATA_PATH + '/music-temp');
-    deleteAllFilesInFolder(TEMP_DATA_PATH + '/result');
+    if(process.env.NODE_ENV === 'development') {
+        deleteAllFilesInFolder(TEMP_DATA_PATH + '/dialogue');
+        deleteAllFilesInFolder(TEMP_DATA_PATH + '/character');
+        deleteAllFilesInFolder(TEMP_DATA_PATH + '/character-temp');
+        deleteAllFilesInFolder(TEMP_DATA_PATH + '/music');
+        deleteAllFilesInFolder(TEMP_DATA_PATH + '/music-temp');
+        deleteAllFilesInFolder(TEMP_DATA_PATH + '/result');
+    }
 }
