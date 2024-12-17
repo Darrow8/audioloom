@@ -1,12 +1,8 @@
-import { Request, Response, Express } from 'express';
-import { app, authCheck } from '../server.js';
-import { Request as JWTRequest } from 'express-jwt';
-import { convertToTXT } from './pass_convert.js';
-import { uploadFileToS3 } from './pass_files.js';
-import { v4 as uuidv4 } from 'uuid';
-import { upload, STORAGE_PATH } from './pod_main.js';
-import { getMongoDataById, updateMongoData, createMongoData, updateMongoArrayDoc } from '../src-db/mongo_methods.js';
-import { ObjectId } from 'mongodb';
+import { convertToTXT } from '@pod/pass_convert.js';
+import { uploadFileToS3 } from '@pod/pass_files.js';
+import { upload, STORAGE_PATH } from '@pod/pod_main.js';
+import { getMongoDataById, updateMongoData, createMongoData, updateMongoArrayDoc } from '@db/mongo_methods.js';
+import { ObjectId } from 'bson';
 import fs from 'fs';
 import { ProcessingStatus, ProcessingStep } from '@shared/processing.js';
 

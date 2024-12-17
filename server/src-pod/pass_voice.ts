@@ -1,9 +1,9 @@
 import { Readable } from 'stream';
-import { Character, Voices } from "@shared/voice";
-import { elevenlabsClient, openaiClient } from './init';
-import { RawPrompts } from '@shared/script';
+import { Character, Voices } from "@shared/voice.js";
+import { elevenlabsClient, openaiClient } from '@pod/init.js';
+import { RawPrompts } from '@shared/script.js';
 import fs from 'fs';
-import { base_voices } from './pod_main';
+import { base_voices } from '@pod/pod_main.js';
 
 
 export async function getVoices() {

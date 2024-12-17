@@ -3,7 +3,7 @@ import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } fr
 import { ElevenLabsClient } from "elevenlabs";
 import OpenAI from "openai";
 import ffmpeg from 'fluent-ffmpeg';
-import { ensureRequiredFolders } from './local';
+import { ensureRequiredFolders } from '@pod/local.js';
 import dotenv from 'dotenv';
 
 dotenv.config();

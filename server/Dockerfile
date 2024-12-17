@@ -1,40 +1,34 @@
 # Build stage
-FROM --platform=linux/amd64 node:18-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:20-alpine as builder
 
-# Set working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+# Copy package files from server
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install
 
-# Copy source code
-# COPY . .
-COPY dist ./dist
-COPY .env ./
+# Copy the shared directory from parent folder
+COPY . .
 
 # Production stage
-FROM --platform=linux/amd64 node:18-alpine
+FROM --platform=$TARGETPLATFORM node:20-alpine
 
-# Set working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+# Copy package files and install production dependencies
 COPY package*.json ./
+RUN npm install --production
 
-# Install production dependencies
-RUN npm ci --only=production
-
-# Copy built assets from the builder stage
+# Copy built JavaScript files from builder stage
 COPY --from=builder /usr/src/app/dist ./dist
 
-# Set NODE_ENV to production
-ENV NODE_ENV production
+COPY prompts ./prompts 
+COPY temp-data ./temp-data
+COPY logs ./logs
 
-# Expose the port the app runs on
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "run", "start"]
+# CMD ["npm", "run", "start"]
+CMD ["node", "dist/server/server.js"]

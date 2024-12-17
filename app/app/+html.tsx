@@ -1,7 +1,6 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import { type PropsWithChildren } from 'react';
-import {useAuth0, Auth0Provider} from 'react-native-auth0';
-import * as config from "../auth0_config";
+import { env } from '../config/env';
 import 'react-native-get-random-values'
 
 /**

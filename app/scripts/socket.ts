@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
+import { env } from '../config/env';
 
-export const socket = io("http://localhost:3000", {
+export const socket = io(env.BASE_URL, {
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,

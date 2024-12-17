@@ -77,14 +77,6 @@ const jwtCheck = expressjwt({
     algorithms: ['RS256']
 });
 
-// API key middleware
-const apiKeyCheck = (req: Request, res: Response, next: NextFunction) => {
-    const apiKey = req.header('X-API-Key');
-    if (!apiKey || apiKey !== process.env.RIVET_API_KEY) {
-        return res.status(401).json({ error: 'Invalid API key' });
-    }
-    next();
-};
 
 // Combine JWT and API key checks
 export const authCheck = (req: Request, res: Response, next: NextFunction) => {
@@ -94,16 +86,28 @@ export const authCheck = (req: Request, res: Response, next: NextFunction) => {
 
     jwtCheck(req, res, (jwtError) => {
         if (jwtError) {
-            return next(jwtError);
+            console.error("JWT Validation Error:", jwtError.message, jwtError.code);
+            return res.status(401).json({ error: 'Unauthorized: Invalid or missing token' });
         }
         apiKeyCheck(req, res, (apiKeyError) => {
             if (apiKeyError) {
-                return next(apiKeyError);
+                console.error("API Key Validation Error:", apiKeyError.message);
+                return res.status(403).json({ error: 'Forbidden: Invalid API key' });
             }
             next();
         });
     });
 };
+
+// API key middleware
+const apiKeyCheck = (req: Request, res: Response, next: NextFunction) => {
+    const apiKey = req.header('X-API-Key');
+    if (!apiKey || apiKey !== process.env.RIVET_API_KEY) {
+        return res.status(401).json({ error: 'Invalid API key' });
+    }
+    next();
+};
+
 
 async function startServer() {
     try {

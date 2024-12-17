@@ -1,7 +1,7 @@
 import { JSONSchema } from "openai/lib/jsonschema";
 import { ChatModel, ResponseFormatJSONSchema } from "openai/resources"
 import { z } from "zod";
-import { Line, CharLine, MusicLine, LineUnionSchema } from "./line";
+import { Line, CharLine, MusicLine, LineUnionSchema } from "./line.js";
 /**
  * Represents a script containing various lines, a title, and authors.
  */

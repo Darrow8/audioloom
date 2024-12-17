@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "ESNext", 
+    "moduleResolution": "Node",
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -10,21 +10,20 @@
     "isolatedModules": true,
     "preserveConstEnums": true,
     "sourceMap": false,
+    "outDir": "./dist",
     "paths": {
-      "@shared/*": [
-        "../shared/src/*"
-      ],
-      "@/*": [
-        "./src-db/*",
-        "./src-pod/*"
-      ]
-    },
+      "@shared/*": ["../shared/src/*"],
+      "@pod/*": ["./src-pod/*"],
+      "@prompts/*": ["./prompts/*"],
+      "@db/*": ["./src-db/*"]
+    }
   },
   "exclude": [
     "node_modules"
   ],
   "include": [
     "server.ts",
+    "temp.ts",
     "src-db/**/*.ts",
     "src-pod/**/*.ts",
     "**/*.test.ts",

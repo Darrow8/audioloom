@@ -6,10 +6,9 @@ import * as SecureStore from 'expo-secure-store';
 import { useStateContext } from "@/state/StateContext";
 import { MongoChangeStreamData } from "@shared/mongodb";
 import { Dispatch } from "react";
-import * as config from "../auth0_config";
 import { ObjectId } from "bson";
 import { User as Auth0User } from "react-native-auth0";
-
+import { env } from '../config/env';
 /**
  * Initialize a new user in the database
  */
@@ -17,7 +16,7 @@ export async function initUser(auth0_user: Auth0User) : Promise<User | false> {
   let partial_user = {
     ...auth0_user,
     name: auth0_user.name,
-    pods: [new ObjectId('6727006b22da058cbd4d4665')],
+    pods: [new ObjectId(process.env.INTRO_POD)],
     email: auth0_user.email,
     email_verified: auth0_user.email_verified,
     picture: auth0_user.picture,

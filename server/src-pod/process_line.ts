@@ -1,15 +1,15 @@
-import { AudioFile, CharLine, Clip, createClip, Line, MusicLine, MusicType } from '@shared/line';
-import { textToSpeech, processCharacterVoices } from './pass_voice.js';
-import { musicChooser } from './process_track.js';
-import { getAudioDuration } from './process_audio.js';
+import { AudioFile, CharLine, Clip, createClip, Line, MusicLine, MusicType } from '@shared/line.js';
+import { textToSpeech, processCharacterVoices } from '@pod/pass_voice.js';
+import { musicChooser } from '@pod/process_track.js';
+import { getAudioDuration } from '@pod/process_audio.js';
 import { usefulTrack } from '@shared/music.js';
-import { saveMusicAsAudio } from './save_track.js';
-import { fetchTracks, fetchEpidemicSFX } from './pass_music.js';
+import { saveMusicAsAudio } from '@pod/save_track.js';
+import { fetchTracks, fetchEpidemicSFX } from '@pod/pass_music.js';
 import { Readable } from 'stream';
-import { saveStreamToFile } from './local.js';
-import { TEMP_DATA_PATH } from './init.js';
+import { saveStreamToFile } from '@pod/local.js';
+import { TEMP_DATA_PATH } from '@pod/init.js';
 import { Character } from '@shared/voice.js';
-import { ScriptType, Script } from '@shared/script';
+import { ScriptType, Script } from '@shared/script.js';
 
 /** 
  * processCharacterLines

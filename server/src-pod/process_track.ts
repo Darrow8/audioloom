@@ -1,6 +1,6 @@
 import OpenAI from "openai";
-import { openaiClient } from "./init";
-import { genres, moods } from "@shared/music";
+import { openaiClient } from "@pod/init.js";
+import { genres, moods } from "@shared/music.js";
 
 
 export async function musicChooser(music_description: string, next_dialogue: string): Promise<{ genre?: string, mood?: string }> {

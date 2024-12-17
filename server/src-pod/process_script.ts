@@ -1,21 +1,21 @@
 import fs from "fs";
-import * as aws from "./pass_files.js";
+import * as aws from "@pod/pass_files.js";
 import { encoding_for_model, TiktokenModel } from "tiktoken";
-import { openaiClient, TEMP_DATA_PATH } from "./init.js";
-import { ChatModel } from "openai/resources/index.js";
+import { ChatModel } from "openai/resources/index";
 import { ProcessingStatus, ProcessingStep } from "@shared/processing.js";
-import { promptLLM, localInstructions } from "./process_prompt.js";
+import { promptLLM, localInstructions } from "@pod/process_prompt.js";
 import { FullLLMPrompt, FullPrompts, PromptLLM, RawPrompts, ScriptType } from "@shared/script.js";
-import { Pod } from "@shared/index.js";
-import { createMongoData } from "@/mongo_methods.js";
-import { updateMongoArrayDoc } from "@/mongo_methods.js";
+import { Pod } from "@shared/pods.js";
+import { createMongoData } from "@db/mongo_methods.js";
+import { updateMongoArrayDoc } from "@db/mongo_methods.js";
 import { ObjectId } from "mongodb";
-import { base_instructions } from "./pod_main.js";
+import { base_instructions } from "@pod/pod_main.js";
 import { Script } from "@shared/script.js";
 import crypto from "crypto";
-import { saveScriptToLogs } from "./local.js";
+import { saveScriptToLogs } from "@pod/local.js";
 import path from "path";
-import { deleteTempFiles } from "./process_pod.js";
+import { deleteTempFiles } from "@pod/process_pod.js";
+
 // step 1: get instructions
 export async function getInstructions(articleContent: string): Promise<FullPrompts>{
   let fullInstructions: FullPrompts = {} as FullPrompts;
