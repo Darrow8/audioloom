@@ -1,19 +1,19 @@
-import { uploadFileToS3, getFileFromS3, uploadAudioToS3 } from './pass_files.js';
-import { CharLine, Clip, MusicLine } from '@shared/line';
-import { Script } from '@shared/script';
+import { uploadFileToS3, getFileFromS3, uploadAudioToS3 } from '@pod/pass_files.js';
+import { CharLine, Clip, MusicLine } from '@shared/line.js';
+import { Script } from '@shared/script.js';
 import { v4 as uuidv4 } from 'uuid';
-import { processCharacterLines, processMusicLines, processMusicLine, processCharacterLine, prevAndNextCharLines, processLine } from './process_line.js';
-import { deleteAllFilesInFolder, saveAsJson } from './local.js';
-import { TEMP_DATA_PATH } from './init.js';
-import { processCharacterVoices } from './pass_voice.js';
-import { parallelMerge } from './process_merging.js';
+import { processCharacterLines, processMusicLines, processMusicLine, processCharacterLine, prevAndNextCharLines, processLine } from '@pod/process_line.js';
+import { deleteAllFilesInFolder, saveAsJson } from '@pod/local.js';
+import { TEMP_DATA_PATH } from '@pod/init.js';
+import { processCharacterVoices } from '@pod/pass_voice.js';
+import { parallelMerge } from '@pod/process_merging.js';
 import path from 'path';
 import fs from 'fs';
-import { saveClipToLogs } from './local.js'; // Add this import at the top of the file
+import { saveClipToLogs } from '@pod/local.js'; // Add this import at the top of the file
 import { Request, Response, Express } from 'express';
 import fsPromises from 'fs/promises';
 import { ProcessingStatus, ProcessingStep } from '@shared/processing.js';
-import { updateMongoData } from '@/mongo_methods.js';
+import { updateMongoData } from '@db/mongo_methods.js';
 import { ObjectId } from 'bson';
 import { PodStatus } from '@shared/pods.js';
 

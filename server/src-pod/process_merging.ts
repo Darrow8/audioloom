@@ -1,12 +1,12 @@
-import { TEMP_DATA_PATH } from "./init";
-import { Clip, MusicLine, CharLine, MusicType } from "@shared/line";
-import { Script } from "@shared/script";
+import { TEMP_DATA_PATH } from "@pod/init.js";
+import { Clip, MusicLine, CharLine, MusicType } from "@shared/line.js";
+import { Script } from "@shared/script.js";
 import { v4 as uuid } from 'uuid';
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
-import { normalizeAudioInPlace } from "./process_normalize";
+import { normalizeAudioInPlace } from "@pod/process_normalize.js";
 
 
 /**

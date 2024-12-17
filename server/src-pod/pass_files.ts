@@ -1,5 +1,5 @@
 import { S3Client, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, PutObjectCommandInput } from "@aws-sdk/client-s3";
-import { s3Client, TEMP_DATA_PATH } from "./init";
+import { s3Client, TEMP_DATA_PATH } from "@pod/init.js";
 import { Upload } from "@aws-sdk/lib-storage";
 import { Readable } from "stream";
 import { createReadStream } from 'fs';

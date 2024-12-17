@@ -1,9 +1,9 @@
 import * as fs from "fs";
 import path from "path";
 import { PassThrough, Readable, pipeline } from 'stream';
-import { TEMP_DATA_PATH } from './init';
-import { Clip, Line } from "@shared/line";
-import { Script } from "@shared/script";
+import { TEMP_DATA_PATH } from '@pod/init.js';
+import { Clip, Line } from "@shared/line.js";
+import { Script } from "@shared/script.js";
 
 
 export async function saveClipToLogs(data: Clip, folderPath: string, fileName: string){

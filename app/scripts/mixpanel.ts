@@ -1,12 +1,16 @@
 //Import Mixpanel API
 import { Mixpanel, People } from "mixpanel-react-native";
- 
+import { env } from '../config/env';
+
 let mixpanelInstance: Mixpanel;
 
 function initMixpanel() {
+    if(!env.MIXPANEL_TOKEN) {
+        throw new Error('No MIXPANEL_TOKEN available');
+    }
     // Set up an instance of Mixpanel
     const trackAutomaticEvents = false;
-    mixpanelInstance = new Mixpanel("9e7c55199ecb01109190b327652ecfbe", trackAutomaticEvents);
+    mixpanelInstance = new Mixpanel(env.MIXPANEL_TOKEN, trackAutomaticEvents);
     mixpanelInstance.init();
 }
 

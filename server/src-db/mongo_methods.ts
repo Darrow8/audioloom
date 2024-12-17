@@ -1,6 +1,6 @@
 import { MongoClient, ServerApiVersion, ObjectId, Db, ChangeStream } from "mongodb";
 import { app } from '../server.js'
-import { MongoDocument, ChangeStreamUpdate } from '@shared/mongodb.js';
+import { MongoDocument, ChangeStreamUpdate } from '../../shared/src/mongodb.js';
 import { db } from './mongo_interface.js';
 import { Socket } from 'socket.io';
 import { Document } from 'bson';

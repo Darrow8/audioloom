@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 
-import { AudioFile, Clip, MusicLine, MusicType } from '@shared/line';
-import { TEMP_DATA_PATH } from './init';
+import { AudioFile, Clip, MusicLine, MusicType } from '@shared/line.js';
+import { TEMP_DATA_PATH } from '@pod/init.js';
 import path from 'path';
 
 

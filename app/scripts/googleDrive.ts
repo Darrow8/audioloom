@@ -1,13 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { ActionSheetIOS } from 'react-native';
+import { env } from '../config/env';
 import {
   GDrive,
   MimeTypes
 } from "@robinbobin/react-native-google-drive-api-wrapper";
+
 GoogleSignin.configure({
     scopes: ['https://www.googleapis.com/auth/drive.readonly'], // what API you want to access on behalf of the user, default is email and profile
-    iosClientId: '554636964216-v3fsfvau5939st9bjquk8to2fnt0m2f1.apps.googleusercontent.com', // [iOS] if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
+    iosClientId: env.GOOGLE_CLIENT_ID, // [iOS] if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
 });
 // const [driveFiles, setDriveFiles] = useState<any[]>([]);
 // const [modalVisible, setModalVisible] = useState(false);

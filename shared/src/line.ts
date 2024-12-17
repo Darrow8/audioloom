@@ -1,4 +1,4 @@
-import { usefulTrack } from './music';
+import { usefulTrack } from './music.js';
 import { z } from "zod";
 
 // Base Line schema

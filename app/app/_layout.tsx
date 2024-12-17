@@ -3,21 +3,20 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
-import * as config from "../auth0_config";
 import Landing from './landing';
-import Auth0 from 'react-native-auth0';
-import { Auth0Provider, useAuth0 } from 'react-native-auth0';
+import { Auth0Provider, LocalAuthenticationStrategy, useAuth0 } from 'react-native-auth0';
 import { User } from '@shared/user';
 import { useStateContext } from '@/state/StateContext';
 import { StateProvider } from '@/state/StateContext';
 import { checkLogin, initUser } from '@/scripts/auth';
 import { ActivityIndicator, View } from 'react-native';
 import { socket } from '@/scripts/socket';
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+import { env } from '../config/env';
+
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-  const { user: auth0_user, getCredentials, clearSession, clearCredentials, hasValidCredentials } = useAuth0();
+  const { user: auth0_user, getCredentials, clearSession } = useAuth0();
   const { state, dispatch } = useStateContext();
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -41,7 +40,9 @@ function AppContent() {
 
   async function handleCheckLogin(auth0_user: Partial<User>) {
     try {
+      // console.log('hasValidCredentials', await hasValidCredentials());
       let credentials = await getCredentials();
+      console.log(credentials)
       if (credentials) {
         console.log('auth0_user', auth0_user);
         let resp = await checkLogin(auth0_user, dispatch, credentials);
@@ -129,8 +130,12 @@ export default function RootLayout() {
     return null;
   }
 
+  if(!env.AUTH0_DOMAIN || !env.AUTH0_CLIENT_ID) {
+    throw new Error('No AUTH0_DOMAIN or AUTH0_CLIENT_ID available');
+  }
+
   return (
-    <Auth0Provider domain={config.default.domain} clientId={config.default.clientId}>
+    <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>
       <StateProvider>
         <AppContent />
       </StateProvider>

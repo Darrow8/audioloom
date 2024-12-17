@@ -1,9 +1,9 @@
 import fs from 'fs';
-import { usefulTrack, Segment } from '@shared/music';
-import { AudioFile } from '@shared/line';
+import { usefulTrack, Segment } from '@shared/music.js';
+import { AudioFile } from '@shared/line.js';
 import ffmpeg from 'fluent-ffmpeg';
-import { getAudioDuration, round } from './process_audio';
-import { TEMP_DATA_PATH } from './init';
+import { getAudioDuration, round } from '@pod/process_audio.js';
+import { TEMP_DATA_PATH } from '@pod/init.js';
 import fetch from 'node-fetch';
 
 export async function saveMusicAsAudio(tracks: usefulTrack[], id:string): Promise<AudioFile> {

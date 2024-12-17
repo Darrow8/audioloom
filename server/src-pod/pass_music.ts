@@ -1,4 +1,4 @@
-import {DataStructure, Track, usefulTrack, TrackMap, genres, moods, Hit} from '@shared/music';
+import {DataStructure, Track, usefulTrack, TrackMap, genres, moods, Hit} from '@shared/music.js';
 import fetch from 'node-fetch';
 
 
