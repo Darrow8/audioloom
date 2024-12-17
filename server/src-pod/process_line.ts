@@ -10,6 +10,7 @@ import { saveStreamToFile } from '@pod/local.js';
 import { TEMP_DATA_PATH } from '@pod/init.js';
 import { Character } from '@shared/voice.js';
 import { ScriptType, Script } from '@shared/script.js';
+import path from 'path';
 
 /** 
  * processCharacterLines
@@ -62,7 +63,7 @@ export async function processCharacterLine(current_line: CharLine, prev_line: Ch
     next_line: CharLine | null, current_character: Character, runningStartTime: number) : Promise<AudioFile> {
     let stream = await processCharacterDialogue(current_line, prev_line, next_line, current_character.voice_model);
     let fileName = `${current_line.id}.mp3`;
-    let url = `${TEMP_DATA_PATH}/dialogue/${fileName}`;
+    let url = path.join(TEMP_DATA_PATH, 'dialogue', fileName);
     await saveStreamToFile(stream, url);
     let duration = await getAudioDuration(url);
     let audio = new AudioFile(current_line.id, url, runningStartTime, duration, duration);

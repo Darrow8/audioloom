@@ -42,7 +42,6 @@ function AppContent() {
     try {
       // console.log('hasValidCredentials', await hasValidCredentials());
       let credentials = await getCredentials();
-      console.log(credentials)
       if (credentials) {
         console.log('auth0_user', auth0_user);
         let resp = await checkLogin(auth0_user, dispatch, credentials);
@@ -133,6 +132,8 @@ export default function RootLayout() {
   if(!env.AUTH0_DOMAIN || !env.AUTH0_CLIENT_ID) {
     throw new Error('No AUTH0_DOMAIN or AUTH0_CLIENT_ID available');
   }
+  // console.log('env.AUTH0_DOMAIN', env.AUTH0_DOMAIN);
+  // console.log('env.AUTH0_CLIENT_ID', env.AUTH0_CLIENT_ID);
 
   return (
     <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>

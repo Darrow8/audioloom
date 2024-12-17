@@ -25,6 +25,8 @@ const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sou
     if (pod.audio_key != '') {
       getAudioFromS3(pod.audio_key).then((data: AudioUrlTransporter) => {
         setAudioUrlData(data);
+      }).catch((error) => {
+        console.error('Error getting audio from S3:', error);
       });
     }
   }, [pod]);
@@ -289,14 +291,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
-    // backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
     borderRadius: 16,
-    margin: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    margin: 16
   },
   timeDisplay: {
     flexDirection: 'row',

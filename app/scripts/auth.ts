@@ -47,7 +47,7 @@ export async function checkLogin(auth0_user: Auth0User, dispatch: Dispatch<UserA
         }
 
         let signingUp = await SecureStore.getItemAsync('signingUp');
-        console.log('signingUp', signingUp);
+        // console.log('signingUp', signingUp);
         if (signingUp == 'false' || logins_count > 1) {
           // watch user
           let mongo_user = await getUserBySub(auth0_user.sub);

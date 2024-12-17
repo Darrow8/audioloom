@@ -7,7 +7,6 @@ const RIVET_API_KEY = env.RIVET_API_KEY
 
 export const makeAuthenticatedRequest = async (url: string, method: string = 'GET', body?: any, retries = 3): Promise<any> => {
   const accessToken = await SecureStore.getItemAsync('auth0AccessToken');
-  console.log(accessToken);
   if (!accessToken) {
     throw new Error('No access token available');
   }
@@ -35,7 +34,6 @@ export const makeAuthenticatedRequest = async (url: string, method: string = 'GE
     },
     body: JSON.stringify(body)
   };
-  console.log('fetchOptions', fetchOptions);
 
   try {
     const response = await fetchWithTimeout(url, fetchOptions) as Response;

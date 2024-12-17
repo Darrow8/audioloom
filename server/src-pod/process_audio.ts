@@ -8,8 +8,8 @@ import path from 'path';
 
 async function overlayAudios(backgroundFile: string, overlayFiles: Clip[], outputFile: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const outputPath = `${TEMP_DATA_PATH}/result/${outputFile}.mp3`;
-    const backgroundFilePath = `${TEMP_DATA_PATH}/character/${backgroundFile}.mp3`;
+    const outputPath = path.join(TEMP_DATA_PATH, 'result', `${outputFile}.mp3`);
+    const backgroundFilePath = path.join(TEMP_DATA_PATH, 'character', `${backgroundFile}.mp3`);
 
     // Check if the input files exist
     if (!fs.existsSync(backgroundFilePath)) {
