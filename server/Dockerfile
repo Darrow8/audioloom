@@ -25,10 +25,7 @@ RUN npm install --production
 COPY --from=builder /usr/src/app/dist ./dist
 
 COPY prompts ./prompts 
-COPY temp-data ./temp-data
-COPY logs ./logs
 
 EXPOSE 3000
 
-# CMD ["npm", "run", "start"]
 CMD ["node", "dist/server/server.js"]

@@ -46,7 +46,7 @@ export async function startup() {
         configureFFMPEG();
         console.log("FFMPEG configured");
         
-        TEMP_DATA_PATH = process.env.IS_DOCKER == "true" ? '/tmp' : './temp-data';
+        TEMP_DATA_PATH = process.env.IS_DOCKER == "true" ? '/app/data' : './temp-data';
         console.log("TEMP_DATA_PATH:", TEMP_DATA_PATH);
 
         ensureRequiredFolders();

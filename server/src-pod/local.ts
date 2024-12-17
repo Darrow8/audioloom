@@ -13,7 +13,7 @@ export async function saveClipToLogs(data: Clip, folderPath: string, fileName: s
     }
 
     // Create the full file path
-    const filePath = `${folderPath}/${fileName}.json`;
+    const filePath = path.join(folderPath, `${fileName}.json`);
 
     // Check if the file exists
     if (fs.existsSync(filePath)) {
@@ -164,10 +164,9 @@ export function ensureRequiredFolders(): void {
         'logs'
     ];
 
-    let tempDataPath = TEMP_DATA_PATH;
 
     requiredFolders.forEach(folder => {
-        const folderPath = path.join(tempDataPath, folder);
+        const folderPath = path.join(TEMP_DATA_PATH, folder);
         if (!fs.existsSync(folderPath)) {
             try {
                 fs.mkdirSync(folderPath, { recursive: true });

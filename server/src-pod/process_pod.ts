@@ -170,11 +170,11 @@ function shouldMergeClips(clips: Clip[]): boolean {
  */
 export function deleteTempFiles() {
     if(process.env.NODE_ENV === 'development') {
-        deleteAllFilesInFolder(TEMP_DATA_PATH + '/dialogue');
-        deleteAllFilesInFolder(TEMP_DATA_PATH + '/character');
-        deleteAllFilesInFolder(TEMP_DATA_PATH + '/character-temp');
-        deleteAllFilesInFolder(TEMP_DATA_PATH + '/music');
-        deleteAllFilesInFolder(TEMP_DATA_PATH + '/music-temp');
-        deleteAllFilesInFolder(TEMP_DATA_PATH + '/result');
+        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'dialogue'));
+        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'character'));
+        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'character-temp'));
+        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'music'));
+        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'music-temp'));
+        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'result'));
     }
 }

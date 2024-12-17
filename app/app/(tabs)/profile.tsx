@@ -9,7 +9,7 @@ const Profile = () => {
   const { state, dispatch } = useStateContext();
   const onLogout = async () => {
     try {
-      await clearSession();
+      await clearSession()
       await SecureStore.deleteItemAsync('auth0AccessToken');
       await SecureStore.deleteItemAsync('signingUp');
       dispatch({ type: 'LOGOUT' });

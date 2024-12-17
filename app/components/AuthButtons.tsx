@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import auth0, { useAuth0, Auth0Provider } from 'react-native-auth0';
-import WebAuth from 'react-native-auth0/lib/typescript/src/webauth';
-import { getUserById, createUser } from '../scripts/mongoClient';
-import * as AuthSession from 'expo-auth-session';
 import * as SecureStore from 'expo-secure-store';
-import jwtDecode from 'jwt-decode';
-import { v4 as uuidv4 } from 'uuid';
 import { debounce } from 'lodash';
+import { env } from '../config/env';
 
 const AuthButtons = () => {
   const { authorize, isLoading, user } = useAuth0();
@@ -20,6 +16,7 @@ const AuthButtons = () => {
     try {
       await authorize({
         scope: 'openid profile email',
+        audience: env.AUTH0_AUDIENCE,
         additionalParameters: {
           prompt: 'select_account',
           screen_hint: 'login'
@@ -33,7 +30,8 @@ const AuthButtons = () => {
   const debouncedSignup = debounce(async () => {
     try {
       await authorize({
-        scope: 'openid profile email',
+        scope: 'openid profile email', 
+        audience: env.AUTH0_AUDIENCE,
         additionalParameters: {
           prompt: 'select_account',
           screen_hint: 'signup'
