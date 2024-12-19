@@ -1,11 +1,10 @@
 import { convertToTXT } from '@pod/pass_convert.js';
 import { uploadFileToS3 } from '@pod/pass_files.js';
-import { upload, STORAGE_PATH } from '@pod/pod_main.js';
 import { getMongoDataById, updateMongoData, createMongoData, updateMongoArrayDoc } from '@db/mongo_methods.js';
 import { ObjectId } from 'bson';
 import fs from 'fs';
 import { ProcessingStatus, ProcessingStep } from '@shared/processing.js';
-
+import { STORAGE_PATH } from '@pod/init.js';
 /**
  * processArticles: saving articles to s3 and mongo
  * 1. upload file to s3

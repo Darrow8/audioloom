@@ -6,8 +6,9 @@ import { Clip, Line } from "@shared/line.js";
 import { Script } from "@shared/script.js";
 
 
-export async function saveClipToLogs(data: Clip, folderPath: string, fileName: string){
+export async function saveClipToLogs(data: Clip, fileName: string){
     // Ensure the folder exists
+    let folderPath = path.join(TEMP_DATA_PATH, 'logs');
     if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
     }
@@ -161,7 +162,8 @@ export function ensureRequiredFolders(): void {
         'music',
         'music-temp',
         'result',
-        'logs'
+        'logs',
+        'uploads'
     ];
 
 
@@ -178,14 +180,15 @@ export function ensureRequiredFolders(): void {
     });
 }
 
-export async function saveScriptToLogs(data: Script, folderPath: string, fileName: string) {
+export async function saveScriptToLogs(data: Script, fileName: string) {
     // Ensure the folder exists
+    let folderPath = path.join(TEMP_DATA_PATH, 'logs');
     if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
     }
 
     // Create the full file path
-    const filePath = `${folderPath}/${fileName}.json`;
+    const filePath = path.join(folderPath, `${fileName}.json`);
 
     // Check if the file exists
     if (fs.existsSync(filePath)) {

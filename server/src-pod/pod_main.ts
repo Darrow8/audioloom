@@ -4,9 +4,9 @@ import { Request as JWTRequest } from 'express-jwt';
 import multer from 'multer';
 import path from 'path';
 import { processArticles, uploadArticleToS3 } from '@pod/process_articles.js';
-import { startup } from '@pod/init.js';
+import { startup, STORAGE_PATH } from '@pod/init.js';
 import { createPodInParallel } from '@pod/process_pod.js';
-import { createScript, getInstructions, saveFileToS3, saveScriptToS3 } from '@pod/process_script.js';
+import { createScript } from '@pod/process_script.js';
 import { ProcessingStep } from '@shared/processing.js';
 import { ProcessingStatus } from '@shared/processing.js';
 import { Pod } from '@shared/pods.js';
@@ -18,7 +18,7 @@ import { RawPrompts, Script } from '@shared/script.js';
 import { localInstructions } from '@pod/process_prompt.js';
 import { getVoices } from '@pod/pass_voice.js';
 import { saveClipToLogs } from '@pod/local.js';
-export const STORAGE_PATH = 'uploads';
+
 
 export let base_voices: Voices;
 export let base_instructions: RawPrompts;
@@ -50,7 +50,7 @@ export const upload = multer({
     }
   },
   limits: {
-    fileSize: 50 * 1024 * 1024 // 50 MB
+    fileSize: 100 * 1024 * 1024 // 100 MB
   }
 });
 
@@ -94,16 +94,12 @@ export async function podRoutes() {
 
   app.post('/pod/trigger_creation', upload.single('file'), authCheck, async (req: JWTRequest, res: Response) => {
     if (!req.file) {
-      console.error('No file received');
       return res.status(400).json({ error: 'No file uploaded' });
     }
-    console.log('req.file: ' + req.file)
-
     if (req.file.size === 0) {
       return res.status(400).json({ error: 'File size is 0 bytes' });
     }
     await triggerPodCreation(req, res);
-    console.log('im done...')
   });
 
   // Catch-all route for /pod should be last
@@ -127,9 +123,9 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     return res.status(400).json({
       message: 'Missing required fields',
       details: {
-        file: !req.file ? 'Missing file' : null,
-        user_id: !req.body.user_id ? 'Missing user_id' : null,
-        new_pod_id: !req.body.new_pod_id ? 'Missing new_pod_id' : null
+        file: req.file || null,
+        user_id: req.body.user_id || null, 
+        new_pod_id: req.body.new_pod_id || null
       }
     });
   }

@@ -33,9 +33,6 @@ const formats = {
 };
 
 export async function promptLLM(articleName: string, instructions: FullLLMPrompt): Promise<ProcessingStep> {
-    console.log('promptLLM', instructions.GPTModel)
-    console.log('promptLLM', instructions.type)
-    console.log('promptLLM', articleName)
     let intructionsTokens = countTokens(instructions.instructions, instructions.GPTModel.version);
     
     if (intructionsTokens > instructions.GPTModel.tokenLimit) {
