@@ -29,10 +29,11 @@ export async function getInstructions(articleContent: string): Promise<FullPromp
     } as FullLLMPrompt;
     if (key === 'podcast') {
       // Get word count to help ensure podcast length
+      let wpm = 150;
       const wordCount = articleContent.trim().split(/\s+/).length;
-      let minCount = Math.ceil(wordCount / 150);
+      let minCount = Math.ceil(wordCount / wpm);
       // Add word count context to help GPT generate appropriate length podcast
-      let additionalInstructions = `\nThe article is ${wordCount} words long. Please ensure the podcast script has enough content and discussion to fill at least ${minCount} minutes.`;
+      let additionalInstructions = `\nThe article is ${wordCount} words long. Please ensure the podcast script has enough content and discussion to fill at least ${minCount} minutes considering the average talking speed of ${wpm} words per minute.`;
       console.log(additionalInstructions)
       fullInstructions[key].instructions = prompt.raw_instructions + additionalInstructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
     } else {
@@ -72,7 +73,7 @@ export async function scriptwriter(articleName: string, instructions: FullLLMPro
       kind: line.kind 
     }));
     const newScript = new Script(validatedLines, script.title, script.authors);
-    saveScriptToLogs(newScript, './logs', crypto.randomUUID().toString());
+    saveScriptToLogs(newScript, crypto.randomUUID().toString());
     return {
       status: ProcessingStatus.IN_PROGRESS,
       step: "script",
@@ -156,39 +157,4 @@ export function countTokens(message: string, model: ChatModel): number {
   const tokens = enc.encode(message);
   enc.free();
   return tokens.length;
-}
-
-export async function saveScriptToS3(script_path: string){
-
-    const uploadDetails = {
-      Key: `pod-scripts/${script_path}`,
-      Body: fs.readFileSync(script_path),
-      ContentType: 'text/plain',
-      Bucket: 'main-server',
-    };
-
-    await aws.uploadFileToS3(uploadDetails)
-      .then(response => {
-        console.log(response)
-      })
-      .catch(error => console.error(error));
-    fs.unlinkSync(script_path);
-}
-
-export async function saveFileToS3(file_path: string){
-  const fileName = path.basename(file_path);
-
-  const uploadDetails = {
-    Key: `pod-scripts/${fileName}`,
-    Body: fs.readFileSync(file_path),
-    ContentType: 'text/plain',
-    Bucket: 'main-server',
-  };
-
-  await aws.uploadFileToS3(uploadDetails)
-    .then(response => {
-      console.log(response)
-    })
-    .catch(error => console.error(error));
-  fs.unlinkSync(file_path);
 }

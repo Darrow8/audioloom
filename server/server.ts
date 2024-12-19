@@ -35,18 +35,14 @@ export const io = new Server(httpServer, {
 
 
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb' }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb' }));
 app.use(helmet());
 app.use(cors());
 
 app.get('/public', (req: Request, res: Response) => {
     res.send('Hello from the main server!');
 });
-
-// app.listen(PORT, '0.0.0.0', () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });
 
 
 // Graceful shutdown

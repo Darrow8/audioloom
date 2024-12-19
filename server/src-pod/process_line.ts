@@ -158,12 +158,7 @@ export async function processBMusicLine(music_line: MusicLine, script: Script): 
     }
     console.log(`dialogue_desc: ${dialogue_desc}`);
     let music_choice = await musicChooser(music_line.music_description, dialogue_desc)
-    // if ('genre' in music_choice == false) {
-    //     music_choice.genre = "";
-    // }
-    // if ('mood' in music_choice == false) {
-    //     music_choice.mood = "";
-    // }
+
     let tracks: usefulTrack[] = await fetchTracks(music_choice.genre, music_choice.mood);
 
     return await saveMusicAsAudio(tracks, music_line.id);

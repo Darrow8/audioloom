@@ -60,7 +60,6 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
                 res.write(JSON.stringify(progressUpdate));
 
                 const clip = await processLine(line, script, characters, runningTime);
-                console.log(`clip: ${clip}`);
                 if (clip != null && clip != undefined) {
                     cur_clips.push(clip);
                     tempFiles.push(clip.audio.url);
@@ -76,13 +75,18 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
                 throw new Error(`Failed to process line ${i}: ${error.message}`);
             }
         }
+
+        // save clips to logs
         for (const clip of cur_clips) {
-            saveClipToLogs(clip, './logs', 'pod_logs');
+            saveClipToLogs(clip, `pod_${pod_id}_id_${clip.line.id}`);
         }
-        // Final merge if there are remaining clips
-        if (cur_clips.length > 0) {
-            runningTime = await mergeAndCleanup(cur_clips, pod_id, runningTime, script, res);
-        }
+
+        await uploadAudioToS3(`${pod_id}.wav`);
+        await updateMongoData('pods', {
+            _id: new ObjectId(pod_id),
+            audio_key: `pod-audio/${pod_id}.wav`,
+            status: PodStatus.PENDING
+        });
 
         return {
             status: ProcessingStatus.COMPLETED,
@@ -125,13 +129,13 @@ async function mergeAndCleanup(
         if (fileStats.size === 0) {
             throw new Error('Generated file is empty');
         }
-
-        await uploadAudioToS3(`${resultFileName}.wav`);
-        await updateMongoData('pods', {
-            _id: new ObjectId(resultFileName),
-            audio_key: `pod-audio/${resultFileName}.wav`,
-            status: PodStatus.PENDING
-        });
+        // TODO: When we want to do quicker production we can upload to S3 here
+        // await uploadAudioToS3(`${resultFileName}.wav`);
+        // await updateMongoData('pods', {
+        //     _id: new ObjectId(resultFileName),
+        //     audio_key: `pod-audio/${resultFileName}.wav`,
+        //     status: PodStatus.PENDING
+        // });
         res.write(JSON.stringify({
             status: ProcessingStatus.IN_PROGRESS,
             step: "podcast",

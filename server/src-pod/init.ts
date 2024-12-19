@@ -21,6 +21,7 @@ export let openaiClient: OpenAI;
 export let openai_initialized = false;
 
 export let TEMP_DATA_PATH = '';
+export let STORAGE_PATH = '';
 
 /**
  * Main startup function that initializes all API calls and gets secret keys
@@ -28,11 +29,11 @@ export let TEMP_DATA_PATH = '';
 export async function startup() {
     try {
         // secret must be retrieved first
-        let secret = await initSecrets();
-        console.log("Secrets initialized:", secret !== undefined);
+        // let secret = await initSecrets();
+        // console.log("Secrets initialized:", secret !== undefined);
         
-        passSecrets(secret);
-        console.log("Secrets passed to environment");
+        // passSecrets(secret);
+        // console.log("Secrets passed to environment");
         
         initS3();
         console.log("S3 initialized:", s3Initialized);
@@ -46,13 +47,21 @@ export async function startup() {
         configureFFMPEG();
         console.log("FFMPEG configured");
         
-        TEMP_DATA_PATH = process.env.IS_DOCKER == "true" ? '/app/data' : './temp-data';
+        if(process.env.IS_DOCKER == "true") {
+            TEMP_DATA_PATH = '/app/data';
+            STORAGE_PATH = '/app/data/uploads';
+        } else {
+            TEMP_DATA_PATH = './temp-data';
+            STORAGE_PATH = './temp-data/uploads';
+        }
+
         console.log("TEMP_DATA_PATH:", TEMP_DATA_PATH);
+        console.log("STORAGE_PATH:", STORAGE_PATH);
 
         ensureRequiredFolders();
         console.log("Required folders ensured");
         
-        if (!secret || !s3Initialized || !elevenlabsInitialized || !openAIInitialized) {
+        if (!s3Initialized || !elevenlabsInitialized || !openAIInitialized) {
             throw new Error("One or more initializations failed");
         }
     }
@@ -73,8 +82,8 @@ export const configureFFMPEG = () => {
 
 export const initOpenAI = () => {
     openaiClient = new OpenAI({
-        organization: "org-nd9Kz3AFMD7Wo3q05FTQMFAw",
-        project: "proj_6RLSgyTB2eo5NjAfghsFU8df",
+        organization: process.env.OPENAI_ORG_KEY,
+        project: process.env.OPENAI_PROJECT_KEY,
         apiKey: process.env.OPENAI_API_KEY,
     });
     openai_initialized = true;
@@ -111,57 +120,58 @@ export const initS3 = () => {
     return true;
 };
 
-/**
- * Initializes secrets from AWS Secrets Manager
- */
-export async function initSecrets() {
-    const secret_name = "dev-keys";
-    const credentials = {
-        accessKeyId: process.env.AWS_ACCESS_KEY,
-        secretAccessKey: process.env.AWS_SECRET_KEY,
-    }
+// /**
+//  * Initializes secrets from AWS Secrets Manager
+//  */
+// export async function initSecrets() {
+//     const secret_name = "dev-keys";
+//     const credentials = {
+//         accessKeyId: process.env.AWS_ACCESS_KEY,
+//         secretAccessKey: process.env.AWS_SECRET_KEY,
+//     }
 
-    const client = new SecretsManagerClient({
-        region: "us-west-1",
-        credentials: credentials,
-    });
+//     const client = new SecretsManagerClient({
+//         region: "us-west-1",
+//         credentials: credentials,
+//     });
 
-    let response;
+//     let response;
 
-    try {
-        response = await client.send(
-            new GetSecretValueCommand({
-                SecretId: secret_name,
-                VersionStage: "AWSCURRENT", // VersionStage defaults to AWSCURRENT if unspecified
-            })
-        );
-    } catch (error) {
-        // For a list of exceptions thrown, see
-        // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-        throw error;
-    }
+//     try {
+//         response = await client.send(
+//             new GetSecretValueCommand({
+//                 SecretId: secret_name,
+//                 VersionStage: "AWSCURRENT", // VersionStage defaults to AWSCURRENT if unspecified
+//             })
+//         );
+//     } catch (error) {
+//         // For a list of exceptions thrown, see
+//         // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+//         throw error;
+//     }
 
-    const secret = response.SecretString;
-    return secret;
-}
-/**
- * Gets secret from initSecrets() and passes to process.env
- */
-export function passSecrets(secret) {
-    if (secret) {
-        try {
-            const secretObj = JSON.parse(secret);
-            if (typeof secretObj === 'object' && secretObj !== null) {
-                for (let key in secretObj) {
-                    if (secretObj.hasOwnProperty(key)) {
-                        process.env[key] = secretObj[key];
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error parsing secret:', error);
-        }
-    } else {
-        console.error('No secrets found');
-    }
-}
+//     const secret = response.SecretString;
+//     return secret;
+// }
+
+// /**
+//  * Gets secret from initSecrets() and passes to process.env
+//  */
+// export function passSecrets(secret) {
+//     if (secret) {
+//         try {
+//             const secretObj = JSON.parse(secret);
+//             if (typeof secretObj === 'object' && secretObj !== null) {
+//                 for (let key in secretObj) {
+//                     if (secretObj.hasOwnProperty(key)) {
+//                         process.env[key] = secretObj[key];
+//                     }
+//                 }
+//             }
+//         } catch (error) {
+//             console.error('Error parsing secret:', error);
+//         }
+//     } else {
+//         console.error('No secrets found');
+//     }
+// }

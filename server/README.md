@@ -38,7 +38,7 @@ The main thing we will be doing with pod functions is creating a podcast from a 
  - Save to AWS S3 Bucket
 
 
-## Dialogue and Music Overlay Philosophy
+## Dialogue and Music Overlay Design Choice
 
 The dialogue and background music/sound effect files and start and end at various times. 
 
@@ -47,3 +47,18 @@ For now, all sound effects and background music files will start at the exact ti
 If there is no proceeding dialogue, then the music will start at t=0
 
 If the music file is still running when another one is scheduled to start, then it will be cut short. 
+
+# VPC Commands
+
+SSH into the VPC:
+`ssh root@164.90.153.167`
+`ssh manager@164.90.153.167`
+
+To run commands in docker container:
+`docker exec -it manager-server-1 /bin/sh`
+
+To get logs from docker container:
+`docker logs manager-server-1 -f`
+
+
+
