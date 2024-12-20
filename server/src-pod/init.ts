@@ -44,13 +44,15 @@ export async function startup() {
         const openAIInitialized = initOpenAI();
         console.log("OpenAI initialized:", openAIInitialized);
         
-        configureFFMPEG();
-        console.log("FFMPEG configured");
-        
         if(process.env.IS_DOCKER == "true") {
             TEMP_DATA_PATH = '/app/data';
             STORAGE_PATH = '/app/data/uploads';
+            ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
+            ffmpeg.setFfprobePath('/usr/bin/ffprobe');
         } else {
+            // this is for my local machine
+            ffmpeg.setFfmpegPath('/opt/homebrew/bin/ffmpeg');
+            ffmpeg.setFfprobePath('/opt/homebrew/bin/ffprobe');
             TEMP_DATA_PATH = './temp-data';
             STORAGE_PATH = './temp-data/uploads';
         }
@@ -67,16 +69,6 @@ export async function startup() {
     }
     catch (e) {
         throw new Error(`Error on Startup: ${e}`);
-    }
-}
-
-export const configureFFMPEG = () => {
-    if (process.env.IS_DOCKER == "true") {
-        ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
-        ffmpeg.setFfprobePath('/usr/bin/ffprobe');
-    } else {
-        ffmpeg.setFfmpegPath('/opt/homebrew/bin/ffmpeg');
-        ffmpeg.setFfprobePath('/opt/homebrew/bin/ffprobe');
     }
 }
 

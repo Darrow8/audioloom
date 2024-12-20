@@ -13,6 +13,7 @@ import { MongoChangeStreamData } from '@shared/mongodb';
 import { connectToPodGen } from '@/scripts/s3';
 import { ObjectId } from 'bson';
 import { Audio } from 'expo-av';
+import * as SecureStore from 'expo-secure-store';
 
 const Listen = () => {
   const [sound, setSound] = useState<Audio.Sound>();
@@ -26,10 +27,8 @@ const Listen = () => {
     message: '',
     visible: false
   });
-
   useEffect(() => {
     if (!state.user) return;
-
     const pod_ids = state.user.pods.map((id) => new ObjectId(id));
     // get initial pods
 
@@ -99,6 +98,13 @@ const Listen = () => {
     }
   }
 
+  const handleModalClose = () => {
+    setIsPlayerModalVisible(false);
+    if(sound) {
+      sound.unloadAsync();
+    }
+  }
+
   const handleCloseToast = () => {
     setToast(prev => ({...prev, visible: false}));
   };
@@ -130,7 +136,7 @@ const Listen = () => {
           </Modal>
           {showProcessingBanner && (
             <View style={styles.banner}>
-              <Text style={styles.bannerText}>Processing...</Text>
+              <Text style={styles.bannerText}>Estimated processing time: 90 seconds</Text>
             </View>
           )}
           <ScrollView contentContainerStyle={styles.songList}>
@@ -156,7 +162,7 @@ const Listen = () => {
           <GestureRecognizer
             style={{flex: 1}}
             onSwipeUp={ () => setIsPlayerModalVisible(true) }
-            onSwipeDown={ () => setIsPlayerModalVisible(false) }
+            onSwipeDown={ () => handleModalClose() }
           >
             <Modal
               animationType="slide"

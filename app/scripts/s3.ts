@@ -20,7 +20,7 @@ async function authenticatedFileUpload(url: string, fileUri: string, options?: F
 
     const headers = {
         'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'multipart/form-data',
+        // 'Content-Type': 'multipart/form-data',
         'X-API-Key': env.RIVET_API_KEY
     }
     return await FileSystem.uploadAsync(url, fileUri, {

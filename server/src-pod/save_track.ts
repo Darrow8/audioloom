@@ -9,8 +9,8 @@ import path from 'path';
 
 export async function saveMusicAsAudio(tracks: usefulTrack[], id:string): Promise<AudioFile> {
     console.log(`saveMusicAsAudio: tracks: ${tracks}`);
-    // default to first track for now
-    let track = tracks[0];
+    // get random track in group
+    let track = tracks[Math.floor(Math.random() * tracks.length)];
     if (tracks.length == 0) {
         return undefined;
     }
@@ -42,52 +42,56 @@ export async function saveMusicAsAudio(tracks: usefulTrack[], id:string): Promis
 // returns duration of downloaded file
 export async function downloadFile(track_id: string, url: string, outputPath: string, segment: Segment) : Promise<number> {
     return new Promise<number>(async (resolve, reject) => {
-        const response = await fetch(url);
-        if (!response.ok) {
-            console.error(`Error downloading file: ${response.statusText}`);
-            reject();
-        }
-
-        let tempPath = path.join(TEMP_DATA_PATH, 'music', `${track_id}_raw.mp3`); // Temporary file path
-        const fileStream = fs.createWriteStream(tempPath);
-        response.body.pipe(fileStream);
-        fileStream.on('finish', () => {
-            fileStream.close();
-            console.log(`Download of ${tempPath} completed!`);
-            const ffmpegCommand = ffmpeg(tempPath).output(outputPath);
-
-            if (segment != undefined) {
-                ffmpegCommand.setStartTime(segment.startTime);
-                    ffmpegCommand.setDuration(segment.duration < 60 ? segment.duration : 60);
-            } else {
-                ffmpegCommand.setDuration(60);
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to download file: ${response.statusText}`);
             }
+
+            let tempPath = path.join(TEMP_DATA_PATH, 'music', `${track_id}_raw.mp3`);
+            const fileStream = fs.createWriteStream(tempPath);
+            response.body.pipe(fileStream);
             
-            ffmpegCommand.on('end', async () => {
-                console.log(`Audio processing completed: ${outputPath}`);
-                    // Delete the temporary file
-                    // fs.unlinkSync(tempPath);
-                // get duration
-                if(segment == undefined){
-                    let dur = await getAudioDuration(outputPath);
-                    resolve(round(dur,2));
+            await new Promise((resolveStream, rejectStream) => {
+                fileStream.on('finish', resolveStream);
+                fileStream.on('error', rejectStream);
+            });
+            
+            console.log(`Download of ${tempPath} completed!`);
+            
+            await new Promise<void>((resolveFFmpeg, rejectFFmpeg) => {
+                const ffmpegCommand = ffmpeg(tempPath).output(outputPath);
 
-                }else{
-                    resolve(round(segment.duration, 2));
-
+                if (segment != undefined) {
+                    ffmpegCommand.setStartTime(segment.startTime);
+                    ffmpegCommand.setDuration(segment.duration < 60 ? segment.duration : 60);
+                } else {
+                    ffmpegCommand.setDuration(60);
                 }
+                
+                ffmpegCommand
+                    .on('end', async () => {
+                        console.log(`Audio processing completed: ${outputPath}`);
+                        resolveFFmpeg();
+                    })
+                    .on('error', (err: Error) => {
+                        console.error(`Error processing audio file: ${err.message}`);
+                        rejectFFmpeg(err);
+                    })
+                    .run();
+            });
 
-            })
-                .on('error', (err: Error) => {
-                    console.error(`Error processing audio file: ${err.message}`);
-                    reject();
-                })
-                .run();
-        });
+            // Get duration after ffmpeg processing is complete
+            if(segment == undefined) {
+                let dur = await getAudioDuration(outputPath);
+                resolve(round(dur, 2));
+            } else {
+                resolve(round(segment.duration, 2));
+            }
 
-        fileStream.on('error', (err: Error) => {
-            console.error(`Error writing to file: ${err.message}`);
-            reject()
-        });
-    })
+        } catch (error) {
+            console.error('Error in downloadFile:', error);
+            reject(error);
+        }
+    });
 }

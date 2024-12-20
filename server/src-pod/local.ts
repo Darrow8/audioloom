@@ -165,8 +165,6 @@ export function ensureRequiredFolders(): void {
         'logs',
         'uploads'
     ];
-
-
     requiredFolders.forEach(folder => {
         const folderPath = path.join(TEMP_DATA_PATH, folder);
         if (!fs.existsSync(folderPath)) {
@@ -198,3 +196,4 @@ export async function saveScriptToLogs(data: Script, fileName: string) {
         await saveAsJson([data], folderPath, fileName);
     }
 }
+

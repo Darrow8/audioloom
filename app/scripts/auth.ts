@@ -38,6 +38,8 @@ export async function initUser(auth0_user: Auth0User) : Promise<User | false> {
 
 export async function checkLogin(auth0_user: Auth0User, dispatch: Dispatch<UserAction>, credentials: Credentials) {
   try {
+    let access_token = await SecureStore.getItemAsync('auth0AccessToken');
+    console.log('access_token', access_token);
     if (auth0_user) {      
       if (credentials && credentials.accessToken && auth0_user.sub) {
         await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);

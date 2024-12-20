@@ -14,7 +14,8 @@ import { Script } from "@shared/script.js";
 import crypto from "crypto";
 import { saveScriptToLogs } from "@pod/local.js";
 import path from "path";
-import { deleteTempFiles } from "@pod/process_pod.js";
+import { v4 as uuidv4 } from 'uuid';
+// import { deleteTempFiles } from "@pod/local.js";
 
 // step 1: get instructions
 export async function getInstructions(articleContent: string): Promise<FullPrompts>{
@@ -33,7 +34,7 @@ export async function getInstructions(articleContent: string): Promise<FullPromp
       const wordCount = articleContent.trim().split(/\s+/).length;
       let minCount = Math.ceil(wordCount / wpm);
       // Add word count context to help GPT generate appropriate length podcast
-      let additionalInstructions = `\nThe article is ${wordCount} words long. Please ensure the podcast script has enough content and discussion to fill at least ${minCount} minutes considering the average talking speed of ${wpm} words per minute.`;
+      let additionalInstructions = `\nThe article is ${wordCount} words long. Please ensure the podcast script has enough content and discussion to fill at least ${minCount/2} minutes considering the average talking speed of ${wpm} words per minute.`;
       console.log(additionalInstructions)
       fullInstructions[key].instructions = prompt.raw_instructions + additionalInstructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
     } else {
@@ -67,13 +68,13 @@ export async function scriptwriter(articleName: string, instructions: FullLLMPro
     // Ensure required properties are present before creating Script
     const validatedLines = script.lines.map(line => ({
       ...line,
-      id: line.id || crypto.randomUUID(),
+      id: uuidv4().toString(),
       raw_string: line.raw_string,
       order: line.order,
       kind: line.kind 
     }));
     const newScript = new Script(validatedLines, script.title, script.authors);
-    saveScriptToLogs(newScript, crypto.randomUUID().toString());
+    saveScriptToLogs(newScript, uuidv4().toString());
     return {
       status: ProcessingStatus.IN_PROGRESS,
       step: "script",
@@ -130,7 +131,7 @@ export async function createScript(local_file_path: string, newPod: Partial<Pod>
       console.log(newPod)
       await createMongoData('pods', newPod);
       await updateMongoArrayDoc('users', user_id, 'pods', newPod._id);
-      deleteTempFiles()
+      // deleteTempFiles()
     } catch (dbError) {
       return {
         status: ProcessingStatus.ERROR,

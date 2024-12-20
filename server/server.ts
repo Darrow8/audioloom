@@ -53,12 +53,12 @@ process.on('SIGTERM', () => {
 });
 
 // Rate limiting
-const limiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 200 // limit each IP to 200 requests per windowMs
-});
+// const limiter = rateLimit({
+//     windowMs: 1 * 60 * 1000, // 1 minute
+//     max: 200 // limit each IP to 200 requests per windowMs
+// });
 
-app.use(limiter);
+// app.use(limiter);
 
 // Auth0 JWT validation middleware
 const jwtCheck = expressjwt({
