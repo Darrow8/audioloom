@@ -12,6 +12,7 @@ import { checkLogin, initUser } from '@/scripts/auth';
 import { ActivityIndicator, View } from 'react-native';
 import { socket } from '@/scripts/socket';
 import { env } from '../config/env';
+import { Colors } from '@/constants/Colors';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -87,7 +88,7 @@ function AppContent() {
     isLoggedIn ? (
       <Stack screenOptions={{
         headerStyle: {
-          backgroundColor: '#f4511e',
+          backgroundColor: Colors.theme.lightBlue,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -132,8 +133,6 @@ export default function RootLayout() {
   if(!env.AUTH0_DOMAIN || !env.AUTH0_CLIENT_ID) {
     throw new Error('No AUTH0_DOMAIN or AUTH0_CLIENT_ID available');
   }
-  // console.log('env.AUTH0_DOMAIN', env.AUTH0_DOMAIN);
-  // console.log('env.AUTH0_CLIENT_ID', env.AUTH0_CLIENT_ID);
 
   return (
     <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>

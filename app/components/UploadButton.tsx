@@ -6,11 +6,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DriveList from './DriveList';
 import { connectToPodGen } from '../scripts/s3';
 import { ProcessingStatus, ProcessingStep } from '@shared/processing';
-
 import 'react-native-get-random-values';
 import { ObjectId } from 'bson';
 import { useDocumentPicker } from '@/hooks/useDocumentPicker';
-
+import { Colors } from '../constants/Colors';
 
 const UploadButton: React.FC<{ 
   userId: ObjectId, 
@@ -78,7 +77,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: Colors.theme.lightBlue,
     width: 75,
     height: 75,
     borderRadius: 50,

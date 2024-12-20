@@ -2,7 +2,7 @@ import { uploadFileToS3, getFileFromS3, uploadAudioToS3 } from '@pod/pass_files.
 import { CharLine, Clip, MusicLine } from '@shared/line.js';
 import { Script } from '@shared/script.js';
 import { v4 as uuidv4 } from 'uuid';
-import { processCharacterLines, processMusicLines, processMusicLine, processCharacterLine, prevAndNextCharLines, processLine } from '@pod/process_line.js';
+import { processLine } from '@pod/process_line.js';
 import { deleteAllFilesInFolder, saveAsJson } from '@pod/local.js';
 import { TEMP_DATA_PATH } from '@pod/init.js';
 import { processCharacterVoices } from '@pod/pass_voice.js';
@@ -58,7 +58,6 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
                     message: `Processing line ${i + 1} of ${script.lines.length}`
                 };
                 res.write(JSON.stringify(progressUpdate));
-
                 const clip = await processLine(line, script, characters, runningTime);
                 if (clip != null && clip != undefined) {
                     cur_clips.push(clip);
@@ -169,16 +168,4 @@ function shouldMergeClips(clips: Clip[]): boolean {
 }
 
 
-/**
- * Delete temp files that are used in processing
- */
-export function deleteTempFiles() {
-    if(process.env.NODE_ENV === 'development') {
-        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'dialogue'));
-        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'character'));
-        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'character-temp'));
-        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'music'));
-        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'music-temp'));
-        deleteAllFilesInFolder(path.join(TEMP_DATA_PATH, 'result'));
-    }
-}
+

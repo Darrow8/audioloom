@@ -17,7 +17,6 @@ import { Voices } from '@shared/voice.js';
 import { RawPrompts, Script } from '@shared/script.js';
 import { localInstructions } from '@pod/process_prompt.js';
 import { getVoices } from '@pod/pass_voice.js';
-import { saveClipToLogs } from '@pod/local.js';
 
 
 export let base_voices: Voices;
@@ -164,9 +163,8 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
   }
 
   try {
-    // Step 1: Process and upload article
+    // Process and upload article
     let articlePath: string;
-
     try {
       const articleProcessResponse = await processArticles(req.file);
       articlePath = articleProcessResponse.file_path;
@@ -184,7 +182,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
       }, res);
     }
 
-    // Step 3: Create screenplay
+    // Create screenplay
     let scriptData: Script;
     try {
       const scriptResponse = await createScript(articlePath, newPod, user_id);
@@ -201,14 +199,14 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
       }, res);
     }
 
-    // // Step 4: Create podcast
+    // Create podcast
     const podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res);
     if (podResponse.status === ProcessingStatus.ERROR) {
       return onPodError(newPod, podResponse, res);
     }
     sendUpdate(new_pod_id, podResponse);
 
-    // Step 5: Cleanup - Save to S3 and delete local files
+    // Cleanup - Save to S3 and delete local files
     try {
       if (articlePath) {
         await uploadArticleToS3(articlePath, req.body.user_id);
@@ -222,6 +220,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
         newPod.audio_key = `pod-audio/${podResponse.filename}`;
       }
       await updateMongoData('pods', newPod);
+
     } catch (error) {
       console.error('Cleanup error:', error);
       // Continue execution as this is not critical

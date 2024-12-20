@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npx tsx server.ts",
     "dbuild": "docker build --platform linux/amd64 -t registry.digitalocean.com/audioloom/server:latest .",
-    "drun": "docker run --platform linux/amd64 --env-file .env -p 3000:3000 registry.digitalocean.com/audioloom/server:latest",
+    "drun": "docker run --platform linux/amd64 --env-file .env.docker -p 3000:3000 registry.digitalocean.com/audioloom/server:latest",
     "dpush": "docker push registry.digitalocean.com/audioloom/server:latest",
     "start": "node dist/server/server.js",
     "build": "npx tsc && npx tsc-alias",

@@ -6,7 +6,6 @@ import path from 'path';
 import { Multer } from "multer";
 import { ConvertAPI } from 'convertapi';
 
-
 export async function convertToTXT(file: Express.Multer.File, save_path: string): Promise<{ path: string, updated_file: any }> {
   const convertapi = new ConvertAPI(process.env.CONVERT_API_SECRET);
 
@@ -28,7 +27,4 @@ export async function convertToTXT(file: Express.Multer.File, save_path: string)
     path: file_path,
     updated_file: updated_file
   };
-
-
-
 }

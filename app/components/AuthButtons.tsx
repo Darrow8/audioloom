@@ -4,6 +4,7 @@ import auth0, { useAuth0, Auth0Provider } from 'react-native-auth0';
 import * as SecureStore from 'expo-secure-store';
 import { debounce } from 'lodash';
 import { env } from '../config/env';
+import { Colors } from '../constants/Colors';
 
 const AuthButtons = () => {
   const { authorize, isLoading, user } = useAuth0();
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    backgroundColor: 'blue',
+    backgroundColor: Colors.theme.lightBlue,
     padding: 15,
     borderRadius: 10,
     marginVertical: 1,

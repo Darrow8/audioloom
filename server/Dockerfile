@@ -15,6 +15,10 @@ COPY . .
 # Production stage
 FROM --platform=$TARGETPLATFORM node:20-alpine
 
+# Install FFmpeg
+RUN apk add --no-cache ffmpeg
+
+
 WORKDIR /usr/src/app
 
 # Copy package files and install production dependencies

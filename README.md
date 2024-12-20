@@ -60,5 +60,9 @@ To run commands in docker container:
 To get logs from docker container:
 `docker logs manager-server-1 -f`
 
+To update docker image and restart container:
+`docker compose down`
+`docker compose pull`
+`docker compose up -d`
 
 

@@ -120,19 +120,6 @@ export async function processCharacterDialogue(line: CharLine, prev_line: CharLi
 
 
 
-export async function processMusicLines(lines: MusicLine[], script: Script): Promise<AudioFile[]> {
-    let audio_arr: AudioFile[] = [];
-    for (let line of lines) {
-        let audio: AudioFile | null = await processMusicLine(line, script);
-        if (audio != null) {
-            audio_arr.push(audio);
-        }
-    }
-    // console.log(audio_arr);
-    return audio_arr;
-}
-
-
 export async function processMusicLine(line: MusicLine, script: Script): Promise<AudioFile> {
     let audio: AudioFile | null = null;
     if (line.type == MusicType.BMusic) {
@@ -229,8 +216,6 @@ async function processMusicLineWithRetry(
         } catch (error) {
             console.error(`Attempt ${i + 1} failed for music line ${line.order}:`, error);
             lastError = error;
-            // Exponential backoff
-            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
         }
     }
     throw new Error(`Failed to process music line after ${maxRetries} attempts: ${lastError.message}`);
