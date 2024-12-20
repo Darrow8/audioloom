@@ -3,25 +3,14 @@ import { Text, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useStateContext } from '@/state/StateContext';
 import { useAuth0 } from 'react-native-auth0';
-
+import { resetUser } from '@/scripts/mixpanel';
+import { fullLogout } from '@/scripts/auth';
 const Profile = () => {
   const { clearSession, hasValidCredentials } = useAuth0();
   const { state, dispatch } = useStateContext();
-  const onLogout = async () => {
-    try {
-      await clearSession()
-      await SecureStore.deleteItemAsync('auth0AccessToken');
-      await SecureStore.deleteItemAsync('signingUp');
-      dispatch({ type: 'LOGOUT' });
-    } catch (e) {
-      console.log('Log out cancelled');
-    }
-  };
   if(state.user == undefined) {
     return <Text>Loading...</Text>
   }
-
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -49,7 +38,7 @@ const Profile = () => {
       <View style={styles.content}>
 
         <View style={styles.actionSection}>
-          <TouchableOpacity style={styles.actionButton} onPress={onLogout}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => fullLogout(dispatch, clearSession)}>
             <Text style={styles.actionButtonText}>Log Out</Text>
           </TouchableOpacity>
         </View>

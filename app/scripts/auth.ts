@@ -8,7 +8,8 @@ import { MongoChangeStreamData } from "@shared/mongodb";
 import { Dispatch } from "react";
 import { ObjectId } from "bson";
 import { User as Auth0User } from "react-native-auth0";
-import { env } from '../config/env';
+import { env } from '@/config/env';
+import { identifyUser, resetUser, trackEvent } from './mixpanel';
 /**
  * Initialize a new user in the database
  */
@@ -16,7 +17,7 @@ export async function initUser(auth0_user: Auth0User) : Promise<User | false> {
   let partial_user = {
     ...auth0_user,
     name: auth0_user.name,
-    pods: [new ObjectId(process.env.INTRO_POD)],
+    pods: [new ObjectId(env.INTRO_POD)],
     email: auth0_user.email,
     email_verified: auth0_user.email_verified,
     picture: auth0_user.picture,
@@ -38,8 +39,6 @@ export async function initUser(auth0_user: Auth0User) : Promise<User | false> {
 
 export async function checkLogin(auth0_user: Auth0User, dispatch: Dispatch<UserAction>, credentials: Credentials) {
   try {
-    let access_token = await SecureStore.getItemAsync('auth0AccessToken');
-    console.log('access_token', access_token);
     if (auth0_user) {      
       if (credentials && credentials.accessToken && auth0_user.sub) {
         await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
@@ -56,7 +55,7 @@ export async function checkLogin(auth0_user: Auth0User, dispatch: Dispatch<UserA
           console.log("mongo_user", mongo_user);
           if(mongo_user){
             let mongo_id = mongo_user._id.toString();
-            watchAndDeploy(mongo_id, mongo_user, dispatch);
+            watchAndDeploy(mongo_id, mongo_user, dispatch, false);
             return true;
           }else{
             throw new Error('User not found');
@@ -77,7 +76,7 @@ export async function checkLogin(auth0_user: Auth0User, dispatch: Dispatch<UserA
             if (new_user) {
               // signing up is done
               await SecureStore.setItemAsync('signingUp', 'false');
-              watchAndDeploy(new_user._id.toString(), new_user, dispatch);
+              watchAndDeploy(new_user._id.toString(), new_user, dispatch, true);
               return true;
             }else{
               throw new Error('Error getting new user id');
@@ -119,7 +118,33 @@ const localWatchUser = (mongo_id: string, dispatch: Dispatch<UserAction>) => {
     });
   }
 
-  const watchAndDeploy = async (mongo_id: string, user: User, dispatch: Dispatch<UserAction>) => {
+  const watchAndDeploy = async (mongo_id: string, user: User, dispatch: Dispatch<UserAction>, isSignup: boolean = false) => {
     localWatchUser(mongo_id, dispatch);
+    identifyUser(user._id.toString(), {
+      email: user.email,
+      name: user.name,
+      account_type: user.user_metadata?.account_type,
+      reference_channel: user.user_metadata?.reference_channel,
+      created_at: user.created_at,
+    });
+    if(isSignup){
+      trackEvent('signup', {
+        email: user.email,
+        reference_channel: user.user_metadata?.reference_channel,
+        account_type: user.user_metadata?.account_type,
+      });
+    }
     dispatch({ type: 'LOGIN', payload: user });
+  }
+
+  export async function fullLogout(dispatch: Dispatch<UserAction>, clearSession: () => Promise<void>) {
+    try {
+      await clearSession()
+      await SecureStore.deleteItemAsync('auth0AccessToken');
+      await SecureStore.deleteItemAsync('signingUp');
+      resetUser();
+      dispatch({ type: 'LOGOUT' });
+    } catch (e) {
+      console.log('Log out cancelled');
+    }
   }

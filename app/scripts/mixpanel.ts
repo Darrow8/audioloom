@@ -4,7 +4,7 @@ import { env } from '../config/env';
 
 let mixpanelInstance: Mixpanel;
 
-function initMixpanel() {
+export function initMixpanel() {
     if(!env.MIXPANEL_TOKEN) {
         throw new Error('No MIXPANEL_TOKEN available');
     }
