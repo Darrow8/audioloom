@@ -10,6 +10,7 @@ import 'react-native-get-random-values';
 import { ObjectId } from 'bson';
 import { useDocumentPicker } from '@/hooks/useDocumentPicker';
 import { Colors } from '../constants/Colors';
+import { trackEvent } from '@/scripts/mixpanel';
 
 const UploadButton: React.FC<{ 
   userId: ObjectId, 
@@ -30,6 +31,11 @@ const UploadButton: React.FC<{
       }
       setShowProcessingBanner(true);
       let newPodId = new ObjectId();
+      trackEvent('pod_upload', {
+        pod_id: newPodId,
+        pod_title: fileAsset.name,
+        uploader_id: userId,
+      });
       await connectToPodGen(fileAsset, userId, newPodId, (update: ProcessingStep) => {
         console.log('update', update)
         if(update.status === ProcessingStatus.COMPLETED){

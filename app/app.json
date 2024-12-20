@@ -1,20 +1,21 @@
 {
   "expo": {
-    "name": "frontend",
+    "name": "Audioloom",
     "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rivetaudio.frontend",
+      "bundleIdentifier": "com.audioloom.frontend",
       "infoPlist": {
         "UIBackgroundModes": [
           "audio"

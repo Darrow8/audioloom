@@ -7,6 +7,8 @@ import { getAudioFromS3 } from '@/scripts/s3';
 import { AudioUrlTransporter } from '@shared/s3';
 import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
 import { Marquee } from '@animatereactnative/marquee';
+import { trackEvent } from '@/scripts/mixpanel';
+import { useStateContext } from '@/state/StateContext';
 
 const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sound | undefined, setSound: (sound: Audio.Sound | undefined) => void }) => {
   const [currentTime, setCurrentTime] = useState(0);
@@ -16,6 +18,7 @@ const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sou
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { state } = useStateContext();
 
   if (pod == null) {
     return null;
@@ -25,6 +28,12 @@ const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sou
     if (pod.audio_key != '') {
       getAudioFromS3(pod.audio_key).then((data: AudioUrlTransporter) => {
         setAudioUrlData(data);
+        trackEvent('pod_play', {
+          pod_id: pod._id,
+          pod_title: pod.title,
+          pod_author: pod.author,
+          listener_id: state.user?._id,
+        });
       }).catch((error) => {
         console.error('Error getting audio from S3:', error);
       });
