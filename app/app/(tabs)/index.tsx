@@ -14,6 +14,8 @@ import { connectToPodGen } from '@/scripts/s3';
 import { ObjectId } from 'bson';
 import { Audio } from 'expo-av';
 import * as SecureStore from 'expo-secure-store';
+import TrackPlayer from 'react-native-track-player';
+import { SplashScreen } from 'expo-router';
 
 const Listen = () => {
   const [sound, setSound] = useState<Audio.Sound>();
@@ -23,15 +25,11 @@ const Listen = () => {
   const [pods, setPods] = useState<Pod[]>([]); // Add Pod type to useState
   const [isPlayerModalVisible, setIsPlayerModalVisible] = useState(false);
   const [currentPod, setCurrentPod] = useState<Pod>();
-  const [toast, setToast] = useState<{message: string, visible: boolean}>({
-    message: '',
-    visible: false
-  });
+
   useEffect(() => {
     if (!state.user) return;
     const pod_ids = state.user.pods.map((id) => new ObjectId(id));
     // get initial pods
-
     Promise.all(pod_ids.map(async (id) => {
       try {
         const pod = await getRecordById('pods', id);
@@ -41,17 +39,18 @@ const Listen = () => {
           return undefined;
         }
       } catch (error) {
-        setToast({message: 'Failed to load pod', visible: true});
         return undefined;
       }
-    })).then(resolvedPods => {
+    })).then(async (resolvedPods) => {
       const validPods = resolvedPods.filter((pod) => pod != undefined);
       // Sort pods by created_at date, newest first
       const sortedPods = validPods.sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
-      console.log(`validPods: ${sortedPods}`);
+      // console.log(`validPods: ${sortedPods}`);
       setPods(sortedPods);
+      // console.log('hide splash screen from sorted pods');
+      // await SplashScreen.hideAsync();
     });
     watchDocumentsPods(pod_ids, (stream_data: MongoChangeStreamData) => {
       setPods(currentPods => {
@@ -71,20 +70,12 @@ const Listen = () => {
         );
       });
     });
-    socket.on('error', (data) => {
+    socket.on('error', async (data) => {
       console.log("error: ", data);
-      setToast({message: 'Connection error occurred', visible: true});
+      console.log('hide splash screen from error');
+      // await SplashScreen.hideAsync();
     });
   }, [state.user?.pods]);
-
-  useEffect(() => {
-    if (toast.visible) {
-      const timer = setTimeout(() => {
-        setToast(prev => ({...prev, visible: false}));
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast.visible]);
 
   const handlePodClick = (pod: Pod) => {
     if(pod.status == PodStatus.READY){
@@ -94,7 +85,7 @@ const Listen = () => {
       setCurrentPod(pod);
       setIsPlayerModalVisible(true);
     }else{
-      setToast({message: 'Pod is not ready yet', visible: true});
+      console.log('pod is not ready');
     }
   }
 
@@ -103,11 +94,10 @@ const Listen = () => {
     if(sound) {
       sound.unloadAsync();
     }
+    if(currentPod) {
+      TrackPlayer.reset();
+    }
   }
-
-  const handleCloseToast = () => {
-    setToast(prev => ({...prev, visible: false}));
-  };
 
     const panResponder = useRef(
         PanResponder.create({
@@ -156,8 +146,6 @@ const Listen = () => {
             userId={state.user._id} 
             showProcessingBanner={showProcessingBanner}
             setShowProcessingBanner={setShowProcessingBanner}
-            toast={toast}
-            setToast={setToast}
           />
           <GestureRecognizer
             style={{flex: 1}}
@@ -179,14 +167,6 @@ const Listen = () => {
               </View>
             </Modal>
           </GestureRecognizer>
-          {toast.visible && (
-            <View style={styles.toast}>
-              <View style={styles.toastContent}>
-                <Text style={styles.toastText}>{toast.message}</Text>
-                <Text style={styles.closeButton} onPress={handleCloseToast}>✕</Text>
-              </View>
-            </View>
-          )}
         </>
       ) : null}
     </View>
