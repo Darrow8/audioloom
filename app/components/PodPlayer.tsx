@@ -9,25 +9,89 @@ import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
 import { Marquee } from '@animatereactnative/marquee';
 import { trackEvent } from '@/scripts/mixpanel';
 import { useStateContext } from '@/state/StateContext';
+import TrackPlayer, { 
+  useTrackPlayerEvents,
+  Event,
+  State,
+  useProgress,
+  usePlaybackState,
+  Capability
+} from 'react-native-track-player';
+
 
 const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sound | undefined, setSound: (sound: Audio.Sound | undefined) => void }) => {
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(3600);
-  const [audioUrlData, setAudioUrlData] = useState<AudioUrlTransporter | null>(null);
-  const [position, setPosition] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioUrlData, setAudioUrlData] = useState<AudioUrlTransporter | null>(null);
+  const { position, duration } = useProgress();
+  const playbackState = usePlaybackState();
+  const isPlaying = playbackState.state === State.Playing;
   const { state } = useStateContext();
 
   if (pod == null) {
     return null;
   }
+  
+
+  const setupPlayer = async () => {
+    try {
+      await TrackPlayer.setupPlayer();
+      await TrackPlayer.updateOptions({
+        capabilities: [
+          Capability.Play,
+          Capability.Pause,
+          Capability.SeekTo,
+          Capability.JumpForward,
+          Capability.JumpBackward,
+        ],
+        compactCapabilities: [
+          Capability.Play,
+          Capability.Pause,
+        ],
+      });
+      TrackPlayer.addEventListener(Event.RemotePlay, async () => {
+        await TrackPlayer.play();
+      });
+  
+      TrackPlayer.addEventListener(Event.RemotePause, async () => {
+        await TrackPlayer.pause();
+      });
+  
+      TrackPlayer.addEventListener(Event.RemoteSeek, async (event) => {
+        await TrackPlayer.seekTo(event.position);
+      });
+  
+      TrackPlayer.addEventListener(Event.RemoteJumpForward, async () => {
+        await TrackPlayer.seekBy(30);
+      });
+  
+      TrackPlayer.addEventListener(Event.RemoteJumpBackward, async () => {
+        await TrackPlayer.seekBy(-30);
+      });
+    } catch (error) {
+      console.error('Error setting up player:', error);
+    }
+  };
+
+  async function initPlayer() { 
+    let playerState = await TrackPlayer.getPlaybackState();
+    if(playerState.state == State.None) {
+      await setupPlayer();
+    }
+    // if(playerState.state == State.Paused || playerState.state == State.Ready) {
+    //   await TrackPlayer.play();
+    // }
+  }
+
+  useEffect(() => {
+    initPlayer();
+  }, []);
 
   useEffect(() => {
     if (pod.audio_key != '') {
       getAudioFromS3(pod.audio_key).then((data: AudioUrlTransporter) => {
         setAudioUrlData(data);
+        loadTrack(data.audio_url);
         trackEvent('pod_play', {
           pod_id: pod._id,
           pod_title: pod.title,
@@ -36,164 +100,68 @@ const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sou
         });
       }).catch((error) => {
         console.error('Error getting audio from S3:', error);
+        setError('Failed to load audio');
       });
     }
   }, [pod]);
 
-  useEffect(() => {
-    let subscription: any;
-    if (audioUrlData) {
-      if (sound) {
-        sound.unloadAsync();
-      }
-      loadAudio().then(async (sub) => {
-        subscription = sub;
-      });
-    }
-
-    return () => {
-      if (subscription) {
-        subscription.remove();
-      }
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
-  }, [audioUrlData]);
-
-  useEffect(() => {
-    const setupAudio = async () => {
-      try {
-        
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          staysActiveInBackground: true,
-          interruptionModeIOS: InterruptionModeIOS.DuckOthers,
-          playsInSilentModeIOS: true,
-          shouldDuckAndroid: false,
-          interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
-          playThroughEarpieceAndroid: false,
-        });
-      } catch (err) {
-        console.error('Error setting up audio mode:', err);
-      }
-    };
-
-    setupAudio();
-
-    return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
-    };
-  }, []);
-
-  const loadAudio = async () => {
+  const loadTrack = async (audioUrl: string) => {
     try {
       setIsLoading(true);
-      setError(null);
-
-      // if (sound) {
-      //   await sound.stopAsync();
-      //   await sound.unloadAsync();
-      //   setSound(undefined);
-      // }
-
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: audioUrlData?.audio_url ?? '' },
-        { shouldPlay: true }
-      );
-
-      const statusSubscription = newSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded) {
-          setCurrentTime(status.positionMillis / 1000);
-          setDuration(status.durationMillis ? status.durationMillis / 1000 : duration);
-        }
+      await TrackPlayer.reset();
+      await TrackPlayer.add({
+        url: audioUrl,
+        title: pod.title,
+        artist: pod.author,
+        id: pod._id,
       });
-
-      setSound(newSound);
       setIsLoading(false);
-      setIsPlaying(true);
-
-      return statusSubscription;
-    } catch (err) {
+    } catch (error) {
+      console.error('Error loading track:', error);
       setError('Failed to load audio');
       setIsLoading(false);
-      console.error('Error loading audio:', err);
     }
   };
 
   const playSound = async () => {
     try {
-      if (!sound) {
-        await loadAudio();
-      }
-      if(sound) {
-        await sound.playAsync();
-        setIsPlaying(true);
-      }
-    } catch (err) {
+      await TrackPlayer.play();
+    } catch (error) {
+      console.error('Error playing track:', error);
       setError('Failed to play audio');
-      console.error('Error playing audio:', err);
     }
   };
 
   const pauseSound = async () => {
     try {
-      await sound?.pauseAsync();
-      setIsPlaying(false);
-    } catch (err) {
+      await TrackPlayer.pause();
+    } catch (error) {
+      console.error('Error pausing track:', error);
       setError('Failed to pause audio');
-      console.error('Error pausing audio:', err);
     }
   };
 
-
   const handlePlaybackProgress = async (value: number) => {
     try {
-      setCurrentTime(value);
-      if (sound) {
-        const wasPlaying = isPlaying;
-        if (wasPlaying) {
-          await sound.pauseAsync();
-        }
-        await sound.setPositionAsync(value * 1000); // Convert seconds to milliseconds
-        if (wasPlaying) {
-          await sound.playAsync();
-        }
-      }
-    } catch (err) {
-      console.log('Error seeking audio:', err);
+      await TrackPlayer.seekTo(value);
+    } catch (error) {
+      console.error('Error seeking:', error);
     }
   };
 
   const skipForward = async () => {
     try {
-      if (sound) {
-        const status = await sound.getStatusAsync();
-        if (status.isLoaded) {
-          const newPosition = Math.min(status.positionMillis + 30000, status.durationMillis || 0);
-          await sound.setPositionAsync(newPosition);
-        }
-      }
-    } catch (err) {
-      setError('Failed to skip forward');
-      console.error('Error skipping forward:', err);
+      await TrackPlayer.seekBy(30);
+    } catch (error) {
+      console.error('Error skipping forward:', error);
     }
   };
 
   const skipBackward = async () => {
     try {
-      if (sound) {
-        const status = await sound.getStatusAsync();
-        if (status.isLoaded) {
-          const newPosition = Math.max(0, status.positionMillis - 30000);
-          await sound.setPositionAsync(newPosition);
-        }
-      }
-    } catch (err) {
-      setError('Failed to skip backward');
-      console.error('Error skipping backward:', err);
+      await TrackPlayer.seekBy(-30);
+    } catch (error) {
+      console.error('Error skipping backward:', error);
     }
   };
 
@@ -226,14 +194,14 @@ const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sou
 
           <View style={styles.controls}>
             <View style={styles.timeDisplay}>
-              <Text style={styles.timeText}>{formatTime(currentTime)}</Text>
+              <Text style={styles.timeText}>{formatTime(position)}</Text>
               <Text style={styles.timeText}>{formatTime(duration)}</Text>
             </View>
             <Slider
               style={styles.progressBar}
               minimumValue={0}
               maximumValue={duration}
-              value={currentTime}
+              value={position}
               onValueChange={handlePlaybackProgress}
               maximumTrackTintColor="#ccc"
               minimumTrackTintColor="#007AFF"

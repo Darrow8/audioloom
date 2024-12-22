@@ -10,7 +10,8 @@ export function initMixpanel() {
     }
     // Set up an instance of Mixpanel
     const trackAutomaticEvents = false;
-    mixpanelInstance = new Mixpanel(env.MIXPANEL_TOKEN, trackAutomaticEvents);
+    const useNative = false;
+    mixpanelInstance = new Mixpanel(env.MIXPANEL_TOKEN, trackAutomaticEvents, useNative);
     mixpanelInstance.init();
 }
 

@@ -15,8 +15,8 @@ import { trackEvent } from '@/scripts/mixpanel';
 const UploadButton: React.FC<{ 
   userId: ObjectId, 
   showProcessingBanner: boolean, setShowProcessingBanner: (show: boolean) => void, 
-  toast: {message: string, visible: boolean}, setToast: (toast: {message: string, visible: boolean}) => void }> 
-  = ({ userId, showProcessingBanner, setShowProcessingBanner, toast, setToast }) => {
+  }> 
+  = ({ userId, showProcessingBanner, setShowProcessingBanner }) => {
   const { fileAsset, isLoading, promptIOSPicker } = useDocumentPicker();
 
 
@@ -48,7 +48,6 @@ const UploadButton: React.FC<{
         if(update.status === ProcessingStatus.ERROR){
           console.log('error')
           setShowProcessingBanner(false);
-          setToast({message: update.message || 'Error processing', visible: true});
         }
       })
     }
