@@ -6,7 +6,9 @@ import { S3 } from 'aws-sdk';
 import { scheduleJob, Job } from 'node-schedule';
 import { S3ServiceException } from '@aws-sdk/client-s3';
 import { HeadObjectCommandInput } from '@aws-sdk/client-s3';
+
 dotenv.config();
+
 const s3 = new S3Client(
     { region: "us-west-1",
         credentials: {

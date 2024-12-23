@@ -12,7 +12,7 @@ import { ObjectId } from "mongodb";
 import { base_instructions } from "@pod/pod_main.js";
 import { Script } from "@shared/script.js";
 import crypto from "crypto";
-import { saveScriptToLogs } from "@pod/local.js";
+import { saveScript } from "@pod/local.js";
 import path from "path";
 import { v4 as uuidv4 } from 'uuid';
 // import { deleteTempFiles } from "@pod/local.js";
@@ -73,8 +73,9 @@ export async function scriptwriter(articleName: string, instructions: FullLLMPro
       order: line.order,
       kind: line.kind 
     }));
-    const newScript = new Script(validatedLines, script.title, script.authors);
-    saveScriptToLogs(newScript, uuidv4().toString());
+    let script_file_path = `${uuidv4().toString()}.json`;
+    const newScript = new Script(validatedLines, script.title, script.authors, script_file_path);
+    await saveScript(newScript, script_file_path);
     return {
       status: ProcessingStatus.IN_PROGRESS,
       step: "script",

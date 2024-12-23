@@ -35,8 +35,6 @@ export async function mongo_startup() {
     // Optionally, you might want to rethrow the error or handle it in a way that's appropriate for your application
     throw error;
   }
-
-
 }
 
 

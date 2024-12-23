@@ -46,8 +46,12 @@ export async function AttemptAuthentication(auth0_user: Auth0User, dispatch: Dis
     if (auth0_id) {
       console.log(auth0_id);
       let response = await getUserByIdForAuth(auth0_id);
-
-      if(response == 0){
+      if(response){        
+        // user found
+        let user = await getUserById(auth0_id);
+        watchAndDispatch(auth0_id.toString(), user, dispatch, false);
+        return true;
+      }else{
         // create new user
         let newUser = await initUser(auth0_user);
         if (newUser != null) {
@@ -57,56 +61,8 @@ export async function AttemptAuthentication(auth0_user: Auth0User, dispatch: Dis
           console.error("Error creating user");
           return false;
         }
-      } else if(response == -1){
-        console.error("Error fetching user");
-        return false;
-      } else {
-        // user found
-        watchAndDispatch(auth0_id.toString(), response as User, dispatch, false);
-        return true;
-      }
-
-      // if (mongo_user) {
-      //   // watchAndDeploy(mongo_user._id.toString(), mongo_user, dispatch, false);
-      //   return true;
-      // } else {
-      //   // no user found, create new user
-      //   let userStatus = await initUser(auth0_user);
-      //   if (userStatus) {
-      //     // watchAndDeploy(auth0_id.toString(), auth0_user, dispatch, true);
-      //     return true;
-      //   }
-      // }
+      } 
     }
-
-    // if (logins_count > 1) {
-    //   // watch user
-    //   let mongo_user = await getUserBySub(auth0_user.sub as string);
-    //   console.log("mongo_user", mongo_user);
-    //   if (mongo_user) {
-    //     let mongo_id = mongo_user._id.toString();
-    //     watchAndDeploy(mongo_id, mongo_user, dispatch, false);
-    //     return true;
-    //   }
-    // } else if (logins_count == 1) {
-    //   if (auth0_user.email && auth0_user.name) {
-    //     // make new user
-    //     let new_user = await initUser(auth0_user);
-    //     if (new_user) {
-    //       // signing up is done
-    //       watchAndDeploy(new_user._id.toString(), new_user, dispatch, true);
-    //       return true;
-    //     }
-    //   }
-    // }else {
-    //   // user has no logins_count
-    //   // let mongo_user = await getUserBySub(auth0_user.sub as string);
-    //   //   if (mongo_user) {
-    //   //     await SecureStore.setItemAsync('signingUp', 'false');
-    //   //     checkLogin(auth0_user, dispatch);
-    //   //   }
-    //   throw new Error('No logins_count found');
-    // }
   } catch (error) {
     console.error("Error checking login status:", error);
     // full sign out
@@ -118,7 +74,6 @@ export async function AttemptAuthentication(auth0_user: Auth0User, dispatch: Dis
 
 const localWatchUser = (mongo_id: string, dispatch: Dispatch<UserAction>) => {
   console.log("Watching user", mongo_id);
-
   watchDocumentUser(mongo_id, (data: MongoChangeStreamData) => {
     if (data.operationType === 'update') {
       if (data.fullDocument._id != undefined) {

@@ -38,8 +38,10 @@ export const connectToPodGen = async (
 ) => {
     try {
         listenToPodGen(new_pod_id, onUpdate);
-        console.log('sending to podgen')
-        const response = await authenticatedFileUpload(`${BASE_URL}pod/trigger_creation`, fileAsset.uri, {
+
+        console.log('starting pod generation')
+        
+        await authenticatedFileUpload(`${BASE_URL}pod/trigger_creation`, fileAsset.uri, {
             uploadType: FileSystem.FileSystemUploadType.MULTIPART,
             fieldName: 'file',
             parameters: {
@@ -47,41 +49,11 @@ export const connectToPodGen = async (
                 new_pod_id: new_pod_id.toString()
             }
         });
-
-        if (response.status !== 200) {
-            throw new Error(`Upload failed with status ${response.status}`);
-        }
-
-        return JSON.parse(response.body);
     } catch (error) {
         console.error('Upload error:', error);
         throw error;
     }
 };
-
-
-export const uploadWithFileSystem = async (fileAsset: FileAsset, userId: string, podId: string) => {
-    try {
-        const response = await authenticatedFileUpload(`${BASE_URL}pod/trigger_creation`, fileAsset.uri, {
-            uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-            fieldName: 'file',
-            parameters: {
-                user_id: userId,
-                new_pod_id: podId
-            }
-        });
-
-        if (response.status !== 200) {
-            throw new Error(`Upload failed with status ${response.status}`);
-        }
-
-        return JSON.parse(response.body);
-    } catch (error) {
-        console.error('Upload error:', error);
-        throw error;
-    }
-};
-
 
 export function listenToPodGen(pod_id: ObjectId, onUpdate: (update: ProcessingStep) => void) {
     const eventName = `pod:${pod_id.toString()}:status`;

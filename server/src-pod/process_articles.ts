@@ -15,6 +15,7 @@ export const processArticles = async (file: Express.Multer.File) => {
   console.log('processArticles file: ' + file)
   let originalPath = file.path;
   let file_path;
+  let article_id;
   if (file.mimetype != 'text/plain') {
     let convert_txt_resp = await convertToTXT(file, `${STORAGE_PATH}`);
     if (convert_txt_resp == null) {
@@ -22,9 +23,11 @@ export const processArticles = async (file: Express.Multer.File) => {
     }
     file = convert_txt_resp.updated_file;
     file_path = convert_txt_resp.path;
+    article_id = convert_txt_resp.article_id;
     console.log("updated file path: " + file_path);
   } else {
     file_path = originalPath;
+    article_id = file.filename.split('.')[0];
     console.log("original file path: " + file_path);
   }
 
@@ -34,11 +37,11 @@ export const processArticles = async (file: Express.Multer.File) => {
     status: ProcessingStatus.IN_PROGRESS,
     step:"article",
     file_path: file_path,
+    article_id: article_id
   } as ProcessingStep;
 };
 
-export async function uploadArticleToS3(local_file_path: string, _id: ObjectId) {
-  const articleId = new ObjectId();
+export async function uploadArticleToS3(articleId: string, local_file_path: string, _id: ObjectId) {
   const articleKey = `articles/${articleId.toString()}.txt`;
   let file = fs.readFileSync(local_file_path);
   let uploadDetails = {
@@ -47,19 +50,17 @@ export async function uploadArticleToS3(local_file_path: string, _id: ObjectId) 
     Body: file
   }
   const uploadResponse = await uploadFileToS3(uploadDetails);
-  if (uploadResponse.statusCode === 200) {
-    let articleData = {
-      _id: articleId,
-      key: articleKey,
-      uploadedAt: new Date(),
-      uploadedBy: (_id)
-    }
-    let articleResult = await createMongoData('articles', articleData);
-    if (articleResult) {
-      await updateMongoArrayDoc('users', _id, "articles", articleId);
-    } else {
-      throw new Error('Failed to create article in mongo');
-    }
-    fs.unlinkSync(local_file_path);
+  return uploadResponse;
+}
+
+export async function uploadScriptToS3(scriptId:string, local_file_path: string, _id: ObjectId) {
+  const scriptKey = `scripts/${scriptId.toString()}.json`;
+  let file = fs.readFileSync(local_file_path);
+  let uploadDetails = {
+    Bucket: 'main-server',
+    Key: scriptKey,
+    Body: file
   }
+  const uploadResponse = await uploadFileToS3(uploadDetails);
+  return uploadResponse;
 }

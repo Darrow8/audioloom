@@ -7,11 +7,6 @@
     "icon": "./assets/images/icon2.jpg",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/icon2.jpg",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.audioloom.frontend",
@@ -20,6 +15,11 @@
           "audio"
         ]
       }
+    },
+    "splash": {
+      "backgroundColor": "#ffffff",
+      "image": "./assets/images/icon2.jpg",
+      "resizeMode": "contain"
     },
     "plugins": [
       "expo-router",
@@ -53,7 +53,14 @@
           "iosUrlScheme": "com.googleusercontent.apps.554636964216-v3fsfvau5939st9bjquk8to2fnt0m2f1"
         }
       ],
-      "expo-secure-store"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/icon2.jpg",
+          "resizeMode": "contain"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

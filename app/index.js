@@ -29,6 +29,8 @@ ErrorUtils.setGlobalHandler(() => {
   // You can add custom error handling here if needed
 });
 
+// TrackPlayer.registerPlaybackService(() => require('./playerService'));
+
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);
 // It also ensures that whether you load the app in Expo Go or in a native build,
