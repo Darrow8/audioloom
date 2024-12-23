@@ -12,67 +12,67 @@ import { useDocumentPicker } from '@/hooks/useDocumentPicker';
 import { Colors } from '../constants/Colors';
 import { trackEvent } from '@/scripts/mixpanel';
 
-const UploadButton: React.FC<{ 
-  userId: ObjectId, 
-  showProcessingBanner: boolean, setShowProcessingBanner: (show: boolean) => void, 
-  }> 
+const UploadButton: React.FC<{
+  userId: ObjectId,
+  showProcessingBanner: boolean, setShowProcessingBanner: (show: boolean) => void,
+}>
   = ({ userId, showProcessingBanner, setShowProcessingBanner }) => {
-  const { fileAsset, isLoading, promptIOSPicker } = useDocumentPicker();
+    const { fileAsset, isLoading, promptIOSPicker } = useDocumentPicker();
 
 
-  useEffect(() => {
-    async function startPodGenerator() {
-      if(fileAsset == null){
-        return;
+    useEffect(() => {
+      async function startPodGenerator() {
+        if (fileAsset == null) {
+          return;
+        }
+        if (showProcessingBanner) {
+          console.log('already processing')
+          return;
+        }
+        setShowProcessingBanner(true);
+        let newPodId = new ObjectId();
+        trackEvent('pod_upload', {
+          pod_id: newPodId,
+          pod_title: fileAsset.name,
+          uploader_id: userId,
+        });
+        await connectToPodGen(fileAsset, userId, newPodId, (update: ProcessingStep) => {
+          console.log('update', update)
+          if (update.status === ProcessingStatus.COMPLETED) {
+            console.log('completed!')
+            setShowProcessingBanner(false);
+          }
+          if (update.status === ProcessingStatus.IN_PROGRESS) {
+            setShowProcessingBanner(true);
+          }
+          if (update.status === ProcessingStatus.ERROR) {
+            console.log('error')
+            setShowProcessingBanner(false);
+          }
+        })
       }
-      if(showProcessingBanner){
-        console.log('already processing')
-        return;
-      }
-      setShowProcessingBanner(true);
-      let newPodId = new ObjectId();
-      trackEvent('pod_upload', {
-        pod_id: newPodId,
-        pod_title: fileAsset.name,
-        uploader_id: userId,
-      });
-      await connectToPodGen(fileAsset, userId, newPodId, (update: ProcessingStep) => {
-        console.log('update', update)
-        if(update.status === ProcessingStatus.COMPLETED){
-          console.log('completed!')
-          setShowProcessingBanner(false);
-        }
-        if(update.status === ProcessingStatus.IN_PROGRESS){
-          setShowProcessingBanner(true);
-        }
-        if(update.status === ProcessingStatus.ERROR){
-          console.log('error')
-          setShowProcessingBanner(false);
-        }
-      })
-    }
-    startPodGenerator()
-  }, [fileAsset])
+      startPodGenerator()
+    }, [fileAsset])
 
 
-  return (
-    <>
-      {showProcessingBanner == false && (
-        <View style={styles.container}>
-          <TouchableOpacity style={styles.button} onPress={()=>{
-        promptIOSPicker()
-      }} disabled={isLoading}>
-        {isLoading ? (
-          <ActivityIndicator size="large" color="#fff" />
-        ) : (
-          <Feather name="plus" size={30} color="#fff" />
+    return (
+      <>
+        {showProcessingBanner == false && (
+          <View style={styles.container}>
+            <TouchableOpacity style={styles.button} onPress={() => {
+              promptIOSPicker()
+            }} disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator size="large" color="#fff" />
+              ) : (
+                <Feather name="plus" size={30} color="#fff" />
+              )}
+            </TouchableOpacity>
+          </View>
         )}
-          </TouchableOpacity>
-        </View>
-      )}
-    </>
-  );
-};
+      </>
+    );
+  };
 
 const styles = StyleSheet.create({
   container: {

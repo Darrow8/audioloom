@@ -10,7 +10,8 @@
     "dpush": "docker push registry.digitalocean.com/audioloom/server:latest",
     "start": "node dist/server/server.js",
     "build": "npx tsc && npx tsc-alias",
-    "type-check": "npx tsc --noEmit"
+    "type-check": "npx tsc --noEmit",
+    "dfull": "npm run build && npm run dbuild && npm run dpush"
   },
   "author": "Darrow Hartman",
   "license": "ISC",

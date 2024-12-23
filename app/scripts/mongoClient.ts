@@ -21,7 +21,7 @@ export const getAllUsers = async () => {
     return users;
 }
 
-export const createUser = async (data: Partial<User>) : Promise<DocumentCreated | false> => {
+export const createUser = async (data: Partial<User>) : Promise<DocumentCreated> => {
     // Add created_at timestamp
     data.created_at = new Date().toISOString();
     data.updated_at = data.created_at;
@@ -30,7 +30,24 @@ export const createUser = async (data: Partial<User>) : Promise<DocumentCreated 
         console.error('Error creating user:', error);
         return false;
     });
-    return new_data as DocumentCreated | false;
+    return new_data as DocumentCreated;
+}
+/**
+ * 0 means create new user
+ * -1 means error
+ * user means user found
+ */
+export const getUserByIdForAuth = async (id: ObjectId) : Promise<User | number> => {
+    const response = await getRecordById('users', id);
+
+    if ('message' in response && response.message == 'Not found') {
+        // create new user
+        return 0;
+    } else if(response._id != null){
+        return response;
+    } else {
+        return -1;
+    }
 }
 
 export const getUserById = async (id: ObjectId) => {

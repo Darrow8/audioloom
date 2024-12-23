@@ -22,7 +22,6 @@ import TrackPlayer, {
 const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sound | undefined, setSound: (sound: Audio.Sound | undefined) => void }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [audioUrlData, setAudioUrlData] = useState<AudioUrlTransporter | null>(null);
   const { position, duration } = useProgress();
   const playbackState = usePlaybackState();
   const isPlaying = playbackState.state === State.Playing;
@@ -77,20 +76,23 @@ const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sou
     let playerState = await TrackPlayer.getPlaybackState();
     if(playerState.state == State.None) {
       await setupPlayer();
+      return () => {
+        TrackPlayer.reset();
+      };
     }
-    // if(playerState.state == State.Paused || playerState.state == State.Ready) {
-    //   await TrackPlayer.play();
-    // }
   }
 
   useEffect(() => {
-    initPlayer();
+    try{
+      initPlayer();
+    } catch(error) {
+      console.error('Error initializing player:', error);
+    }
   }, []);
 
   useEffect(() => {
     if (pod.audio_key != '') {
       getAudioFromS3(pod.audio_key).then((data: AudioUrlTransporter) => {
-        setAudioUrlData(data);
         loadTrack(data.audio_url);
         trackEvent('pod_play', {
           pod_id: pod._id,
@@ -178,18 +180,10 @@ const PodPlayer = ({ pod, sound, setSound }: { pod: Pod | null, sound: Audio.Sou
       ) : (
         <View style={styles.container}>
           <View style={styles.header}>
-            {/* <Marquee
-              speed={0.5}
-              spacing={2}> */}
              <Text numberOfLines={1} style={styles.podcastTitle}>{pod.title}</Text>
-            {/* </Marquee>
-            <Marquee
-              speed={0.5}
-              spacing={2}> */}
               {(pod.author && pod.author !== "Unknown" && pod.author !== "unknown") && (
                 <Text numberOfLines={1} style={styles.podcastAuthor}>{pod.author}</Text>
               )}
-            {/* </Marquee> */}
           </View>
 
           <View style={styles.controls}>
