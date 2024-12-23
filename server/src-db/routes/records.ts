@@ -14,14 +14,14 @@ export const router = express.Router();
 export async function routerFunctions() {
   // This section will help you get a single record by id
   router.get("/:col/:id", authCheck, async (req, res) => {
-    let collection = client.db("RivetAudio").collection(req.params.col);
+    let collection = client.db(process.env.MONGO_DB).collection(req.params.col);
     if (!ObjectId.isValid(req.params.id)) {
-      return res.status(400).send("Invalid ID format");
+      return res.status(400).send(JSON.stringify({message: "Invalid ID format"}));
     }
     let query = { _id: new ObjectId(req.params.id) };
     let result = await collection.findOne(query);
 
-    if (!result) res.send("Not found").status(404);
+    if (!result) res.send(JSON.stringify({message: "Not found"})).status(404);
     else res.send(result).status(200);
   });
 
@@ -30,18 +30,13 @@ export async function routerFunctions() {
     try {
       let newDocument : any = req.body as User;
       console.log('newDocument', newDocument);
-      let obj_id = new ObjectId();
-      if (!ObjectId.isValid(obj_id)) {
-        return res.status(400).send("Invalid ID format");
-      }
-      newDocument._id = obj_id;
-      let collection = client.db("RivetAudio").collection(req.params.col);
-
+      let collection = client.db(process.env.MONGO_DB).collection(req.params.col);
+      newDocument._id = new ObjectId(newDocument._id as string);
       let result = await collection.insertOne(newDocument);
       res.send(result).status(204);
     } catch (err) {
       console.error(err);
-      res.status(500).send("Error adding record");
+      res.status(500).send(JSON.stringify({message: "Error adding record"}));
     }
   });
 
@@ -57,12 +52,12 @@ export async function routerFunctions() {
       const updates = {
         $set: data,
       };
-      let collection = client.db("RivetAudio").collection(req.params.col);
+      let collection = client.db(process.env.MONGO_DB).collection(req.params.col);
       let result = await collection.updateOne(query, updates);
       res.send(result).status(200);
     } catch (err) {
       console.error(err);
-      res.status(500).send("Error updating record");
+      res.status(500).send(JSON.stringify({message: "Error updating record"}));
     }
   });
 
@@ -75,13 +70,13 @@ export async function routerFunctions() {
       }
       const query = { _id: obj_id };
 
-      let collection = client.db("RivetAudio").collection(req.params.col);
+      let collection = client.db(process.env.MONGO_DB).collection(req.params.col);
       let result = await collection.deleteOne(query);
 
       res.send(result).status(200);
     } catch (err) {
       console.error(err);
-      res.status(500).send("Error deleting record");
+      res.status(500).send(JSON.stringify({message: "Error deleting record"}));
     }
   });
 
@@ -97,17 +92,17 @@ export async function routerFunctions() {
 
       const query = { [field as string]: value };
 
-      let collection = client.db("RivetAudio").collection(col);
+      let collection = client.db(process.env.MONGO_DB).collection(col);
       let result = await collection.findOne(query);
 
       if (result) {
         res.json(result).status(200);
       } else {
-        res.status(404).send("Record not found");
+        res.status(404).send(JSON.stringify({message: "Record not found"}));
       }
     } catch (err) {
       console.error(err);
-      res.status(500).send("Error retrieving record");
+      res.status(500).send(JSON.stringify({message: "Error retrieving record"}));
     }
   });
   return new Promise((resolve, reject) => {

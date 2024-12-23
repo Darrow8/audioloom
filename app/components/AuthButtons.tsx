@@ -26,7 +26,7 @@ const AuthButtons = () => {
     } catch (e) {
       console.log(e);
     }
-  }, 1000);
+  }, 500);
 
   const debouncedSignup = debounce(async () => {
     try {
@@ -38,11 +38,11 @@ const AuthButtons = () => {
           screen_hint: 'signup'
         }
       });
-      await SecureStore.setItemAsync('signingUp', 'true');
+      // await SecureStore.setItemAsync('signingUp', 'true');
     } catch (e) {
       console.log(e);
     }
-  }, 1000);
+  }, 500);
 
   return (
     <View style={styles.buttonContainer}>

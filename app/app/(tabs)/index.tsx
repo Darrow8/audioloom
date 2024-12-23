@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, StyleSheet, View, ScrollView, PanResponder, Text, Button } from 'react-native';
+import { Modal, StyleSheet, View, ScrollView, PanResponder, Text, Button, ActivityIndicator } from 'react-native';
 import UploadButton from '../../components/UploadButton';
 import PodComponent from '../../components/Pod';
 import PodPlayer from '@/components/PodPlayer';
@@ -16,101 +16,98 @@ import { Audio } from 'expo-av';
 import * as SecureStore from 'expo-secure-store';
 import TrackPlayer from 'react-native-track-player';
 import { SplashScreen } from 'expo-router';
+import { Colors } from '@/constants/Colors';
 
 const Listen = () => {
   const [sound, setSound] = useState<Audio.Sound>();
   const [uploadVisible, setUploadVisible] = useState(false);
   const [showProcessingBanner, setShowProcessingBanner] = useState(false);
   const { state } = useStateContext();
-  const [pods, setPods] = useState<Pod[]>([]); // Add Pod type to useState
+  const [pods, setPods] = useState<Pod[]>([]); 
   const [isPlayerModalVisible, setIsPlayerModalVisible] = useState(false);
   const [currentPod, setCurrentPod] = useState<Pod>();
+  const [isPodsLoading, setIsPodsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!state.user) return;
-    const pod_ids = state.user.pods.map((id) => new ObjectId(id));
-    // get initial pods
-    Promise.all(pod_ids.map(async (id) => {
-      try {
-        const pod = await getRecordById('pods', id);
-        if(pod) {
-          return pod as Pod;
-        } else {
-          return undefined;
-        }
-      } catch (error) {
-        return undefined;
-      }
-    })).then(async (resolvedPods) => {
-      const validPods = resolvedPods.filter((pod) => pod != undefined);
-      // Sort pods by created_at date, newest first
-      const sortedPods = validPods.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      // console.log(`validPods: ${sortedPods}`);
-      setPods(sortedPods);
-      // console.log('hide splash screen from sorted pods');
-      // await SplashScreen.hideAsync();
-    });
-    watchDocumentsPods(pod_ids, (stream_data: MongoChangeStreamData) => {
-      setPods(currentPods => {
-        const updatedPods = currentPods.map((pod) => {
-          if (pod._id.toString() === stream_data.documentKey._id.toString()) {
-            const fullDoc = stream_data.fullDocument;
-            return {
-              ...fullDoc,
-              created_at: new Date(fullDoc.created_at)
-            } as Pod;
-          }
-          return pod;
-        });
-        // Sort pods by created_at date, newest first
-        return updatedPods.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-      });
-    });
-    socket.on('error', async (data) => {
-      console.log("error: ", data);
-      console.log('hide splash screen from error');
-      // await SplashScreen.hideAsync();
-    });
-  }, [state.user?.pods]);
+  // useEffect(() => {
+  //   console.log('useEffect for getting pods');
+  //   if (!state.user) return;
+  //   const pod_ids = state.user.pods.map((id) => new ObjectId(id));
+  //   // get initial pods
+  //   Promise.all(pod_ids.map(async (id) => {
+  //     try {
+  //       const pod = await getRecordById('pods', id);
+  //       if (pod) {
+  //         return pod as Pod;
+  //       } else {
+  //         return undefined;
+  //       }
+  //     } catch (error) {
+  //       return undefined;
+  //     }
+  //   })).then(async (resolvedPods) => {
+  //     const validPods = resolvedPods.filter((pod) => pod != undefined);
+  //     // Sort pods by created_at date, newest first
+  //     const sortedPods = validPods.sort((a, b) =>
+  //       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  //     );
+  //     setPods(sortedPods);
+  //     setIsPodsLoading(false);
+  //   });
+  //   watchDocumentsPods(pod_ids, (stream_data: MongoChangeStreamData) => {
+  //     setPods(currentPods => {
+  //       const updatedPods = currentPods.map((pod) => {
+  //         if (pod._id.toString() === stream_data.documentKey._id.toString()) {
+  //           const fullDoc = stream_data.fullDocument;
+  //           return {
+  //             ...fullDoc,
+  //             created_at: new Date(fullDoc.created_at)
+  //           } as Pod;
+  //         }
+  //         return pod;
+  //       });
+  //       // Sort pods by created_at date, newest first
+  //       return updatedPods.sort((a, b) =>
+  //         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  //       );
+  //     });
+  //   });
+  //   socket.on('error', async (data) => {
+  //     console.log("error: ", data);
+  //     console.log('hide splash screen from error');
+  //   });
+  // }, [state.user?.pods]);
 
   const handlePodClick = (pod: Pod) => {
-    if(pod.status == PodStatus.READY){
-      if(currentPod?._id.toString() != pod._id.toString() && sound) {
-        sound.unloadAsync();
-      }
+    if (pod.status == PodStatus.READY) {
       setCurrentPod(pod);
       setIsPlayerModalVisible(true);
-    }else{
+    } else {
       console.log('pod is not ready');
     }
   }
 
   const handleModalClose = () => {
     setIsPlayerModalVisible(false);
-    if(sound) {
-      sound.unloadAsync();
-    }
-    if(currentPod) {
-      TrackPlayer.reset();
-    }
+    // if (sound) {
+    //   sound.unloadAsync();
+    // }
+    // if (currentPod) {
+    //   TrackPlayer.reset();
+    // }
   }
 
-    const panResponder = useRef(
-        PanResponder.create({
-            onMoveShouldSetPanResponderCapture: (_, gestureState) => {
-                return gestureState.dy > 10;
-            },
-            onPanResponderRelease: (_, gestureState) => {
-                if (gestureState.dy > 50) {
-                    setIsPlayerModalVisible(false);
-                }
-            },
-        })
-    ).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, gestureState) => {
+        return gestureState.dy > 10;
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 50) {
+          setIsPlayerModalVisible(false);
+        }
+      },
+    })
+  ).current;
 
   return (
     <View style={styles.container}>
@@ -119,7 +116,7 @@ const Listen = () => {
           <Modal
             animationType="slide"
             transparent={true}
-            visible={uploadVisible} 
+            visible={uploadVisible}
             onRequestClose={() => {
               setUploadVisible(!uploadVisible);
             }}>
@@ -130,10 +127,14 @@ const Listen = () => {
             </View>
           )}
           <ScrollView contentContainerStyle={styles.songList}>
-            {pods.map((pod: Pod) => 
+            {isPodsLoading ? 
+            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+              {/* <ActivityInrdicator size="large" color={Colors.theme.lightBlue} />  */}
+            </View>
+            : pods.map((pod: Pod) =>
               pod.status != PodStatus.ERROR && (
                 <View key={(pod._id).toString()}>
-                  <PodComponent 
+                  <PodComponent
                     pod={pod}
                     onPodClick={() => handlePodClick(pod)}
                   />
@@ -142,15 +143,15 @@ const Listen = () => {
             )}
           </ScrollView>
 
-          <UploadButton 
-            userId={state.user._id} 
+          <UploadButton
+            userId={state.user._id}
             showProcessingBanner={showProcessingBanner}
             setShowProcessingBanner={setShowProcessingBanner}
           />
           <GestureRecognizer
-            style={{flex: 1}}
-            onSwipeUp={ () => setIsPlayerModalVisible(true) }
-            onSwipeDown={ () => handleModalClose() }
+            style={{ flex: 1 }}
+            onSwipeUp={() => setIsPlayerModalVisible(true)}
+            onSwipeDown={() => handleModalClose()}
           >
             <Modal
               animationType="slide"
