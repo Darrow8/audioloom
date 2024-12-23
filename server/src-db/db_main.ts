@@ -4,6 +4,8 @@ import { router as recordRouter } from "./routes/records.js";
 import { app, authCheck } from "../server.js";
 import { mongo_startup } from "./mongo_interface.js";
 import { getAudioURLFromS3 } from './aws.js';
+import { doesIdExist } from './mongo_methods.js';
+import { ObjectId } from 'mongodb';
 
 
 export async function dbRoutes() {
@@ -22,6 +24,27 @@ export async function dbRoutes() {
     // Example of a POST route
     app.post('/db', authCheck, (req: JWTRequest, res: Response) => {
         res.json({ message: 'Data received', data: req.body });
+    });
+
+    app.get('/db/id_exists', authCheck, async (req: JWTRequest, res: Response) => {
+        try {
+            // Use query parameters instead of body for GET request
+            const id = req.query.id as string;
+            const collection = req.query.collection as string;
+
+            // Validate inputs
+            if (!id || !collection) {
+                return res.status(400).json({ 
+                    error: 'Missing required parameters: id and collection' 
+                });
+            }
+
+            const exists = await doesIdExist(collection, new ObjectId(id));
+            res.json({ 'exists': exists });
+        } catch (error) {
+            console.error('Error checking ID existence:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
     });
 
     // Apply authentication to /db/records route

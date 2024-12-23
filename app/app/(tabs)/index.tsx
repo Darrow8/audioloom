@@ -17,65 +17,68 @@ import * as SecureStore from 'expo-secure-store';
 import TrackPlayer from 'react-native-track-player';
 import { SplashScreen } from 'expo-router';
 import { Colors } from '@/constants/Colors';
+import { ProgressBanner } from '@/components/ProgressBanner';
 
 const Listen = () => {
-  const [sound, setSound] = useState<Audio.Sound>();
+  // const [sound, setSound] = useState<Audio.Sound>();
   const [uploadVisible, setUploadVisible] = useState(false);
   const [showProcessingBanner, setShowProcessingBanner] = useState(false);
   const { state } = useStateContext();
-  const [pods, setPods] = useState<Pod[]>([]); 
+  const [pods, setPods] = useState<Pod[]>([]);
   const [isPlayerModalVisible, setIsPlayerModalVisible] = useState(false);
   const [currentPod, setCurrentPod] = useState<Pod>();
   const [isPodsLoading, setIsPodsLoading] = useState(true);
+  const [playerSetup, setPlayerSetup] = useState(false);
 
-  // useEffect(() => {
-  //   console.log('useEffect for getting pods');
-  //   if (!state.user) return;
-  //   const pod_ids = state.user.pods.map((id) => new ObjectId(id));
-  //   // get initial pods
-  //   Promise.all(pod_ids.map(async (id) => {
-  //     try {
-  //       const pod = await getRecordById('pods', id);
-  //       if (pod) {
-  //         return pod as Pod;
-  //       } else {
-  //         return undefined;
-  //       }
-  //     } catch (error) {
-  //       return undefined;
-  //     }
-  //   })).then(async (resolvedPods) => {
-  //     const validPods = resolvedPods.filter((pod) => pod != undefined);
-  //     // Sort pods by created_at date, newest first
-  //     const sortedPods = validPods.sort((a, b) =>
-  //       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  //     );
-  //     setPods(sortedPods);
-  //     setIsPodsLoading(false);
-  //   });
-  //   watchDocumentsPods(pod_ids, (stream_data: MongoChangeStreamData) => {
-  //     setPods(currentPods => {
-  //       const updatedPods = currentPods.map((pod) => {
-  //         if (pod._id.toString() === stream_data.documentKey._id.toString()) {
-  //           const fullDoc = stream_data.fullDocument;
-  //           return {
-  //             ...fullDoc,
-  //             created_at: new Date(fullDoc.created_at)
-  //           } as Pod;
-  //         }
-  //         return pod;
-  //       });
-  //       // Sort pods by created_at date, newest first
-  //       return updatedPods.sort((a, b) =>
-  //         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  //       );
-  //     });
-  //   });
-  //   socket.on('error', async (data) => {
-  //     console.log("error: ", data);
-  //     console.log('hide splash screen from error');
-  //   });
-  // }, [state.user?.pods]);
+  useEffect(() => {
+    async function getPods() {
+      if (!state.user) return;
+      const pod_ids = state.user.pods.map((id) => new ObjectId(id));
+      // get initial pods
+      await Promise.all(pod_ids.map(async (id) => {
+        try {
+          const pod = await getRecordById('pods', id);
+          if (pod) {
+            return pod as Pod;
+          } else {
+            return undefined;
+          }
+        } catch (error) {
+          return undefined;
+        }
+      })).then(async (resolvedPods) => {
+        const validPods = resolvedPods.filter((pod) => pod != undefined);
+        // Sort pods by created_at date, newest first
+        const sortedPods = validPods.sort((a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setPods(sortedPods);
+        setIsPodsLoading(false);
+      });
+      watchDocumentsPods(pod_ids, (stream_data: MongoChangeStreamData) => {
+        setPods(currentPods => {
+          const updatedPods = currentPods.map((pod) => {
+            if (pod._id.toString() === stream_data.documentKey._id.toString()) {
+              const fullDoc = stream_data.fullDocument;
+              return {
+                ...fullDoc,
+                created_at: new Date(fullDoc.created_at)
+              } as Pod;
+            }
+            return pod;
+          });
+          // Sort pods by created_at date, newest first
+          return updatedPods.sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        });
+      });
+      socket.on('error', async (error) => {
+        console.log("error: ", error);
+      });
+    }
+    getPods()
+  }, [state.user?.pods]);
 
   const handlePodClick = (pod: Pod) => {
     if (pod.status == PodStatus.READY) {
@@ -88,12 +91,9 @@ const Listen = () => {
 
   const handleModalClose = () => {
     setIsPlayerModalVisible(false);
-    // if (sound) {
-    //   sound.unloadAsync();
-    // }
-    // if (currentPod) {
-    //   TrackPlayer.reset();
-    // }
+    if (currentPod) {
+      TrackPlayer.pause();
+    }
   }
 
   const panResponder = useRef(
@@ -122,25 +122,23 @@ const Listen = () => {
             }}>
           </Modal>
           {showProcessingBanner && (
-            <View style={styles.banner}>
-              <Text style={styles.bannerText}>Estimated processing time: 90 seconds</Text>
-            </View>
+            <ProgressBanner time={2} />
           )}
           <ScrollView contentContainerStyle={styles.songList}>
-            {isPodsLoading ? 
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-              {/* <ActivityInrdicator size="large" color={Colors.theme.lightBlue} />  */}
-            </View>
-            : pods.map((pod: Pod) =>
-              pod.status != PodStatus.ERROR && (
-                <View key={(pod._id).toString()}>
-                  <PodComponent
-                    pod={pod}
-                    onPodClick={() => handlePodClick(pod)}
-                  />
-                </View>
-              )
-            )}
+            {isPodsLoading ?
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={Colors.theme.lightBlue} /> 
+              </View>
+              : pods.map((pod: Pod) =>
+                pod.status != PodStatus.ERROR && (
+                  <View key={(pod._id).toString()}>
+                    <PodComponent
+                      pod={pod}
+                      onPodClick={() => handlePodClick(pod)}
+                    />
+                  </View>
+                )
+              )}
           </ScrollView>
 
           <UploadButton
@@ -162,7 +160,7 @@ const Listen = () => {
                 <View style={styles.modalContainer} {...panResponder.panHandlers}>
                   <View style={styles.modalContent}>
                     <View style={styles.dragIndicator} />
-                    <PodPlayer pod={currentPod ?? null} sound={sound} setSound={setSound} />
+                    <PodPlayer pod={currentPod as Pod} playerSetup={playerSetup} setPlayerSetup={setPlayerSetup} />
                   </View>
                 </View>
               </View>
@@ -250,17 +248,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     padding: 4,
-  },
-  banner: {
-    backgroundColor: '#007AFF',
-    padding: 8,
-    marginBottom: 8,
-  },
-  bannerText: {
-    color: 'white',
-    textAlign: 'center',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
 

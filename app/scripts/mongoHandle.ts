@@ -5,6 +5,16 @@ import { BASE_URL } from './mongoSecurity';
 import { ObjectId } from 'bson';
 
 let DB_BASE_URL = BASE_URL + 'db/records/'
+
+
+export async function checkIfIdExists(collection: string, id: ObjectId): Promise<boolean> {
+  const record = await makeAuthenticatedRequest(BASE_URL + `db/id_exists?collection=${collection}&id=${id.toString()}`, 'GET');
+  if(record['exists'] == true){
+    return true;
+  }
+  return false;
+}
+
 /**
  * Fetches all records from the database.
  *

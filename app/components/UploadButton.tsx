@@ -19,7 +19,6 @@ const UploadButton: React.FC<{
   = ({ userId, showProcessingBanner, setShowProcessingBanner }) => {
     const { fileAsset, isLoading, promptIOSPicker } = useDocumentPicker();
 
-
     useEffect(() => {
       async function startPodGenerator() {
         if (fileAsset == null) {
@@ -43,6 +42,7 @@ const UploadButton: React.FC<{
             setShowProcessingBanner(false);
           }
           if (update.status === ProcessingStatus.IN_PROGRESS) {
+            
             setShowProcessingBanner(true);
           }
           if (update.status === ProcessingStatus.ERROR) {

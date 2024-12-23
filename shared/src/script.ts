@@ -10,18 +10,19 @@ export class Script {
     title: string;
     authors: string[];
     lineCount: number;
-
+    filename: string;
     /**
      * Creates an instance of the Script class.
      * @param lines - An array of Line objects that make up the script.
      * @param title - The title of the script.
      * @param authors - An array of authors of the script.
      */
-    constructor(lines: Line[], title: string, authors: string[]) {
+    constructor(lines: Line[], title: string, authors: string[], file_path: string) {
         this.lines = lines;
         this.title = title;
         this.authors = authors;
         this.lineCount = lines.length;
+        this.filename = file_path;
     }
 
     /**
@@ -48,6 +49,7 @@ export const ScriptSchema = z.object({
     title: z.string(),
     authors: z.array(z.string()),
     lineCount: z.number(),
+    file_path: z.string(),
   });
   
 // Type inference

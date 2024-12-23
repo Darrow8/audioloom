@@ -3,8 +3,8 @@ import { app, authCheck, io } from '../server.js';
 import { Request as JWTRequest } from 'express-jwt';
 import multer from 'multer';
 import path from 'path';
-import { processArticles, uploadArticleToS3 } from '@pod/process_articles.js';
-import { startup, STORAGE_PATH } from '@pod/init.js';
+import { processArticles, uploadArticleToS3, uploadScriptToS3 } from '@pod/process_articles.js';
+import { startup, STORAGE_PATH, TEMP_DATA_PATH } from '@pod/init.js';
 import { createPodInParallel } from '@pod/process_pod.js';
 import { createScript } from '@pod/process_script.js';
 import { ProcessingStep } from '@shared/processing.js';
@@ -123,7 +123,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
       message: 'Missing required fields',
       details: {
         file: req.file || null,
-        user_id: req.body.user_id || null, 
+        user_id: req.body.user_id || null,
         new_pod_id: req.body.new_pod_id || null
       }
     });
@@ -165,17 +165,20 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
   try {
     // Process and upload article
     let articlePath: string;
+    let articleId: string;
     try {
       const articleProcessResponse = await processArticles(req.file);
       articlePath = articleProcessResponse.file_path;
+      articleId = articleProcessResponse.article_id;
       let articleMessage: ProcessingStep = {
         step: "article",
         status: ProcessingStatus.IN_PROGRESS,
-        file_path: articlePath
+        file_path: articlePath,
+        article_id: articleId
       }
       sendUpdate(new_pod_id, articleMessage);
     } catch (error) {
-      return onPodError(newPod, {
+      return onPodError(newPod, user_id, {
         status: ProcessingStatus.ERROR,
         step: "article",
         message: `Article processing failed: ${error.message}`
@@ -187,12 +190,16 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     try {
       const scriptResponse = await createScript(articlePath, newPod, user_id);
       if (scriptResponse.status === ProcessingStatus.ERROR) {
-        return onPodError(newPod, scriptResponse, res);
+        return onPodError(newPod, user_id, {
+          status: ProcessingStatus.ERROR,
+          step: "script",
+          message: `Script creation failed: ${scriptResponse.message}`
+        }, res);
       }
       console.log('scriptResponse.message: ' + scriptResponse.message)
       scriptData = scriptResponse.script;
     } catch (error) {
-      return onPodError(newPod, {
+      return onPodError(newPod, user_id, {
         status: ProcessingStatus.ERROR,
         step: "script",
         message: `Script creation failed: ${error.message}`
@@ -202,29 +209,30 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     // Create podcast
     const podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res);
     if (podResponse.status === ProcessingStatus.ERROR) {
-      return onPodError(newPod, podResponse, res);
+      return onPodError(newPod, user_id, {
+        status: ProcessingStatus.ERROR,
+        step: "pod",
+        message: `Pod creation failed: ${podResponse.message}`
+      }, res);
     }
     sendUpdate(new_pod_id, podResponse);
 
-    // Cleanup - Save to S3 and delete local files
-    try {
-      if (articlePath) {
-        await uploadArticleToS3(articlePath, req.body.user_id);
-      }
-      if (scriptData) {
-        // scriptData = scriptData.replace('uploads/', '');
-        // await saveFileToS3();
-      }
-      newPod.status = PodStatus.READY;
-      if (podResponse.filename) {
-        newPod.audio_key = `pod-audio/${podResponse.filename}`;
-      }
-      await updateMongoData('pods', newPod);
-
-    } catch (error) {
-      console.error('Cleanup error:', error);
-      // Continue execution as this is not critical
+    // Cleanup - Save to S3
+    if (articlePath) {
+      await uploadArticleToS3(articleId, articlePath, req.body.user_id);
+      newPod.article_key = `articles/${articleId}.txt`;
     }
+    if (scriptData) {
+      let local_path = path.join(TEMP_DATA_PATH, 'scripts', scriptData.filename);
+      await uploadScriptToS3(scriptData.filename, local_path, req.body.user_id);
+      newPod.script_key = `scripts/${scriptData.filename}.json`;
+    }
+    newPod.status = PodStatus.READY;
+    if (podResponse.filename) {
+      newPod.audio_key = `pod-audio/${podResponse.filename}`;
+    }
+    await updateMongoData('pods', newPod);
+
     sendUpdate(new_pod_id, {
       status: ProcessingStatus.COMPLETED,
       step: "powerdown"
@@ -233,14 +241,14 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
   } catch (error) {
     // Only send error response if headers haven't been sent
     if (!res.headersSent) {
-      onPodError(newPod, {
+      onPodError(newPod, user_id, {
         status: ProcessingStatus.ERROR,
         step: "cleanup",
         message: "Internal server error",
         error: error.message
       }, res);
     } else {
-      onPodError(newPod, {
+      onPodError(newPod, user_id, {
         status: ProcessingStatus.ERROR,
         step: "cleanup",
         message: error.message
@@ -250,13 +258,13 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
 }
 
 
-function onPodError(pod: Partial<Pod>, message: ProcessingStep, res: Response) {
+function onPodError(pod: Partial<Pod>, user_id: ObjectId, message: ProcessingStep, res: Response) {
   pod.status = PodStatus.ERROR;
   console.log('Reach onPodError')
   console.log(message)
   if (pod.created_at != undefined) {
     updateMongoData('pods', pod);
-    // TODO: remove this pod from the user's pods array
+    updateMongoArrayDoc('users', user_id, 'pods', pod._id);
   }
   sendUpdate(pod._id, message);
   res.end();

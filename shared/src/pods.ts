@@ -7,6 +7,8 @@ export interface Pod {
     status: PodStatus;
     created_at: Date;
     audio_key: string;
+    article_key?: string;
+    script_key?: string;
 }
 
 export enum PodStatus {

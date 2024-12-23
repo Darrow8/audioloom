@@ -5,8 +5,6 @@ import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Pod, PodStatus } from '@shared/pods';
 
-
-
 const PodComponent: React.FC<{ pod: Pod, onPodClick: () => void }> = ({ pod, onPodClick }) => {
     return (
         <View style={styles.podItem}>

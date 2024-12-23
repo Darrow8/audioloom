@@ -39,7 +39,7 @@ export async function saveAsJson(data: any[], folderPath: string, fileName: stri
     }
 
     // Create the full file path
-    const filePath = `${folderPath}/${fileName}.json`;
+    const filePath = path.join(folderPath, fileName);
 
     // Convert data to formatted JSON string
     const jsonData = JSON.stringify(data, null, 2);
@@ -163,7 +163,8 @@ export function ensureRequiredFolders(): void {
         'music-temp',
         'result',
         'logs',
-        'uploads'
+        'uploads',
+        'scripts'
     ];
     requiredFolders.forEach(folder => {
         const folderPath = path.join(TEMP_DATA_PATH, folder);
@@ -178,22 +179,22 @@ export function ensureRequiredFolders(): void {
     });
 }
 
-export async function saveScriptToLogs(data: Script, fileName: string) {
+export async function saveScript(data: Script, file_path: string) {
     // Ensure the folder exists
-    let folderPath = path.join(TEMP_DATA_PATH, 'logs');
+    let folderPath = path.join(TEMP_DATA_PATH, 'scripts');
     if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
     }
 
     // Create the full file path
-    const filePath = path.join(folderPath, `${fileName}.json`);
+    const filePath = path.join(folderPath, file_path);
 
     // Check if the file exists
     if (fs.existsSync(filePath)) {
         await addToJsonArray(filePath, data);
         console.log(`Script appended to existing file: ${filePath}`);
     } else {
-        await saveAsJson([data], folderPath, fileName);
+        await saveAsJson([data], folderPath, file_path);
     }
 }
 
