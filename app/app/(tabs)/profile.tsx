@@ -1,13 +1,15 @@
 import React from 'react';
-import { Text, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, View, Image, TouchableOpacity, StyleSheet, Button } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useStateContext } from '@/state/StateContext';
 import { useAuth0 } from 'react-native-auth0';
 import { resetUser } from '@/scripts/mixpanel';
 import { fullLogout } from '@/scripts/auth';
+import { useToast } from '@/state/ToastContext';
 const Profile = () => {
   const { clearSession, hasValidCredentials } = useAuth0();
   const { state, dispatch } = useStateContext();
+  const { showToast } = useToast();
   if(state.user == undefined) {
     return <Text>Loading...</Text>
   }
@@ -84,6 +86,7 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+
     marginBottom: 8,
   },
   infoText: {
