@@ -37,14 +37,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 10,
         marginTop: 10,
-        fontFamily: 'FuturaMediumBold',
     },
     subtitle: {
         fontSize: 25,
         textAlign: 'center',
         marginBottom: 20,
-        fontFamily: 'FuturaBook',
-
     }
 });
 export default Landing;

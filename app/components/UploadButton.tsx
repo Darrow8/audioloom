@@ -11,12 +11,15 @@ import { ObjectId } from 'bson';
 import { useDocumentPicker } from '@/hooks/useDocumentPicker';
 import { Colors } from '../constants/Colors';
 import { trackEvent } from '@/scripts/mixpanel';
+import { useToast } from '@/state/ToastContext';
 
 const UploadButton: React.FC<{
   userId: ObjectId,
   showProcessingBanner: boolean, setShowProcessingBanner: (show: boolean) => void,
 }>
   = ({ userId, showProcessingBanner, setShowProcessingBanner }) => {
+    const { showToast } = useToast();
+
     const { fileAsset, isLoading, promptIOSPicker } = useDocumentPicker();
 
     useEffect(() => {
@@ -48,6 +51,7 @@ const UploadButton: React.FC<{
           if (update.status === ProcessingStatus.ERROR) {
             console.log('error')
             setShowProcessingBanner(false);
+            showToast('Error uploading file, please try again');
           }
         })
       }
