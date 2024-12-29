@@ -16,11 +16,13 @@ export function initMixpanel() {
 }
 
 // Track a specific event with optional properties
-export function trackEvent(eventName: string, properties?: Record<string, any>) {
+export function trackEvent(eventName: string, properties: Record<string, any>) {
     if (!mixpanelInstance) {
         console.warn('Mixpanel not initialized');
         return;
     }
+
+    properties.environment = env.ENV;
     mixpanelInstance.track(eventName, properties);
 }
 

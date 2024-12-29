@@ -8,6 +8,15 @@ import { Colors } from '../constants/Colors';
 
 const AuthButtons = () => {
   const { authorize, isLoading, user } = useAuth0();
+  const [disableAuthButtons, setDisableAuthButtons] = useState(false);
+
+  useEffect(() => {
+    if(user != null){
+      setDisableAuthButtons(true);
+    }else{
+      setDisableAuthButtons(false);
+    }
+  }, [user]);
 
   if (isLoading) {
     return <View><Text>Loading...</Text></View>;
@@ -31,7 +40,7 @@ const AuthButtons = () => {
   const debouncedSignup = debounce(async () => {
     try {
       await authorize({
-        // scope: 'openid prrofile email', 
+        // scope: 'openid profile email', 
         audience: env.AUTH0_AUDIENCE,
         additionalParameters: {
           prompt: 'select_account',
@@ -46,11 +55,19 @@ const AuthButtons = () => {
 
   return (
     <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.button} onPress={debouncedLogin}>
-        <Text style={styles.buttonText}>Log In</Text>
+      <TouchableOpacity 
+        style={[styles.button, disableAuthButtons && styles.buttonDisabled]} 
+        onPress={debouncedLogin}
+        disabled={disableAuthButtons}
+      >
+        <Text style={[styles.buttonText, disableAuthButtons && styles.buttonTextDisabled]}>Log In</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={debouncedSignup}>
-        <Text style={styles.buttonText}>Sign Up</Text>
+      <TouchableOpacity 
+        style={[styles.button, disableAuthButtons && styles.buttonDisabled]} 
+        onPress={debouncedSignup}
+        disabled={disableAuthButtons}
+      >
+        <Text style={[styles.buttonText, disableAuthButtons && styles.buttonTextDisabled]}>Sign Up</Text>
       </TouchableOpacity>
     </View>
   );
@@ -75,6 +92,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontFamily: 'FuturaMediumBold',
+  },
+  buttonDisabled: {
+    backgroundColor: Colors.theme.lightBlue + '80',
+    opacity: 0.5,
+  },
+  buttonTextDisabled: {
+    color: 'rgba(255, 255, 255, 0.5)',
   }
 });
 

@@ -18,203 +18,82 @@ import TrackPlayer, {
   Capability
 } from 'react-native-track-player';
 import { Colors } from '@/constants/Colors';
+import { skipBackward, skipForward, pauseSound, playSound, handlePlaybackProgress, setupPlayer, loadTrack } from '@/scripts/player';
 
-
-const PodPlayer = ({ pod, playerSetup, setPlayerSetup }: { pod: Pod, playerSetup: boolean, setPlayerSetup: (playerSetup: boolean) => void }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const PodPlayer = ({ pod }: { pod: Pod }) => {
+  const [playerInitialized, setPlayerInitialized] = useState(false);
   const { position, duration } = useProgress();
-  const [isPlaying, setIsPlaying] = useState(false);
   const playbackState = usePlaybackState();
   const { state } = useStateContext();
 
   if (pod == null) {
     return null;
   }
-  const setupPlayer = async () => {
-    try {
-      if (playerSetup == false) {
-        await TrackPlayer.setupPlayer().then(() => {
-          setPlayerSetup(true);
-        });
-        await TrackPlayer.updateOptions({
-          capabilities: [
-            Capability.Play,
-            Capability.Pause,
-            Capability.SeekTo,
-            Capability.JumpForward,
-            Capability.JumpBackward,
-          ],
-          compactCapabilities: [
-            Capability.Play,
-            Capability.Pause,
-          ],
-        });
-        TrackPlayer.addEventListener(Event.RemotePlay, async () => {
-          await TrackPlayer.play();
-        });
-
-        TrackPlayer.addEventListener(Event.RemotePause, async () => {
-          await TrackPlayer.pause();
-        });
-
-        TrackPlayer.addEventListener(Event.RemoteSeek, async (event) => {
-          await TrackPlayer.seekTo(event.position);
-        });
-
-        TrackPlayer.addEventListener(Event.RemoteJumpForward, async () => {
-          await TrackPlayer.seekBy(30);
-        });
-
-        TrackPlayer.addEventListener(Event.RemoteJumpBackward, async () => {
-          await TrackPlayer.seekBy(-30);
-        });
-      }
-      await loadTrack();
-
-    } catch (error) {
-      console.error('Error setting up player:', error);
-    }
-  }
-
-  const loadTrack = async () => {
-    await getAudioFromS3(pod.audio_key).then(async (data: AudioUrlTransporter) => {
-      await TrackPlayer.add({
-        url: data.audio_url,
-        title: pod.title,
-        artist: pod.author,
-        id: pod._id,
-      });
-      trackEvent('pod_play', {
-        pod_id: pod._id,
-        pod_title: pod.title,
-        pod_author: pod.author,
-        listener_id: state.user?._id,
-      });
-      await TrackPlayer.play();
-      setIsLoading(false);
-    })
-  }
-
-  async function initPlayer() {
-    console.log(pod)
-    if (playbackState.state == State.None || playbackState.state == undefined) {
-      await setupPlayer();
-    }
-  }
 
   useEffect(() => {
-    console.log('playbackState.state', playbackState.state);
-    if (playbackState.state == State.Playing) {
-      setIsPlaying(true);
-    } else {
-      setIsPlaying(false);
-    }
-  }, [playbackState.state])
+    let uid = state.user?._id.toString();
+    if (uid) {
+      (async () => {
+        if (!playerInitialized) {
+          console.log('running setup player!', playbackState.state);
+          await setupPlayer(pod, uid);
+          setPlayerInitialized(true);
+        }
+        console.log('pod', pod);
+        console.log('playbackState', playbackState.state);
+        await TrackPlayer.setQueue([]);
 
-  useEffect(() => {
-    initPlayer();
-  }, []);
-
-  const playSound = async () => {
-    try {
-      await TrackPlayer.play();
-    } catch (error) {
-      console.error('Error playing track:', error);
-      setError('Failed to play audio');
+        await loadTrack(pod, uid);
+      })();
     }
-  };
+  }, [pod]);
 
-  const pauseSound = async () => {
-    try {
-      await TrackPlayer.pause();
-    } catch (error) {
-      console.error('Error pausing track:', error);
-      setError('Failed to pause audio');
-    }
-  };
-
-  const handlePlaybackProgress = async (value: number) => {
-    try {
-      await TrackPlayer.seekTo(value);
-    } catch (error) {
-      console.error('Error seeking:', error);
-    }
-  };
-
-  const skipForward = async () => {
-    try {
-      await TrackPlayer.seekBy(30);
-    } catch (error) {
-      console.error('Error skipping forward:', error);
-    }
-  };
-
-  const skipBackward = async () => {
-    try {
-      await TrackPlayer.seekBy(-30);
-    } catch (error) {
-      console.error('Error skipping backward:', error);
-    }
-  };
 
   return (
     <View style={styles.container}>
-      {isLoading ? (
-        <View style={styles.centerContent}>
-          <Text>Loading...</Text>
-        </View>
-      ) : error ? (
-        <View style={styles.centerContent}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      ) : (
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <Text numberOfLines={1} style={styles.podcastTitle}>{pod.title}</Text>
-            {(pod.author && pod.author !== "Unknown" && pod.author !== "unknown") && (
-              <Text numberOfLines={1} style={styles.podcastAuthor}>{pod.author}</Text>
-            )}
-          </View>
+      <View style={styles.header}>
+        <Text numberOfLines={1} style={styles.podcastTitle}>{pod.title}</Text>
+        {(pod.author && pod.author !== "Unknown" && pod.author !== "unknown") && (
+          <Text numberOfLines={1} style={styles.podcastAuthor}>{pod.author}</Text>
+        )}
+      </View>
 
-          <View style={styles.controls}>
-            <View style={styles.timeDisplay}>
-              <Text style={styles.timeText}>{formatTime(position)}</Text>
-              <Text style={styles.timeText}>{formatTime(duration)}</Text>
-            </View>
-            <Slider
-              style={styles.progressBar}
-              minimumValue={0}
-              maximumValue={duration}
-              value={position}
-              onValueChange={handlePlaybackProgress}
-              maximumTrackTintColor="#ccc"
-              minimumTrackTintColor={Colors.theme.lightBlue}
-              thumbTintColor={Colors.theme.lightBlue}
-            />
-            <View style={styles.controlButtons}>
-              <TouchableOpacity style={styles.controlButton} onPress={skipBackward}>
-                <MaterialIcons name="replay-30" size={24} color={Colors.theme.lightBlue} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.controlButton} onPress={isPlaying ? pauseSound : playSound}>
-                {playbackState.state == State.Playing ? (
-                  <AntDesign name="pause" size={24} color={Colors.theme.lightBlue} />
-                ) : (playbackState.state == State.Paused || playbackState.state == State.Ready) ? (
-                  <Entypo name="controller-play" size={24} color={Colors.theme.lightBlue} />
-                ) : (playbackState.state == State.Buffering || playbackState.state == State.Loading) ? (
-                  <ActivityIndicator size="small" color={Colors.theme.lightBlue} />
-                ) : (
-                  <ActivityIndicator size="small" color={Colors.theme.lightBlue} />
-                )
-                }
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.controlButton} onPress={skipForward}>
-                <MaterialIcons name="forward-30" size={24} color={Colors.theme.lightBlue} />
-              </TouchableOpacity>
-            </View>
-          </View>
+      <View style={styles.controls}>
+        <View style={styles.timeDisplay}>
+          <Text style={styles.timeText}>{formatTime(position)}</Text>
+          <Text style={styles.timeText}>{formatTime(duration)}</Text>
         </View>
-      )}
+        <Slider
+          style={styles.progressBar}
+          minimumValue={0}
+          maximumValue={duration}
+          value={position}
+          onValueChange={handlePlaybackProgress}
+          maximumTrackTintColor="#ccc"
+          minimumTrackTintColor={Colors.theme.lightBlue}
+          thumbTintColor={Colors.theme.lightBlue}
+        />
+        <View style={styles.controlButtons}>
+          <TouchableOpacity style={styles.controlButton} onPress={skipBackward}>
+            <MaterialIcons name="replay-30" size={24} color={Colors.theme.lightBlue} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.controlButton} onPress={playbackState.state == State.Playing ? pauseSound : playSound}>
+            {playbackState.state == State.Playing ? (
+              <AntDesign name="pause" size={24} color={Colors.theme.lightBlue} />
+            ) : (playbackState.state == State.Paused || playbackState.state == State.Ready) ? (
+              <Entypo name="controller-play" size={24} color={Colors.theme.lightBlue} />
+            ) : (playbackState.state == State.Buffering || playbackState.state == State.Loading) ? (
+              <ActivityIndicator size="small" color={Colors.theme.lightBlue} />
+            ) : (
+              <ActivityIndicator size="small" color={Colors.theme.lightBlue} />
+            )
+            }
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.controlButton} onPress={skipForward}>
+            <MaterialIcons name="forward-30" size={24} color={Colors.theme.lightBlue} />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 };

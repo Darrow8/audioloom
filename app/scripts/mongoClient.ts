@@ -1,4 +1,4 @@
-import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection, getRecordByField, checkIfIdExists } from './mongoHandle';
+import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection, getRecordByField, checkIfIdExists, checkIfSubExists } from './mongoHandle';
 import { isValidPod } from './validateData';
 import { User } from '@shared/user';
 import { socket } from './socket';
@@ -39,6 +39,17 @@ export const createUser = async (data: Partial<User>) : Promise<DocumentCreated>
  */
 export const getUserByIdForAuth = async (id: ObjectId) : Promise<boolean> => {
     const response = await checkIfIdExists('users', id);
+    return response;
+}
+
+/**
+ * 0 means create new user
+ * -1 means error
+ * user means user found
+ */
+export const getUserBySubForAuth = async (sub: string) : Promise<boolean> => {
+    const response = await checkIfSubExists('users', sub);
+    console.log('response', response);
     return response;
 }
 

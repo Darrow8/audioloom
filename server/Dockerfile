@@ -12,6 +12,8 @@ RUN npm install
 # Copy the shared directory from parent folder
 COPY . .
 
+COPY assets ./dist/server/assets
+
 # Production stage
 FROM --platform=$TARGETPLATFORM node:20-alpine
 

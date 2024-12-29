@@ -12,50 +12,6 @@ import { Character } from '@shared/voice.js';
 import { ScriptType, Script } from '@shared/script.js';
 import path from 'path';
 
-/** 
- * processCharacterLines
- * process all Character Lines
- * lines -- array of CharLines
-*/
-export async function processCharacterLines(lines: CharLine[]): Promise<AudioFile[]> {
-    // get all unique characters
-    let characterSet: Set<string> = new Set();
-    lines.forEach(charLine => {
-        characterSet.add(charLine.character);
-    });
-    let characterArr: string[] = Array.from(characterSet);
-
-    let characters = await processCharacterVoices(characterArr);
-    console.log(characters);
-    let temp_saves: AudioFile[] = [];
-
-    let runningStartTime = 0;
-    // getting first 2 lines for now
-    for (let i = 0; i < lines.length; i++) {
-        // get prev and next line
-        let prev_line = null;
-        let next_line = null;
-        if (i > 0) {
-            prev_line = lines[i - 1];
-        }
-        if (i < lines.length - 1) {
-            next_line = lines[i + 1];
-        }
-        // get current character
-        let current_character = characters.find((char) => char.name == lines[i].character);
-        if (current_character == null || current_character == undefined) {
-            console.error('no character found!');
-            throw 'no character found!';
-        }
-        let current_line = lines[i];
-        let audio = await processCharacterLine(current_line, prev_line, next_line, current_character, runningStartTime);
-        runningStartTime += audio.duration;
-        temp_saves.push(audio);
-    }
-    return temp_saves;
-}
-
-
 /**
  * Create audio file for a character line and save it to the temp data path
  */
@@ -196,7 +152,6 @@ export async function processCharacterLineWithRetry(
             return createClip(audio, line);
         } catch (error) {
             lastError = error;
-            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
         }
     }
     throw lastError;

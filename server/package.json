@@ -11,7 +11,7 @@
     "start": "node dist/server/server.js",
     "build": "npx tsc && npx tsc-alias",
     "type-check": "npx tsc --noEmit",
-    "dfull": "npm run build && npm run dbuild && npm run dpush"
+    "dfull": "npm run build && npm run dbuild && npm run drun"
   },
   "author": "Darrow Hartman",
   "license": "ISC",

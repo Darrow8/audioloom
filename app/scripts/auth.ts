@@ -1,5 +1,5 @@
 import { User, UserMetadata } from "@shared/user";
-import { createUser, getUserById, getUserBySub, updateUser, watchDocumentUser } from "./mongoClient";
+import { createUser, getUserById, getUserBySub, getUserBySubForAuth, updateUser, watchDocumentUser } from "./mongoClient";
 import { UserAction } from "../state/userReducer";
 import { Credentials } from "react-native-auth0";
 import * as SecureStore from 'expo-secure-store';
@@ -15,11 +15,12 @@ import { getUserByIdForAuth } from "./mongoClient";
  * Initialize a new user in the database
  */
 export async function initUser(auth0_user: Auth0User): Promise<User | null> {
+
   let partial_user = {
     ...auth0_user,
-    _id: new ObjectId(auth0_user.sub?.split('|')[1]),
+    _id: new ObjectId(),
     name: auth0_user.name,
-    pods: [new ObjectId(env.INTRO_POD)],
+    pods: [],//[intro_pod, humanities_pod, science_pod],
     email: auth0_user.email,
     email_verified: auth0_user.email_verified,
     picture: auth0_user.picture,
@@ -42,20 +43,30 @@ export async function AttemptAuthentication(auth0_user: Auth0User, dispatch: Dis
     if (credentials == null) {
       throw new Error('No credentials found');
     }
-    let auth0_id = new ObjectId(auth0_user.sub?.split('|')[1]);
-    if (auth0_id) {
-      console.log(auth0_id);
-      let response = await getUserByIdForAuth(auth0_id);
+    let sub = auth0_user.sub;
+    if (sub) {
+      console.log(sub);
+      let response = await getUserBySubForAuth(sub);
       if(response){        
         // user found
-        let user = await getUserById(auth0_id);
-        watchAndDispatch(auth0_id.toString(), user, dispatch, false);
+        let user = await getUserBySub(sub);
+
+        if(user == false){
+          throw new Error('User not found');
+        }
+
+        watchAndDispatch(user._id.toString(), user, dispatch, false);
         return true;
       }else{
         // create new user
         let newUser = await initUser(auth0_user);
         if (newUser != null) {
-          watchAndDispatch(auth0_id.toString(), newUser, dispatch, true);
+          // Doing this because the user pods are not fully created yet
+          let user = await getUserBySub(sub);
+          if(user == false){
+            throw new Error('User not found');
+          }
+          watchAndDispatch(user._id.toString(), user, dispatch, true);
           return true;
         }else {
           console.error("Error creating user");

@@ -4,6 +4,7 @@ import { User } from "@shared/user.js";
   import { ObjectId } from "bson";
 import { client } from "../mongo_interface.js";
 import { authCheck } from "../../server.js";
+import { addPodsToUser } from "@db/mongo_methods.js";
 
 
 // router is an instance of the express router.
@@ -28,9 +29,14 @@ export async function routerFunctions() {
   // This section will help you create a new record.
   router.post("/:col", authCheck, async (req, res) => {
     try {
+      let collectionName = req.params.col;
       let newDocument : any = req.body as User;
-      console.log('newDocument', newDocument);
-      let collection = client.db(process.env.MONGO_DB).collection(req.params.col);
+      if (collectionName == 'users') {
+        let pods = addPodsToUser(newDocument);
+        newDocument.pods = pods;
+      }
+      console.log('data', newDocument);
+      let collection = client.db(process.env.MONGO_DB).collection(collectionName);
       newDocument._id = new ObjectId(newDocument._id as string);
       let result = await collection.insertOne(newDocument);
       res.send(result).status(204);
