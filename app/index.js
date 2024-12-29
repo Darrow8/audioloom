@@ -14,15 +14,7 @@ if (YellowBox) {
 }
 
 // Disable red error boxes
-if (__DEV__) {
-  // Only in development
-  console.error = () => {};
-} else {
-  // In production
-  console.error = () => {};
-  console.warn = () => {};
-  console.log = () => {};
-}
+console.warn = () => {};
 
 // Alternative method to completely override error handling
 ErrorUtils.setGlobalHandler(() => {

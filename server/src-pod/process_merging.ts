@@ -131,11 +131,8 @@ function getNearestAfterCharDuration(start: number, cur_clips: Clip[]) {
  */
 function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, nearestCharDuration: number, script: Script) {
     let musicVolume = 0;
-    // duration should be -1 right now, raw duration is only existing value
     let durationMs = -1;
-    console.log('raw duration for ', mclip.line.order, mclip.audio.rawDuration)
-    console.log('duration for ', mclip.line.order, mclip.audio.duration)
-    console.log('nearestCharDuration for ', mclip.line.order, nearestCharDuration)
+
     if(mclip.audio.rawDuration && mclip.audio.rawDuration > 0){
         durationMs = (mclip.audio.rawDuration * 1000);
     }else if(mclip.audio.duration && mclip.audio.duration > 0){
@@ -143,27 +140,26 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
     }else{
         durationMs = (nearestCharDuration * 1000) + 10000;
     }
-    let fade = getFadeInAndOutDuration(durationMs);
-
 
     const aud_type = (mclip.line as MusicLine).type;
+    let percent_volume = 0.3;
     if (aud_type === MusicType.BMusic) {
         // if the next line is a character line, then we need to make sure the music clip is longer than the character line
         let next_line = script.lines.find((line) => line.order == mclip.line.order + 1);        
         if (next_line && 'character' in next_line) {
-            // cap at 45 seconds extra
-            if (durationMs > nearestCharDuration + 45000) {
-                durationMs = nearestCharDuration + 45000;
+            // cap at 60 seconds extra
+            if (durationMs > nearestCharDuration + 60000) {
+                durationMs = nearestCharDuration + 60000;
             }
         } else {
-            // cap at 10 seconds extra
-            if (durationMs > nearestCharDuration + 10000) {
-                durationMs = nearestCharDuration + 10000;
+            // cap at 25 seconds extra
+            if (durationMs > nearestCharDuration + 25000) {
+                durationMs = nearestCharDuration + 25000;
             }
         }
-        musicVolume = char_volume * 0.4;
+        musicVolume = char_volume * percent_volume;
     } else if (aud_type === MusicType.SFX) {
-        musicVolume = char_volume * 0.4;
+        musicVolume = char_volume * percent_volume;
         // if the sound effect clip is longer than 15 seconds, then we need to add a fade in and fade out and cap at 15 seconds
         if (durationMs > 1000 * 15) {
             // cap the duration of music to 15 seconds
@@ -171,10 +167,13 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
         }
     }
 
+    // Move fade calculation after duration capping
+    let fade = getFadeInAndOutDuration(durationMs);
+
     return {
         volume: musicVolume,
-        duration: durationMs / 1000,   // Convert back to seconds for atrim
-        start: Math.max(0, runningTime * 1000), // Ensure non-negative and in milliseconds
+        duration: durationMs / 1000,
+        start: Math.max(0, runningTime * 1000),
         fade: fade,
     };
 }
@@ -183,11 +182,13 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
  Only add fade in and fade out if the duration is longer than 10 seconds
 */
 function getFadeInAndOutDuration(durationMs: number) {
-    if (durationMs < 10000) {
+    // Don't apply fades for clips shorter than 3 seconds
+    if (durationMs < 3000) {
         return '';
     }
-    const fadeInDuration = Math.min(3000, durationMs / 10);
-    const fadeOutDuration = Math.min(3000, durationMs / 10);
+    // For longer clips, use up to 1/4 of duration, capped at 6 seconds
+    const fadeInDuration = durationMs / 4;
+    const fadeOutDuration = durationMs / 4;
     const fadeOutStart = durationMs - fadeOutDuration;
-    return `afade=t=in:st=0:d=${(fadeInDuration / 1000).toFixed(2)},afade=t=out:st=${(fadeOutStart / 1000).toFixed(2)}:d=${(fadeOutDuration / 1000).toFixed(2)}`;
+    return `afade=t=in:st=0:d=${(fadeInDuration / 1000).toFixed(2)}:curve=exp,afade=t=out:st=${(fadeOutStart / 1000).toFixed(2)}:d=${(fadeOutDuration / 1000).toFixed(2)}:curve=exp`;
 }

@@ -33,27 +33,46 @@ function AppContent() {
       connectSocket();
       initMixpanel();
       // checking to see if the user is already logged in
-      let credentials = await getCredentials();
-      if (credentials == null) {
-        console.log('no valid credentials')
+      let cur_credentials = await SecureStore.getItemAsync('auth0AccessToken');
+      let cred_status = await hasValidCredentials(1000);
+      if (cur_credentials == null && cred_status == false) {
+        console.log('no credentials saved')
         setIsLoading(false);
-      } else {
-        console.log('has valid credentials')
-        await SecureStore.setItemAsync('auth0AccessToken', credentials.accessToken);
+      } else if (cur_credentials == null || cred_status == false){
+        console.log('issue with credentials')
+        console.log('cred_status', cred_status)
+        console.log('cur_credentials', cur_credentials)
+        let new_credentials = await getCredentials();
+        if (new_credentials == null) {
+          console.error('No credentials found in server');
+          await SecureStore.deleteItemAsync('auth0AccessToken');
+          clearSession();
+          setIsLoading(false);
+        } else {
+          // delete the old token and set the new token
+          await SecureStore.deleteItemAsync('auth0AccessToken');
+          await SecureStore.setItemAsync('auth0AccessToken', new_credentials.accessToken);
+          let new_cred_status = await hasValidCredentials(1000);
+          if(new_cred_status == false){
+            await SecureStore.deleteItemAsync('auth0AccessToken');
+            clearSession();
+            setIsLoading(false);
+          }
+        }
       }
     }
     init();
   }, []);
 
   useEffect(() => {
-    async function loginStatus() {
+    const loginStatus = async () => {
       if (auth0_user != null && !isAuthenticating) {
         console.log('auth0_user', auth0_user)
         setIsAuthenticating(true);
         let storageCredentials = await SecureStore.getItemAsync('auth0AccessToken');
-        if(storageCredentials == null) {
+        if (storageCredentials == null) {
           let newCredentials = await getCredentials();
-          if(newCredentials == null) {
+          if (newCredentials == null) {
             throw new Error('No credentials found in server');
           }
           await SecureStore.setItemAsync('auth0AccessToken', newCredentials.accessToken);
@@ -74,7 +93,6 @@ function AppContent() {
         await SplashScreen.hideAsync();
       }
     }
-
     hideSplash();
   }, [isLoading]);
 
@@ -108,32 +126,35 @@ function AppContent() {
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  // const [loaded, error] = useFonts({
-  //   FuturaHeavy: require('../assets/fonts/futura/Futura_Heavy_font.ttf'),
-  //   FuturaBook: require('../assets/fonts/futura/Futura_Book_font.ttf'),
-  //   FuturaLight: require('../assets/fonts/futura/Futura_Light_font.ttf'),
-  //   FuturaBold: require('../assets/fonts/futura/Futura_Bold_font.ttf'),
-  //   FuturaExtraBlack: require('../assets/fonts/futura/Futura_Extra_Black_font.ttf'),
-  //   FuturaBoldItalic: require('../assets/fonts/futura/Futura_Bold_Italic_font.ttf'),
-  //   FuturaBookItalic: require('../assets/fonts/futura/Futura_Book_Italic_font.ttf'),
-  //   FuturaHeavyItalic: require('../assets/fonts/futura/Futura_Heavy_Italic_font.ttf'),
-  //   FuturaLightItalic: require('../assets/fonts/futura/Futura_Light_Italic_font.ttf'),
-  //   FuturaMediumItalic: require('../assets/fonts/futura/Futura_Medium_Italic_font.ttf'),
-  //   FuturaMediumBold: require('../assets/fonts/futura/futura_medium_bt.ttf'),
-  // });
+  const [loaded, error] = useFonts({
+    FuturaHeavy: require('../assets/fonts/futura/Futura_Heavy_font.ttf'),
+    FuturaBook: require('../assets/fonts/futura/Futura_Book_font.ttf'),
+    FuturaLight: require('../assets/fonts/futura/Futura_Light_font.ttf'),
+    FuturaBold: require('../assets/fonts/futura/Futura_Bold_font.ttf'),
+    FuturaExtraBlack: require('../assets/fonts/futura/Futura_Extra_Black_font.ttf'),
+    FuturaBoldItalic: require('../assets/fonts/futura/Futura_Bold_Italic_font.ttf'),
+    FuturaBookItalic: require('../assets/fonts/futura/Futura_Book_Italic_font.ttf'),
+    FuturaHeavyItalic: require('../assets/fonts/futura/Futura_Heavy_Italic_font.ttf'),
+    FuturaLightItalic: require('../assets/fonts/futura/Futura_Light_Italic_font.ttf'),
+    FuturaMediumItalic: require('../assets/fonts/futura/Futura_Medium_Italic_font.ttf'),
+    FuturaMediumBold: require('../assets/fonts/futura/futura_medium_bt.ttf'),
+    NotoSans: require('../assets/fonts/Noto_Sans/static/NotoSans-Regular.ttf'),
+    NotoSansItalic: require('../assets/fonts/Noto_Sans/static/NotoSans-Italic.ttf'),
+    NotoSansBold: require('../assets/fonts/Noto_Sans/static/NotoSans-Bold.ttf'),
+    NotoSansBoldItalic: require('../assets/fonts/Noto_Sans/static/NotoSans-BoldItalic.ttf'),
+  });
 
   if (!env.AUTH0_DOMAIN || !env.AUTH0_CLIENT_ID) {
     throw new Error('No AUTH0_DOMAIN or AUTH0_CLIENT_ID available');
   }
 
   return (
-      <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>
-        <StateProvider>
-          <ToastProvider>
-            <AppContent />
-          </ToastProvider>
-        </StateProvider>
-      </Auth0Provider>
+    <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>
+      <StateProvider>
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
+      </StateProvider>
+    </Auth0Provider>
   );
 }

@@ -15,7 +15,7 @@ import { ObjectId } from 'bson';
 import { Audio } from 'expo-av';
 import * as SecureStore from 'expo-secure-store';
 import TrackPlayer from 'react-native-track-player';
-import { SplashScreen } from 'expo-router';
+import { router, SplashScreen } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { ProgressBanner } from '@/components/ProgressBanner';
 
@@ -28,12 +28,12 @@ const Listen = () => {
   const [isPlayerModalVisible, setIsPlayerModalVisible] = useState(false);
   const [currentPod, setCurrentPod] = useState<Pod>();
   const [isPodsLoading, setIsPodsLoading] = useState(true);
-  const [playerSetup, setPlayerSetup] = useState(false);
 
   useEffect(() => {
-    async function getPods() {
+    const getPods = async () => {
       if (!state.user) return;
       const pod_ids = state.user.pods.map((id) => new ObjectId(id));
+      console.log('pod_ids', pod_ids);
       // get initial pods
       await Promise.all(pod_ids.map(async (id) => {
         try {
@@ -93,6 +93,8 @@ const Listen = () => {
     setIsPlayerModalVisible(false);
     if (currentPod) {
       TrackPlayer.pause();
+      TrackPlayer.setQueue([]);
+      TrackPlayer.seekTo(0);
     }
   }
 
@@ -160,7 +162,7 @@ const Listen = () => {
                 <View style={styles.modalContainer} {...panResponder.panHandlers}>
                   <View style={styles.modalContent}>
                     <View style={styles.dragIndicator} />
-                    <PodPlayer pod={currentPod as Pod} playerSetup={playerSetup} setPlayerSetup={setPlayerSetup} />
+                    <PodPlayer pod={currentPod as Pod} />
                   </View>
                 </View>
               </View>

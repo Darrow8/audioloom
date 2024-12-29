@@ -9,18 +9,17 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const router = useRouter();
   let size = 28;
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors.light.tint,
         headerShown: true,
         headerStyle: {
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          backgroundColor: Colors.light.background,
         },
-        headerTintColor: Colors[colorScheme ?? 'light'].header,
+        headerTintColor: Colors.light.header,
         headerTitleStyle: {
         },
       }}>

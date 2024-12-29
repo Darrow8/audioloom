@@ -26,8 +26,27 @@ export async function doesIdExist(collectionName: string, id: ObjectId): Promise
   }
 }
 
+export async function doesSubExist(collectionName: string, sub: string): Promise<boolean> {
+  try {
+    // Convert string ID to ObjectId if necessary
+
+    const collection = db.collection(collectionName);
+    const document = await collection.findOne({ sub: sub }, { projection: { sub: 1 } });
+
+    return document !== null;
+  } catch (error) {
+    console.error(`Error checking if sub exists in ${collectionName}:`, error);
+    throw error;
+  }
+}
+
 export async function createMongoData(collectionName: string, data: Document) {
   try {
+    if (collectionName == 'users') {
+      let pods = addPodsToUser(data);
+      data.pods = pods;
+    }
+    console.log('data', data);
     const collection = db.collection(collectionName);
     const result = await collection.insertOne(data);
     console.log(`Successfully inserted document with _id: ${result.insertedId}`);
@@ -194,5 +213,23 @@ export async function removeFromMongoArray(
   } catch (error) {
     console.error(`Error removing item from array in ${collectionName}:`, error);
     throw error;
+  }
+}
+
+/**
+ * Temporary function to add pods to user
+ * @param data 
+ * @returns 
+ */
+export function addPodsToUser(data: any) {
+  if (process.env.NODE_ENV == 'production') {
+    console.log('creating user with additional pods');
+    let intro_pod = new ObjectId('6727006b22da058cbd4d4665');
+    let humanities_pod = new ObjectId('676f5ad4ecf2e78fe10012dc');
+    let science_pod = new ObjectId('676f5880aa561fca5b4a5bd7');
+    return [intro_pod, humanities_pod, science_pod];
+  } else {
+    console.log('not in production');
+    return [];
   }
 }

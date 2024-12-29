@@ -29,12 +29,6 @@ export let STORAGE_PATH = '';
 export async function startup() {
     try {
         // secret must be retrieved first
-        // let secret = await initSecrets();
-        // console.log("Secrets initialized:", secret !== undefined);
-        
-        // passSecrets(secret);
-        // console.log("Secrets passed to environment");
-        
         initS3();
         console.log("S3 initialized:", s3Initialized);
         
