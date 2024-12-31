@@ -8,7 +8,7 @@ export default {
       scheme: "myapp",
       userInterfaceStyle: "automatic",
       ios: {
-        buildNumber: "5",
+        buildNumber: "6",
         supportsTablet: false,
         bundleIdentifier: "com.audioloom.frontend",
         infoPlist: {

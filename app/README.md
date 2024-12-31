@@ -17,3 +17,9 @@
 3. User clicks login, is redirected to Auth0 for login/signup
 4. We get the user's information from Auth0 and then get it from mongodb
 5. User is redirected to the main page
+
+## EAS Submission
+
+- Increment the build number and change the version number in `app.config.js` and `package.json`
+- `npm run eas-build` builds the app for production
+- `npm run eas-submit` submits the app to the Apple Store Connect
