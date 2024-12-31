@@ -53,7 +53,7 @@
       </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>5</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>NSAppTransportSecurity</key>
@@ -63,8 +63,6 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
-    <key>NSFaceIDUsageDescription</key>
-    <string>Allow $(PRODUCT_NAME) to access your Face ID biometric data.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Allow $(PRODUCT_NAME) to access your microphone</string>
     <key>NSUserActivityTypes</key>
@@ -89,6 +87,10 @@
     <key>UIBackgroundModes</key>
     <array>
       <string>audio</string>
+    </array>
+    <key>UIDeviceFamily</key>
+    <array>
+      <integer>1</integer>
     </array>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>

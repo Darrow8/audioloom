@@ -3,78 +3,8 @@
     "name": "Audioloom",
     "slug": "frontend",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon2.jpg",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.audioloom.frontend",
-      "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ]
-      }
-    },
-    "splash": {
-      "backgroundColor": "#ffffff",
-      "image": "./assets/images/icon2.jpg",
-      "resizeMode": "contain"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "react-native-auth0",
-        {
-          "domain": "dev-r0ex85m18bf4us41.us.auth0.com"
-        }
-      ],
-      [
-        "expo-font",
-        {
-          "fonts": [
-            "assets/fonts/futura/Futura_Heavy_font.ttf",
-            "assets/fonts/futura/Futura_Book_font.ttf",
-            "assets/fonts/futura/Futura_Light_font.ttf",
-            "assets/fonts/futura/Futura_Bold_font.ttf",
-            "assets/fonts/futura/Futura_Extra_Black_font.ttf",
-            "assets/fonts/futura/Futura_Bold_Italic_font.ttf",
-            "assets/fonts/futura/Futura_Book_Italic_font.ttf",
-            "assets/fonts/futura/Futura_Heavy_Italic_font.ttf",
-            "assets/fonts/futura/Futura_Light_Italic_font.ttf",
-            "assets/fonts/futura/Futura_Medium_Italic_font.ttf",
-            "assets/fonts/futura/futura_medium_bt.ttf"
-          ]
-        }
-      ],
-      [
-        "@react-native-google-signin/google-signin",
-        {
-          "iosUrlScheme": "com.googleusercontent.apps.554636964216-v3fsfvau5939st9bjquk8to2fnt0m2f1"
-        }
-      ],
-      [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#ffffff",
-          "image": "./assets/images/icon2.jpg",
-          "resizeMode": "contain"
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "59fcd878-2c06-49d2-8f02-1cf4454c0364"
-      }
-    },
-    "android": {
-      "package": "com.audioloom.frontend"
+      "buildNumber": "6"
     }
   }
 }
