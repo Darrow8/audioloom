@@ -39,8 +39,6 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
           await setupPlayer(pod, uid);
           setPlayerInitialized(true);
         }
-        console.log('pod', pod);
-        console.log('playbackState', playbackState.state);
         await TrackPlayer.setQueue([]);
 
         await loadTrack(pod, uid);

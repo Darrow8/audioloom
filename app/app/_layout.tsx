@@ -2,7 +2,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import {  useColorScheme } from 'react-native';
 import Landing from './landing';
 import { Auth0Provider, Credentials, LocalAuthenticationStrategy, useAuth0 } from 'react-native-auth0';
 import { User } from '@shared/user';
@@ -16,9 +16,19 @@ import { Colors } from '@/constants/Colors';
 import { initMixpanel } from '@/scripts/mixpanel';
 import * as SecureStore from 'expo-secure-store';
 import { ToastProvider } from '@/state/ToastContext';
+import * as Sentry from '@sentry/react-native';
+import { StatusBar } from 'expo-status-bar';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* ignore error */
+});
+
+// initialize sentry
+Sentry.init({
+  dsn: "https://3bc4ce3723844cff3747952612e59cee@o4508561138712576.ingest.us.sentry.io/4508561140154368",
+  // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+  // We recommend adjusting this value in production.
+  tracesSampleRate: 1.0,
 });
 
 function AppContent() {
@@ -38,10 +48,8 @@ function AppContent() {
       if (cur_credentials == null && cred_status == false) {
         console.log('no credentials saved')
         setIsLoading(false);
-      } else if (cur_credentials == null || cred_status == false){
+      } else if (cur_credentials == null || cred_status == false) {
         console.log('issue with credentials')
-        console.log('cred_status', cred_status)
-        console.log('cur_credentials', cur_credentials)
         let new_credentials = await getCredentials();
         if (new_credentials == null) {
           console.error('No credentials found in server');
@@ -53,7 +61,7 @@ function AppContent() {
           await SecureStore.deleteItemAsync('auth0AccessToken');
           await SecureStore.setItemAsync('auth0AccessToken', new_credentials.accessToken);
           let new_cred_status = await hasValidCredentials(1000);
-          if(new_cred_status == false){
+          if (new_cred_status == false) {
             await SecureStore.deleteItemAsync('auth0AccessToken');
             clearSession();
             setIsLoading(false);
@@ -152,6 +160,8 @@ export default function RootLayout() {
     <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>
       <StateProvider>
         <ToastProvider>
+          {/* Status bar set to dark mode */}
+          <StatusBar style="dark"/>
           <AppContent />
         </ToastProvider>
       </StateProvider>

@@ -7,55 +7,55 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00060C495CBF4849AF278A84 /* Futura_Heavy_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 75B354FEBBF84153A0597027 /* Futura_Heavy_Italic_font.ttf */; };
+		013733BD6B19CCED05DF2C19 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 34C2B06379245C7A8CA5FEA8 /* PrivacyInfo.xcprivacy */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		1EC45D1496AB457F88FE3354 /* Futura_Light_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 20F3B31BE84D416AA7304D77 /* Futura_Light_Italic_font.ttf */; };
-		2DA49A88C0E8C183A06CA534 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F853DB4F3260B1E5745C28EA /* PrivacyInfo.xcprivacy */; };
+		1BF9909B38A74E96A89AA6F8 /* Futura_Bold_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 457C96D86DA94814914BB770 /* Futura_Bold_font.ttf */; };
+		1DE0E8CB20E648149C6DB92D /* Futura_Light_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 45201E4197344AE9966B8015 /* Futura_Light_font.ttf */; };
+		3BB03DF3DBA143B78FB4D4B7 /* Futura_Book_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B6101D44C1374E5CAA20165F /* Futura_Book_Italic_font.ttf */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		4942F95400A64F9FA3A89697 /* Futura_Book_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 35680961514946539CD136A7 /* Futura_Book_Italic_font.ttf */; };
-		6A07651CDA584FF799F672D2 /* Futura_Light_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5B4A58AF4E724E6F995EAC17 /* Futura_Light_font.ttf */; };
-		6CE4FEB2C7074A1297765B53 /* futura_medium_bt.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B29A456FDA345389D0D3B79 /* futura_medium_bt.ttf */; };
+		5F3FECBD4EBD491A83BE5926 /* Futura_Heavy_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E92A23F7BD93457AAD86614E /* Futura_Heavy_font.ttf */; };
+		6BE0BACA27584BCAB6023909 /* Futura_Book_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 504CCA9E50744FAD8756F087 /* Futura_Book_font.ttf */; };
+		8176CF73E68E47F4B72B3BC3 /* Futura_Light_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 13CCFA1ECCEB405B9859D727 /* Futura_Light_Italic_font.ttf */; };
 		96905EF65AED1B983A6B3ABC /* libPods-Audioloom.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58EEBF8E8E6FB1BC6CAF49B5 /* libPods-Audioloom.a */; };
-		A3883E633081467BBEE3F59C /* Futura_Bold_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0DDD92AEBAC14034BD56977E /* Futura_Bold_Italic_font.ttf */; };
+		ACDA15CC657A445A9F6A0D6E /* Futura_Bold_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 51B7A233EB534778935290B1 /* Futura_Bold_Italic_font.ttf */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
-		B70DFDE7818F45F4A2E6A41C /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BD7B3D15FFF4744AAB40275 /* noop-file.swift */; };
+		B9D0A0BCA35340F38F03F61A /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD7BB9F4A7341CB8AA30CF1 /* noop-file.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		BB4D5300F18542249E7B2F2F /* Futura_Extra_Black_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 81B9C2CED58F49E58152A52F /* Futura_Extra_Black_font.ttf */; };
-		C51662257B244F94B144D2B5 /* Futura_Book_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 72A19D779AF24DD18462795E /* Futura_Book_font.ttf */; };
-		C5FCBCD691A645228D49E9B6 /* Futura_Medium_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 560F1EDE494D4DDAB4F3FFD4 /* Futura_Medium_Italic_font.ttf */; };
-		C87B88071EB245C9A0232B36 /* Futura_Bold_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 55272E1A696C4156AFB7701F /* Futura_Bold_font.ttf */; };
-		CDC038E2032A43DAB6E8AC7B /* Futura_Heavy_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 72FC46AD91544B2D8B9E748C /* Futura_Heavy_Italic_font.ttf */; };
-		F284F7F02E95422CA7F293D0 /* Futura_Heavy_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 978BFA94C9D34F5FB81E2F9E /* Futura_Heavy_font.ttf */; };
+		DF6EB850E5054FD8A6A4234C /* futura_medium_bt.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EE864E8BEA0546B3A3EF74D9 /* futura_medium_bt.ttf */; };
+		E44EB19C4685483EB241C2B4 /* Futura_Extra_Black_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F0484C4F9AF744DCB26A7900 /* Futura_Extra_Black_font.ttf */; };
+		F3D7811DC81B405C821CBA09 /* Futura_Medium_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C14FFF7243664BC69DD0272A /* Futura_Medium_Italic_font.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0DDD92AEBAC14034BD56977E /* Futura_Bold_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Bold_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Bold_Italic_font.ttf; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Audioloom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Audioloom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Audioloom/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = Audioloom/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Audioloom/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Audioloom/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Audioloom/main.m; sourceTree = "<group>"; };
-		20F3B31BE84D416AA7304D77 /* Futura_Light_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Light_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Light_Italic_font.ttf; sourceTree = "<group>"; };
-		26E017D3CE8743CE8D2FFACC /* Audioloom-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "Audioloom-Bridging-Header.h"; path = "Audioloom/Audioloom-Bridging-Header.h"; sourceTree = "<group>"; };
-		35680961514946539CD136A7 /* Futura_Book_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Book_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Book_Italic_font.ttf; sourceTree = "<group>"; };
-		3B29A456FDA345389D0D3B79 /* futura_medium_bt.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = futura_medium_bt.ttf; path = ../assets/fonts/futura/futura_medium_bt.ttf; sourceTree = "<group>"; };
-		3BD7B3D15FFF4744AAB40275 /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "Audioloom/noop-file.swift"; sourceTree = "<group>"; };
-		55272E1A696C4156AFB7701F /* Futura_Bold_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Bold_font.ttf; path = ../assets/fonts/futura/Futura_Bold_font.ttf; sourceTree = "<group>"; };
-		560F1EDE494D4DDAB4F3FFD4 /* Futura_Medium_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Medium_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Medium_Italic_font.ttf; sourceTree = "<group>"; };
+		13CCFA1ECCEB405B9859D727 /* Futura_Light_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Light_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Light_Italic_font.ttf; sourceTree = "<group>"; };
+		34C2B06379245C7A8CA5FEA8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Audioloom/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		45201E4197344AE9966B8015 /* Futura_Light_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Light_font.ttf; path = ../assets/fonts/futura/Futura_Light_font.ttf; sourceTree = "<group>"; };
+		457C96D86DA94814914BB770 /* Futura_Bold_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Bold_font.ttf; path = ../assets/fonts/futura/Futura_Bold_font.ttf; sourceTree = "<group>"; };
+		504CCA9E50744FAD8756F087 /* Futura_Book_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Book_font.ttf; path = ../assets/fonts/futura/Futura_Book_font.ttf; sourceTree = "<group>"; };
+		51B7A233EB534778935290B1 /* Futura_Bold_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Bold_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Bold_Italic_font.ttf; sourceTree = "<group>"; };
 		58EEBF8E8E6FB1BC6CAF49B5 /* libPods-Audioloom.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Audioloom.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5B4A58AF4E724E6F995EAC17 /* Futura_Light_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Light_font.ttf; path = ../assets/fonts/futura/Futura_Light_font.ttf; sourceTree = "<group>"; };
 		6C2E3173556A471DD304B334 /* Pods-Audioloom.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audioloom.debug.xcconfig"; path = "Target Support Files/Pods-Audioloom/Pods-Audioloom.debug.xcconfig"; sourceTree = "<group>"; };
-		72A19D779AF24DD18462795E /* Futura_Book_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Book_font.ttf; path = ../assets/fonts/futura/Futura_Book_font.ttf; sourceTree = "<group>"; };
-		72FC46AD91544B2D8B9E748C /* Futura_Heavy_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Heavy_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Heavy_Italic_font.ttf; sourceTree = "<group>"; };
+		75B354FEBBF84153A0597027 /* Futura_Heavy_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Heavy_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Heavy_Italic_font.ttf; sourceTree = "<group>"; };
 		7A4D352CD337FB3A3BF06240 /* Pods-Audioloom.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audioloom.release.xcconfig"; path = "Target Support Files/Pods-Audioloom/Pods-Audioloom.release.xcconfig"; sourceTree = "<group>"; };
-		81B9C2CED58F49E58152A52F /* Futura_Extra_Black_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Extra_Black_font.ttf; path = ../assets/fonts/futura/Futura_Extra_Black_font.ttf; sourceTree = "<group>"; };
-		978BFA94C9D34F5FB81E2F9E /* Futura_Heavy_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Heavy_font.ttf; path = ../assets/fonts/futura/Futura_Heavy_font.ttf; sourceTree = "<group>"; };
+		8AD7BB9F4A7341CB8AA30CF1 /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "Audioloom/noop-file.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Audioloom/SplashScreen.storyboard; sourceTree = "<group>"; };
+		B6101D44C1374E5CAA20165F /* Futura_Book_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Book_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Book_Italic_font.ttf; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		C14FFF7243664BC69DD0272A /* Futura_Medium_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Medium_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Medium_Italic_font.ttf; sourceTree = "<group>"; };
+		CCEA8DFA9D934667B81FAB1A /* Audioloom-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "Audioloom-Bridging-Header.h"; path = "Audioloom/Audioloom-Bridging-Header.h"; sourceTree = "<group>"; };
+		E92A23F7BD93457AAD86614E /* Futura_Heavy_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Heavy_font.ttf; path = ../assets/fonts/futura/Futura_Heavy_font.ttf; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F853DB4F3260B1E5745C28EA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Audioloom/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		EE864E8BEA0546B3A3EF74D9 /* futura_medium_bt.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = futura_medium_bt.ttf; path = ../assets/fonts/futura/futura_medium_bt.ttf; sourceTree = "<group>"; };
+		F0484C4F9AF744DCB26A7900 /* Futura_Extra_Black_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Extra_Black_font.ttf; path = ../assets/fonts/futura/Futura_Extra_Black_font.ttf; sourceTree = "<group>"; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Audioloom/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -81,9 +81,9 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				3BD7B3D15FFF4744AAB40275 /* noop-file.swift */,
-				26E017D3CE8743CE8D2FFACC /* Audioloom-Bridging-Header.h */,
-				F853DB4F3260B1E5745C28EA /* PrivacyInfo.xcprivacy */,
+				8AD7BB9F4A7341CB8AA30CF1 /* noop-file.swift */,
+				CCEA8DFA9D934667B81FAB1A /* Audioloom-Bridging-Header.h */,
+				34C2B06379245C7A8CA5FEA8 /* PrivacyInfo.xcprivacy */,
 			);
 			name = Audioloom;
 			sourceTree = "<group>";
@@ -95,6 +95,25 @@
 				58EEBF8E8E6FB1BC6CAF49B5 /* libPods-Audioloom.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		424BFD9FB6E541DEA02503A1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E92A23F7BD93457AAD86614E /* Futura_Heavy_font.ttf */,
+				504CCA9E50744FAD8756F087 /* Futura_Book_font.ttf */,
+				45201E4197344AE9966B8015 /* Futura_Light_font.ttf */,
+				457C96D86DA94814914BB770 /* Futura_Bold_font.ttf */,
+				F0484C4F9AF744DCB26A7900 /* Futura_Extra_Black_font.ttf */,
+				51B7A233EB534778935290B1 /* Futura_Bold_Italic_font.ttf */,
+				B6101D44C1374E5CAA20165F /* Futura_Book_Italic_font.ttf */,
+				75B354FEBBF84153A0597027 /* Futura_Heavy_Italic_font.ttf */,
+				13CCFA1ECCEB405B9859D727 /* Futura_Light_Italic_font.ttf */,
+				C14FFF7243664BC69DD0272A /* Futura_Medium_Italic_font.ttf */,
+				EE864E8BEA0546B3A3EF74D9 /* futura_medium_bt.ttf */,
+			);
+			name = Resources;
+			path = "";
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -113,7 +132,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				D65327D7A22EEC0BE12398D9 /* Pods */,
 				D7E4C46ADA2E9064B798F356 /* ExpoModulesProviders */,
-				9FB835506373484D92D4BF14 /* Resources */,
+				424BFD9FB6E541DEA02503A1 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -134,25 +153,6 @@
 				FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */,
 			);
 			name = Audioloom;
-			sourceTree = "<group>";
-		};
-		9FB835506373484D92D4BF14 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				978BFA94C9D34F5FB81E2F9E /* Futura_Heavy_font.ttf */,
-				72A19D779AF24DD18462795E /* Futura_Book_font.ttf */,
-				5B4A58AF4E724E6F995EAC17 /* Futura_Light_font.ttf */,
-				55272E1A696C4156AFB7701F /* Futura_Bold_font.ttf */,
-				81B9C2CED58F49E58152A52F /* Futura_Extra_Black_font.ttf */,
-				0DDD92AEBAC14034BD56977E /* Futura_Bold_Italic_font.ttf */,
-				35680961514946539CD136A7 /* Futura_Book_Italic_font.ttf */,
-				72FC46AD91544B2D8B9E748C /* Futura_Heavy_Italic_font.ttf */,
-				20F3B31BE84D416AA7304D77 /* Futura_Light_Italic_font.ttf */,
-				560F1EDE494D4DDAB4F3FFD4 /* Futura_Medium_Italic_font.ttf */,
-				3B29A456FDA345389D0D3B79 /* futura_medium_bt.ttf */,
-			);
-			name = Resources;
-			path = "";
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -189,13 +189,14 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Audioloom" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				D9AE012F4843FD4AC2213C77 /* [Expo] Configure project */,
+				FC07039923A5CEED52F0E78F /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				FEF4D137A43CA1733ECE89BD /* [CP] Embed Pods Frameworks */,
+				A291C87FA04F4D5A969D5E1F /* Upload Debug Symbols to Sentry */,
+				CB1ED2003B2AABA5BF81D060 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -216,8 +217,6 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
-						DevelopmentTeam = "Q83KXHA9M9";
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -247,18 +246,18 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				F284F7F02E95422CA7F293D0 /* Futura_Heavy_font.ttf in Resources */,
-				C51662257B244F94B144D2B5 /* Futura_Book_font.ttf in Resources */,
-				6A07651CDA584FF799F672D2 /* Futura_Light_font.ttf in Resources */,
-				C87B88071EB245C9A0232B36 /* Futura_Bold_font.ttf in Resources */,
-				BB4D5300F18542249E7B2F2F /* Futura_Extra_Black_font.ttf in Resources */,
-				A3883E633081467BBEE3F59C /* Futura_Bold_Italic_font.ttf in Resources */,
-				4942F95400A64F9FA3A89697 /* Futura_Book_Italic_font.ttf in Resources */,
-				CDC038E2032A43DAB6E8AC7B /* Futura_Heavy_Italic_font.ttf in Resources */,
-				1EC45D1496AB457F88FE3354 /* Futura_Light_Italic_font.ttf in Resources */,
-				C5FCBCD691A645228D49E9B6 /* Futura_Medium_Italic_font.ttf in Resources */,
-				6CE4FEB2C7074A1297765B53 /* futura_medium_bt.ttf in Resources */,
-				2DA49A88C0E8C183A06CA534 /* PrivacyInfo.xcprivacy in Resources */,
+				5F3FECBD4EBD491A83BE5926 /* Futura_Heavy_font.ttf in Resources */,
+				6BE0BACA27584BCAB6023909 /* Futura_Book_font.ttf in Resources */,
+				1DE0E8CB20E648149C6DB92D /* Futura_Light_font.ttf in Resources */,
+				1BF9909B38A74E96A89AA6F8 /* Futura_Bold_font.ttf in Resources */,
+				E44EB19C4685483EB241C2B4 /* Futura_Extra_Black_font.ttf in Resources */,
+				ACDA15CC657A445A9F6A0D6E /* Futura_Bold_Italic_font.ttf in Resources */,
+				3BB03DF3DBA143B78FB4D4B7 /* Futura_Book_Italic_font.ttf in Resources */,
+				00060C495CBF4849AF278A84 /* Futura_Heavy_Italic_font.ttf in Resources */,
+				8176CF73E68E47F4B72B3BC3 /* Futura_Light_Italic_font.ttf in Resources */,
+				F3D7811DC81B405C821CBA09 /* Futura_Medium_Italic_font.ttf in Resources */,
+				DF6EB850E5054FD8A6A4234C /* futura_medium_bt.ttf in Resources */,
+				013733BD6B19CCED05DF2C19 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -278,7 +277,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n# Source .xcode.env.updates if it exists to allow\n# SKIP_BUNDLING to be unset if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.updates\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.updates\"\nfi\n# Source local changes to allow overrides\n# if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n\n";
+			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n# Source .xcode.env.updates if it exists to allow\n# SKIP_BUNDLING to be unset if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.updates\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.updates\"\nfi\n# Source local changes to allow overrides\n# if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n/bin/sh `\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('@sentry/react-native/package.json')) + '/scripts/sentry-xcode.sh'\"` `\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n\n";
 		};
 		08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -322,6 +321,7 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/Mixpanel-swift/Mixpanel.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/RCTI18nStrings.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/Sentry/Sentry.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/expo-dev-launcher/EXDevLauncher.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/expo-dev-menu/EXDevMenu.bundle",
 			);
@@ -340,6 +340,7 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Mixpanel.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCTI18nStrings.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Sentry.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXDevLauncher.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXDevMenu.bundle",
 			);
@@ -348,7 +349,39 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D9AE012F4843FD4AC2213C77 /* [Expo] Configure project */ = {
+		A291C87FA04F4D5A969D5E1F /* Upload Debug Symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Upload Debug Symbols to Sentry";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh `${NODE_BINARY:-node} --print \"require('path').dirname(require.resolve('@sentry/react-native/package.json')) + '/scripts/sentry-xcode-debug-files.sh'\"`";
+		};
+		CB1ED2003B2AABA5BF81D060 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FC07039923A5CEED52F0E78F /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -367,24 +400,6 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Audioloom/expo-configure-project.sh\"\n";
 		};
-		FEF4D137A43CA1733ECE89BD /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -395,7 +410,7 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
-				B70DFDE7818F45F4A2E6A41C /* noop-file.swift in Sources */,
+				B9D0A0BCA35340F38F03F61A /* noop-file.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,15 +441,12 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.audioloom.frontend;
-				PRODUCT_NAME = Audioloom;
+				PRODUCT_NAME = "Audioloom";
 				SWIFT_OBJC_BRIDGING_HEADER = "Audioloom/Audioloom-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1";
 				VERSIONING_SYSTEM = "apple-generic";
-				DEVELOPMENT_TEAM = "Q83KXHA9M9";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
@@ -457,14 +469,11 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.audioloom.frontend;
-				PRODUCT_NAME = Audioloom;
+				PRODUCT_NAME = "Audioloom";
 				SWIFT_OBJC_BRIDGING_HEADER = "Audioloom/Audioloom-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1";
 				VERSIONING_SYSTEM = "apple-generic";
-				DEVELOPMENT_TEAM = "Q83KXHA9M9";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};

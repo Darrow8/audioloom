@@ -33,7 +33,6 @@ const Listen = () => {
     const getPods = async () => {
       if (!state.user) return;
       const pod_ids = state.user.pods.map((id) => new ObjectId(id));
-      console.log('pod_ids', pod_ids);
       // get initial pods
       await Promise.all(pod_ids.map(async (id) => {
         try {
@@ -101,11 +100,25 @@ const Listen = () => {
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponderCapture: (_, gestureState) => {
-        return gestureState.dy > 10;
+        if (currentPod) {
+          // Allow both up and down gestures when a pod is selected
+          return Math.abs(gestureState.dy) > 10;
+        } else {
+          // Only allow downward gestures when no pod is selected
+          return gestureState.dy > 10;
+        }
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 50) {
-          setIsPlayerModalVisible(false);
+        if (currentPod) {
+          if (gestureState.dy > 50) {
+            // Swipe down to close
+            console.log('swipe down to close');
+            setIsPlayerModalVisible(false);
+          } else if (gestureState.dy < -50 && currentPod != undefined) {
+            // Swipe up to open
+            console.log('swipe up to open');
+            setIsPlayerModalVisible(true);
+          }
         }
       },
     })
@@ -122,11 +135,15 @@ const Listen = () => {
             onRequestClose={() => {
               setUploadVisible(!uploadVisible);
             }}>
+            
           </Modal>
           {showProcessingBanner && (
             <ProgressBanner time={2} />
           )}
-          <ScrollView contentContainerStyle={styles.songList}>
+          <ScrollView 
+            style={styles.scrollView} 
+            contentContainerStyle={styles.songList}
+          >
             {isPodsLoading ?
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <ActivityIndicator size="large" color={Colors.theme.lightBlue} /> 
@@ -150,7 +167,6 @@ const Listen = () => {
           />
           <GestureRecognizer
             style={{ flex: 1 }}
-            onSwipeUp={() => setIsPlayerModalVisible(true)}
             onSwipeDown={() => handleModalClose()}
           >
             <Modal
@@ -178,6 +194,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scrollView: {
+    height: '65%',
   },
   songList: {
     padding: 16,
