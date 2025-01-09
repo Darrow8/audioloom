@@ -24,6 +24,8 @@ export const processArticles = async (file: Express.Multer.File) => {
     file = convert_txt_resp.updated_file;
     file_path = convert_txt_resp.path;
     article_id = convert_txt_resp.article_id;
+    console.log("File path: " + file_path);
+    console.log("article id: " + article_id);
     console.log("updated file path: " + file_path);
   } else {
     file_path = originalPath;
@@ -40,6 +42,18 @@ export const processArticles = async (file: Express.Multer.File) => {
     article_id: article_id
   } as ProcessingStep;
 };
+
+export async function uploadCleanedArticleToS3(articleId: string, local_file_path: string, _id: ObjectId) {
+  const articleKey = `cleaned_articles/${articleId.toString()}.txt`;
+  let file = fs.readFileSync(local_file_path);
+  let uploadDetails = {
+    Bucket: 'main-server',
+    Key: articleKey,
+    Body: file
+  }
+  const uploadResponse = await uploadFileToS3(uploadDetails);
+  return uploadResponse;
+}
 
 export async function uploadArticleToS3(articleId: string, local_file_path: string, _id: ObjectId) {
   const articleKey = `articles/${articleId.toString()}.txt`;

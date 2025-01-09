@@ -43,6 +43,11 @@ export class Script {
 }
 
 
+
+// Base Script Schema is for when all we have is the lines
+export const BaseScriptSchema = z.array(LineUnionSchema);
+export type BaseScriptType = z.infer<typeof BaseScriptSchema>;
+
 // Script schema
 export const ScriptSchema = z.object({
     lines: z.array(LineUnionSchema),
@@ -78,7 +83,6 @@ export interface PromptLLM {
 
 export interface FullLLMPrompt extends PromptLLM {
     instructions: string;
-
 }
 
 export interface RawPrompts {

@@ -9,6 +9,7 @@ export interface Pod {
     audio_key: string;
     article_key?: string;
     script_key?: string;
+    clean_article_key?: string;
 }
 
 export enum PodStatus {

@@ -3,7 +3,7 @@ import { app, authCheck, io } from '../server.js';
 import { Request as JWTRequest } from 'express-jwt';
 import multer from 'multer';
 import path from 'path';
-import { processArticles, uploadArticleToS3, uploadScriptToS3 } from '@pod/process_articles.js';
+import { processArticles, uploadArticleToS3, uploadScriptToS3, uploadCleanedArticleToS3 } from '@pod/process_articles.js';
 import { startup, STORAGE_PATH, TEMP_DATA_PATH } from '@pod/init.js';
 import { createPodInParallel } from '@pod/process_pod.js';
 import { createScript } from '@pod/process_script.js';
@@ -188,7 +188,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     // Create screenplay
     let scriptData: Script;
     try {
-      const scriptResponse = await createScript(articlePath, newPod, user_id);
+      const scriptResponse = await createScript(articlePath, articleId, newPod, user_id);
       if (scriptResponse.status === ProcessingStatus.ERROR) {
         return onPodError(newPod, user_id, {
           status: ProcessingStatus.ERROR,
@@ -221,6 +221,8 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     if (articlePath) {
       await uploadArticleToS3(articleId, articlePath, req.body.user_id);
       newPod.article_key = `articles/${articleId}.txt`;
+      await uploadCleanedArticleToS3(articleId, `${STORAGE_PATH}/clean-${articleId}.txt`, req.body.user_id);
+      newPod.clean_article_key = `cleaned_articles/${articleId}.txt`;
     }
     if (scriptData) {
       let local_path = path.join(TEMP_DATA_PATH, 'scripts', scriptData.filename);
