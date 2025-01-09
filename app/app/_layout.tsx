@@ -17,7 +17,7 @@ import { initMixpanel } from '@/scripts/mixpanel';
 import * as SecureStore from 'expo-secure-store';
 import { ToastProvider } from '@/state/ToastContext';
 import * as Sentry from '@sentry/react-native';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar } from 'react-native';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* ignore error */
@@ -42,6 +42,7 @@ function AppContent() {
       // setup socket and mixpanel
       connectSocket();
       initMixpanel();
+      StatusBar.setBarStyle('dark-content');
       // checking to see if the user is already logged in
       let cur_credentials = await SecureStore.getItemAsync('auth0AccessToken');
       let cred_status = await hasValidCredentials(1000);
@@ -160,9 +161,8 @@ export default function RootLayout() {
     <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>
       <StateProvider>
         <ToastProvider>
-          {/* Status bar set to dark mode */}
-          <StatusBar style="dark"/>
-          <AppContent />
+        <StatusBar barStyle="dark-content" /> 
+        <AppContent />
         </ToastProvider>
       </StateProvider>
     </Auth0Provider>

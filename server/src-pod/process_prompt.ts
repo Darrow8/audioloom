@@ -1,5 +1,5 @@
 import { ProcessingStatus, ProcessingStep } from "@shared/processing.js";
-import { FullLLMPrompt, FullPrompts, GPTModel, InstructionType, PromptLLM, RawPrompts, ScriptSchema } from "@shared/script.js";
+import { BaseScriptSchema, FullLLMPrompt, FullPrompts, GPTModel, InstructionType, PromptLLM, RawPrompts, ScriptSchema } from "@shared/script.js";
 import { countTokens } from "@pod/process_script.js";
 import { openaiClient } from "@pod/init.js";
 import fs from "fs";
@@ -8,26 +8,19 @@ import { ChatModel } from "openai/resources";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
-const BaseFormat = z.object({
-  type: z.enum(['podcast', 'clean', 'title', 'author'])
-});
+// const BaseFormat = z.object({
+//   type: z.enum(['podcast', 'clean', 'title', 'author'])
+// });
 
 const formats = {
-  podcast: BaseFormat.extend({
-    type: z.literal('podcast'),
-    script: ScriptSchema
-  }),
-  clean: BaseFormat.extend({
-    type: z.literal('clean'),
+  podcast: BaseScriptSchema,
+  clean: z.object({
     article: z.string(),
-    script: ScriptSchema
   }),
-  title: BaseFormat.extend({
-    type: z.literal('title'),
+  title: z.object({
     title: z.string()
   }),
-  author: BaseFormat.extend({
-    type: z.literal('author'),
+  author: z.object({
     author: z.string()
   })
 };
@@ -74,7 +67,7 @@ export async function promptLLM(articleName: string, instructions: FullLLMPrompt
         ],
         response_format: zodResponseFormat(format, format_name),
     });
-
+    console.log(completion.choices[0].message.parsed);
     return {
         status: ProcessingStatus.IN_PROGRESS,
         step: instructions.type,

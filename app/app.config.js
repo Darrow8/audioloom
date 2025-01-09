@@ -8,12 +8,14 @@ export default {
       scheme: "myapp",
       userInterfaceStyle: "automatic",
       ios: {
-        buildNumber: "6",
+        buildNumber: "8",
         supportsTablet: false,
         bundleIdentifier: "com.audioloom.frontend",
         infoPlist: {
           UIBackgroundModes: ["audio"],
           UIDeviceFamily: [1],
+          UIStatusBarStyle: "UIStatusBarStyleDarkContent",
+          UIViewControllerBasedStatusBarAppearance: false
         },
       },
       splash: {

@@ -4,28 +4,24 @@ import { z } from "zod";
 // Base Line schema
 export const LineSchema = z.object({
   id: z.string(),
-  raw_string: z.string(),
   order: z.number(),
 });
 
-// CharLine schema with discriminator
+// CharLine schema with discriminator 
 export const CharLineSchema = z.object({
-  kind: z.literal("character"),  // Discriminator first!
-  id: z.string(),
-  raw_string: z.string(),
-  order: z.number(),
+  kind: z.literal("character"),
+//   id: z.string(),
+//   order: z.number(),
   character: z.string(),
-  raw_dialogue: z.string(),
   dialogue: z.string(),
   adjective: z.string(),
 });
 
 // MusicLine schema with discriminator
 export const MusicLineSchema = z.object({
-  kind: z.literal("music"),  // Discriminator first!
-  id: z.string(),
-  raw_string: z.string(),
-  order: z.number(),
+  kind: z.literal("music"),
+//   id: z.string(), 
+//   order: z.number(),
   type: z.enum(["Background Music", "Sound Effect"]),
   music_description: z.string(),
 });
@@ -36,56 +32,28 @@ export const LineUnionSchema = z.discriminatedUnion("kind", [
   MusicLineSchema
 ]);
 
-/**
- * Represents a basic line in the script.
- */
 export class Line {
     id: string;
-    raw_string: string;
     order: number;
     kind: "character" | "music";
 
-    /**
-     * Creates an instance of the Line class.
-     * @param raw_string - The raw string from the script.
-     * @param order - The order of the line in the script.
-     */
-    constructor(raw_string: string, order: number, id: string, kind: "character" | "music") {
-        this.raw_string = raw_string;
+    constructor(order: number, id: string, kind: "character" | "music") {
         this.order = order;
         this.id = id;
         this.kind = kind;
     }
 }
 
-/**
- * Represents a character line in the script.
- * Inherits from Line.
- */
 export class CharLine extends Line {
     character: string;
-    raw_dialogue: string;
     dialogue: string;
     adjective: string;
 
-    /**
-     * Creates an instance of the CharLine class.
-     * @param raw_string - The raw string from the script.
-     * @param order - The order of the line in the script.
-     */
-    constructor(raw_string: string, order: number, id: string, kind: "character") {
-        super(raw_string, order, id, kind);
-        let i = raw_string.indexOf(':');
-        this.character = (raw_string.slice(0, i)).trim();
-        this.raw_dialogue = (raw_string.slice(i + 1)).trim();
-        if (this.raw_dialogue.includes('[')) {
-            let contents = separateString(this.raw_dialogue);
-            this.dialogue = contents.dialogue;
-            this.adjective = contents.adjective;
-        } else {
-            this.dialogue = this.raw_dialogue;
-            this.adjective = "";
-        }
+    constructor(dialogue: string, character: string, adjective: string, order: number, id: string, kind: "character") {
+        super(order, id, kind);
+        this.dialogue = dialogue;
+        this.character = character;
+        this.adjective = adjective;
     }
 }
 
@@ -101,11 +69,6 @@ export class Clip {
     }
 }
 
-
-/**
- * createClips
- * For either Music or Char lines, create clips and save them from audiofiles
- */
 export function createClips(audios: AudioFile[], lines: MusicLine[] | CharLine[]) {
     let clip_arr : Clip[] = [];
     for (let line of lines) {
@@ -114,7 +77,7 @@ export function createClips(audios: AudioFile[], lines: MusicLine[] | CharLine[]
             console.error("error, no corresponding AudioFile for line", line)
             continue;
         }
-        let audio = filtered_audios[0]; // get first audio, should only be 1
+        let audio = filtered_audios[0];
         clip_arr.push(createClip(audio, line));
     }
     return clip_arr;
@@ -127,7 +90,7 @@ export function createClip(audio: AudioFile, line: MusicLine | CharLine): Clip {
 export class AudioFile {
     id: string;
     url: string;
-    rawDuration?: number; // raw duration is the duration of the audio file, but it may be too long for what we want
+    rawDuration?: number;
     duration: number;
     start: number;
     constructor(id: string, url: string, start: number, duration:number, rawDuration?: number,) {
@@ -139,68 +102,18 @@ export class AudioFile {
     }
 }
 
-
 export enum MusicType {
     BMusic = "Background Music",
     SFX = "Sound Effect"
 }
 
-/**
- * Represents a music line in the script.
- * Inherits from Line.
- */
 export class MusicLine extends Line {
-    type: string;
+    type: MusicType;
     music_description: string;
 
-    /**
-     * Creates an instance of the MusicLine class.
-     * @param raw_string - The raw string from the script.
-     * @param order - The order of the line in the script.
-     */
-    constructor(raw_string: string, order: number, id: string, kind: "music") {
-        super(raw_string, order, id, kind);
-        let msg = removeFirstAndLastBrackets(raw_string);
-        let i = msg.indexOf(':');
-        let raw_type = (msg.slice(0, i)).trim();
-        if (raw_type == "Background Music") {
-            this.type = MusicType.BMusic;
-        } else if (raw_type == "Sound Effect") {
-            this.type = MusicType.SFX;
-        } else {
-            throw new Error(`Unknown music type: ${raw_type}`);
-        }
-        this.music_description = (msg.slice(i + 1)).trim();
+    constructor(type: MusicType, music_description: string, order: number, id: string, kind: "music") {
+        super(order, id, kind);
+        this.type = type;
+        this.music_description = music_description;
     }
 }
-
-/**
- * Removes the first and last brackets from a string if they exist.
- * @param input - The input string.
- * @returns The string without the first and last brackets.
- */
-function removeFirstAndLastBrackets(input: string): string {
-    if (input.startsWith('[') && input.endsWith(']')) {
-        return input.slice(1, -1);
-    }
-    return input;
-}
-
-/**
- * Separates a string into dialogue and adjective components.
- * @param input - The input string containing dialogue and optional adjective in brackets.
- * @returns An object containing the dialogue and adjective.
- */
-function separateString(input: string): { adjective: string, dialogue: string } {
-    const startIndex = input.indexOf('[');
-    const endIndex = input.indexOf(']');
-
-    if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
-        const adjective = input.substring(startIndex + 1, endIndex);
-        const dialogue = input.substring(endIndex + 1).trim();
-        return { adjective, dialogue };
-    }
-
-    return { adjective: '', dialogue: input };
-}
-

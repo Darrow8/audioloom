@@ -3,8 +3,8 @@ import * as aws from "@pod/pass_files.js";
 import { encoding_for_model, TiktokenModel } from "tiktoken";
 import { ChatModel } from "openai/resources/index";
 import { ProcessingStatus, ProcessingStep } from "@shared/processing.js";
-import { promptLLM, localInstructions } from "@pod/process_prompt.js";
-import { FullLLMPrompt, FullPrompts, PromptLLM, RawPrompts, ScriptType } from "@shared/script.js";
+import { promptLLM } from "@pod/process_prompt.js";
+import { BaseScriptType, FullLLMPrompt, FullPrompts, PromptLLM, RawPrompts, ScriptType } from "@shared/script.js";
 import { Pod } from "@shared/pods.js";
 import { createMongoData } from "@db/mongo_methods.js";
 import { updateMongoArrayDoc } from "@db/mongo_methods.js";
@@ -15,13 +15,23 @@ import crypto from "crypto";
 import { saveScript } from "@pod/local.js";
 import path from "path";
 import { v4 as uuidv4 } from 'uuid';
-// import { deleteTempFiles } from "@pod/local.js";
+import { STORAGE_PATH } from "@pod/init.js";
 
-// step 1: get instructions
+// // step 1: get instructions
+export async function getCleanInstructions(articleContent): Promise<FullLLMPrompt>{
+  let init = base_instructions["clean"] as PromptLLM;
+  let resp = {
+    response_type: init.response_type,
+    GPTModel: init.GPTModel,
+    type: init.type
+  } as FullLLMPrompt;
+  resp.instructions = init.raw_instructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
+  return resp
+}
+
 export async function getInstructions(articleContent: string): Promise<FullPrompts>{
   let fullInstructions: FullPrompts = {} as FullPrompts;
   for(let key of Object.keys(base_instructions)){
-
     let prompt = base_instructions[key] as PromptLLM;
     fullInstructions[key] = {
       response_type: prompt.response_type,
@@ -64,17 +74,16 @@ export async function getAuthor(articleName:string, instructions: FullLLMPrompt)
 export async function scriptwriter(articleName: string, instructions: FullLLMPrompt): Promise<ProcessingStep>{
   let response = await promptLLM(articleName, instructions);
   if (response.status != ProcessingStatus.ERROR) {
-    let script = response.data.script as ScriptType;
+    let baseScript = response.data.script as BaseScriptType;
     // Ensure required properties are present before creating Script
-    const validatedLines = script.lines.map(line => ({
+    const validatedLines = baseScript.map((line, index) => ({
       ...line,
       id: uuidv4().toString(),
-      raw_string: line.raw_string,
-      order: line.order,
+      order: index, // not sure if this will work
       kind: line.kind 
     }));
     let script_file_path = `${uuidv4().toString()}.json`;
-    const newScript = new Script(validatedLines, script.title, script.authors, script_file_path);
+    const newScript = new Script(validatedLines, "Empty", ["Empty"], "Empty");
     await saveScript(newScript, script_file_path);
     return {
       status: ProcessingStatus.IN_PROGRESS,
@@ -88,8 +97,8 @@ export async function scriptwriter(articleName: string, instructions: FullLLMPro
 
 // /**
 //  * Start with reading that has been uploaded earlier, ends with script in S3
-// */
-export async function createScript(local_file_path: string, newPod: Partial<Pod>, user_id: ObjectId): Promise<ProcessingStep> {
+//*/
+export async function createScript(local_file_path: string, articleId: string, newPod: Partial<Pod>, user_id: ObjectId): Promise<ProcessingStep> {
   try {
     // Validate file extension
     if (!local_file_path.match(/\.(txt)$/i)) {
@@ -108,12 +117,20 @@ export async function createScript(local_file_path: string, newPod: Partial<Pod>
         message: "File is empty"
       };
     }
-
-    let instructions = await getInstructions(articleContent);
-    // Process each step and check for errors
-    const cleanStep = await cleanArticle(local_file_path, instructions.clean);
+    // we have to get clean instructions first so that we can use it to get the rest of the instructions
+    let clean_instructions = await getCleanInstructions(articleContent);
+    const cleanStep = await cleanArticle(local_file_path, clean_instructions);
     if (cleanStep.status === ProcessingStatus.ERROR) return cleanStep;
-    console.log(cleanStep)
+    console.log(cleanStep);
+    console.log(cleanStep.data.article);
+    fs.writeFileSync(`${STORAGE_PATH}/clean-${articleId}.txt`, cleanStep.data.article);
+    let content = articleContent;
+    if(cleanStep.data.article && cleanStep.data.article != ""){
+      console.log('using cleaned article version!')
+      content = cleanStep.data.article
+    }
+    let instructions = await getInstructions(content);
+    // Process each step and check for errors
     const titleStep = await getTitle(local_file_path, instructions.title);
     if (titleStep.status === ProcessingStatus.ERROR) return titleStep;
     console.log(titleStep)

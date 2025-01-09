@@ -68,7 +68,7 @@ const normalizeLoudness = (inputFile: string, outputFile: string, stats: Loudnor
             .on('start', (cmd) => {
                 console.log('Started normalization:', cmd);
             })
-            .on('end', resolve)
+            .on('end', () => resolve())
             .on('error', reject)
             .run();
     });

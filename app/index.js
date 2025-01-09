@@ -5,7 +5,7 @@ import App from './App';
 
 // this code is to suppress warning and errors
 // Disable yellow warnings if in production
-if (process.env.NODE_ENV === 'production') {
+if (process.env.ENV === 'production') {
   LogBox.ignoreAllLogs();
 }
 
