@@ -16,13 +16,19 @@ import { routerFunctions } from './src-db/routes/records.js';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { mongo_startup, watchDocumentPods, watchDocumentUser } from './src-db/mongo_interface.js';
-// import { watchS3Wav } from '@/s3_wav.js';
 import fs from 'fs';
 
 dotenv.config();
 
-export const app: Express = express();
+declare global {
+    namespace Express {
+        interface Request {
+            envMode?: 'dev' | 'prod';
+        }
+    }
+}
 
+export const app: Express = express();
 export const httpServer = createServer(app);
 const PORT = parseInt(process.env.PORT || '3000');
 
@@ -80,10 +86,6 @@ const jwtCheck = expressjwt({
 
 // Combine JWT and API key checks
 export const authCheck = (req: Request, res: Response, next: NextFunction) => {
-    // if (process.env.NODE_ENV == 'development') {
-    //     return next();
-    // }
-
     jwtCheck(req, res, (jwtError) => {
         if (jwtError) {
             console.error("JWT Validation Error:", jwtError.message, jwtError.code);
@@ -102,10 +104,18 @@ export const authCheck = (req: Request, res: Response, next: NextFunction) => {
 // API key middleware
 const apiKeyCheck = (req: Request, res: Response, next: NextFunction) => {
     const apiKey = req.header('X-API-Key');
-    if (!apiKey || apiKey !== process.env.RIVET_API_KEY) {
-        return res.status(401).json({ error: 'Invalid API key' });
+    if (process.env.DEV_RIVET_API_KEY == apiKey) {
+        req.envMode = 'dev';
+        return next();
     }
-    next();
+
+    if (process.env.PROD_RIVET_API_KEY == apiKey) {
+        req.envMode = 'prod';
+        return next();
+    }
+
+    console.log('Request from Invalid API key');
+    return res.status(401).json({ error: 'Invalid API key' });
 };
 
 
@@ -146,7 +156,6 @@ function setupSocketIO() {
         console.log('Client connected:', socket.id);
         watchDocumentPods(socket);
         watchDocumentUser(socket);
-        // watchS3Wav(socket);
 
         socket.on('disconnect', async () => {
             console.log('Client disconnected:', socket.id);

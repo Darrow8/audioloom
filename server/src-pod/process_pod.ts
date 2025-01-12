@@ -21,7 +21,7 @@ import { PodStatus } from '@shared/pods.js';
  * createPodcastInParallel
  * In each iteration, process a character line and music line to update audio file
  */
-export async function createPodInParallel(script: Script, pod_id: string, res: Response) {
+export async function createPodInParallel(script: Script, pod_id: string, res: Response, mode: "prod" | "dev") {
     const tempFiles: string[] = [];
     try {
         // Validate script path
@@ -85,7 +85,7 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
             _id: new ObjectId(pod_id),
             audio_key: `pod-audio/${pod_id}.wav`,
             status: PodStatus.PENDING
-        });
+        }, mode);
 
         return {
             status: ProcessingStatus.COMPLETED,

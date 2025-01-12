@@ -26,6 +26,7 @@ export const Colors = {
     black: "#100B00",
     text: '#11181C',
     background: '#ffffff',
-    darkText: '#141414'
+    darkText: '#141414',
+    settings: '#ccc'
   }
 };

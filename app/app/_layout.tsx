@@ -2,7 +2,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState } from 'react';
-import {  useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 import Landing from './landing';
 import { Auth0Provider, Credentials, LocalAuthenticationStrategy, useAuth0 } from 'react-native-auth0';
 import { User } from '@shared/user';
@@ -18,6 +18,7 @@ import * as SecureStore from 'expo-secure-store';
 import { ToastProvider } from '@/state/ToastContext';
 import * as Sentry from '@sentry/react-native';
 import { StatusBar } from 'react-native';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* ignore error */
@@ -87,7 +88,12 @@ function AppContent() {
           await SecureStore.setItemAsync('auth0AccessToken', newCredentials.accessToken);
         }
         console.log('attempting authentication')
-        await AttemptAuthentication(auth0_user, dispatch);
+        let resp = await AttemptAuthentication(auth0_user, dispatch);
+        if (resp == false) {
+          console.log('Authentication failed, restarting app');
+          await SecureStore.deleteItemAsync('auth0AccessToken');
+          clearSession();
+        }
         setIsAuthenticating(false);
         setIsLoading(false);
       }
@@ -153,18 +159,23 @@ export default function RootLayout() {
     NotoSansBoldItalic: require('../assets/fonts/Noto_Sans/static/NotoSans-BoldItalic.ttf'),
   });
 
+  if (!loaded) {
+    return null;
+  }
   if (!env.AUTH0_DOMAIN || !env.AUTH0_CLIENT_ID) {
     throw new Error('No AUTH0_DOMAIN or AUTH0_CLIENT_ID available');
   }
 
   return (
     <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>
-      <StateProvider>
-        <ToastProvider>
-        <StatusBar barStyle="dark-content" /> 
-        <AppContent />
-        </ToastProvider>
-      </StateProvider>
+      <ActionSheetProvider>
+        <StateProvider>
+          <ToastProvider>
+            <StatusBar barStyle="dark-content" />
+            <AppContent />
+          </ToastProvider>
+        </StateProvider>
+      </ActionSheetProvider>
     </Auth0Provider>
   );
 }

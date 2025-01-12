@@ -4,7 +4,7 @@ import { User } from "@shared/user.js";
   import { ObjectId } from "bson";
 import { client } from "../mongo_interface.js";
 import { authCheck } from "../../server.js";
-import { addPodsToUser } from "@db/mongo_methods.js";
+// import { addPodsToUser } from "@db/mongo_methods.js";
 
 
 // router is an instance of the express router.
@@ -12,10 +12,19 @@ import { addPodsToUser } from "@db/mongo_methods.js";
 // The router will be added as a middleware and will take control of requests starting with path /record.
 export const router = express.Router();
 
+export function getDatabase(mode: "prod" | "dev") {
+  if(mode == "prod") {
+    return process.env.PROD_MONGO_DB;
+  } else {
+    return process.env.DEV_MONGO_DB;
+  }
+}
+
 export async function routerFunctions() {
   // This section will help you get a single record by id
   router.get("/:col/:id", authCheck, async (req, res) => {
-    let collection = client.db(process.env.MONGO_DB).collection(req.params.col);
+    
+    let collection = client.db(getDatabase(req.envMode)).collection(req.params.col);
     if (!ObjectId.isValid(req.params.id)) {
       return res.status(400).send(JSON.stringify({message: "Invalid ID format"}));
     }
@@ -31,12 +40,11 @@ export async function routerFunctions() {
     try {
       let collectionName = req.params.col;
       let newDocument : any = req.body as User;
-      if (collectionName == 'users') {
-        let pods = addPodsToUser(newDocument);
-        newDocument.pods = pods;
-      }
-      console.log('data', newDocument);
-      let collection = client.db(process.env.MONGO_DB).collection(collectionName);
+      // if (collectionName == 'users') {
+      //   let pods = addPodsToUser(newDocument);
+      //   newDocument.pods = pods;
+      // }
+      let collection = client.db(getDatabase(req.envMode)).collection(collectionName);
       newDocument._id = new ObjectId(newDocument._id as string);
       let result = await collection.insertOne(newDocument);
       res.send(result).status(204);
@@ -58,7 +66,7 @@ export async function routerFunctions() {
       const updates = {
         $set: data,
       };
-      let collection = client.db(process.env.MONGO_DB).collection(req.params.col);
+      let collection = client.db(getDatabase(req.envMode)).collection(req.params.col);
       let result = await collection.updateOne(query, updates);
       res.send(result).status(200);
     } catch (err) {
@@ -76,7 +84,7 @@ export async function routerFunctions() {
       }
       const query = { _id: obj_id };
 
-      let collection = client.db(process.env.MONGO_DB).collection(req.params.col);
+      let collection = client.db(getDatabase(req.envMode)).collection(req.params.col);
       let result = await collection.deleteOne(query);
 
       res.send(result).status(200);
@@ -98,7 +106,7 @@ export async function routerFunctions() {
 
       const query = { [field as string]: value };
 
-      let collection = client.db(process.env.MONGO_DB).collection(col);
+      let collection = client.db(getDatabase(req.envMode)).collection(col);
       let result = await collection.findOne(query);
 
       if (result) {
