@@ -5,7 +5,6 @@ import { watchDocuments, watchDocument } from './mongo_methods.js';
 import { io } from '../server.js';
 export let client: MongoClient = undefined
 export let uri: string = undefined;
-export let db: Db = undefined;
 
 
 
@@ -26,8 +25,6 @@ export async function mongo_startup() {
   try {
     // Connect the client to the server
     await client.connect();
-    // Send a ping to confirm a successful connection
-    db = client.db(process.env.MONGO_DB);
     console.log("Successfully connected to MongoDB Atlas");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
@@ -37,12 +34,21 @@ export async function mongo_startup() {
   }
 }
 
+export function getMode(socket: Socket){
+  const mode = socket.handshake.query.env_mode;
+  if(mode != "dev" && mode != "prod") {
+    throw new Error("Invalid mode");
+  }
+  return mode;
+}
+
 
 
 export function watchDocumentPods(socket: Socket) {
+  const mode = getMode(socket);
   socket.on('watchDocumentsPods', (documentIds: ObjectId[]) => {
     let emit_name = 'pods';
-    watchDocuments(socket, 'pods', documentIds, emit_name, (changeStream) => {
+    watchDocuments(socket, 'pods', documentIds, emit_name, mode, (changeStream) => {
       // Listen for changes
       changeStream.on('change', (change) => {
         socket.emit(`${emit_name}Change`, change);
@@ -54,9 +60,10 @@ export function watchDocumentPods(socket: Socket) {
 }
 
 export function watchDocumentUser(socket: Socket) {
+  const mode = getMode(socket);
   socket.on('watchDocumentUser', (documentId: ObjectId) => {
     let emit_name = 'user';
-    watchDocument(socket, 'users', documentId, emit_name, (changeStream) => {
+    watchDocument(socket, 'users', documentId, emit_name, mode, (changeStream) => {
       // Listen for changes
       changeStream.on('change', (change) => {
         socket.emit(`${emit_name}Change`, change);

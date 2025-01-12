@@ -3,6 +3,7 @@ import { Alert, Platform } from 'react-native';
 import { makeAuthenticatedRequest } from './mongoSecurity';
 import { BASE_URL } from './mongoSecurity';
 import { ObjectId } from 'bson';
+import { User } from '@shared/user';
 
 let DB_BASE_URL = BASE_URL + 'db/records/'
 
@@ -136,6 +137,29 @@ export async function deleteRecord(collection: string, id: ObjectId): Promise<vo
   } catch (error) {
     console.error(`Error deleting record with ID ${id} from collection ${collection}:`, error);
     // Alert.alert('Error', `Failed to delete record from ${collection}. Please try again later.`);
+    throw error;
+  }
+}
+
+export async function deleteUser(id: ObjectId, sub: string) {
+  try {
+    let response = await makeAuthenticatedRequest(BASE_URL +`db/delete_user`, 'DELETE', {id: id.toString(), sub: sub});
+    console.log("Response:", response);
+  } catch (error) {
+    console.error(`Error deleting record with ID ${id} from collection:`, error);
+    throw error;
+  }
+}
+
+export async function createUser(user: Partial<User>) {
+  try {
+    user.created_at = new Date().toISOString();
+    user.updated_at = user.created_at;
+    let response = await makeAuthenticatedRequest(BASE_URL +`db/create_user`, 'POST', {user: user});
+    console.log("Response:", response);
+    return response;
+  } catch (error) {
+    console.error(`Error creating user:`, error);
     throw error;
   }
 }

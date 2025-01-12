@@ -5,6 +5,7 @@ import OpenAI from "openai";
 import ffmpeg from 'fluent-ffmpeg';
 import { ensureRequiredFolders } from '@pod/local.js';
 import dotenv from 'dotenv';
+import { initAuth0 } from "@db/auth0_manager.js";
 
 dotenv.config();
 
@@ -28,16 +29,21 @@ export let STORAGE_PATH = '';
  */
 export async function startup() {
     try {
+        console.log("Starting up...");
+        console.log("Environment: ", process.env.NODE_ENV)
         // secret must be retrieved first
         initS3();
         console.log("S3 initialized:", s3Initialized);
-        
+
         initElevenLabs();
         console.log("ElevenLabs initialized:", elevenlabsInitialized);
         
         const openAIInitialized = initOpenAI();
         console.log("OpenAI initialized:", openAIInitialized);
         
+        const auth0Initialized = initAuth0();
+        console.log("Auth0 initialized:", auth0Initialized);
+
         if(process.env.IS_DOCKER == "true") {
             TEMP_DATA_PATH = '/app/data';
             STORAGE_PATH = '/app/data/uploads';

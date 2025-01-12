@@ -1,3 +1,4 @@
+import 'react-native-get-random-values'
 import { registerRootComponent } from 'expo';
 import { LogBox, YellowBox } from 'react-native';
 import App from './App';

@@ -15,7 +15,8 @@ export default {
           UIBackgroundModes: ["audio"],
           UIDeviceFamily: [1],
           UIStatusBarStyle: "UIStatusBarStyleDarkContent",
-          UIViewControllerBasedStatusBarAppearance: false
+          UIViewControllerBasedStatusBarAppearance: false,
+          LSApplicationQueriesSchemes: ['mailto']
         },
       },
       splash: {

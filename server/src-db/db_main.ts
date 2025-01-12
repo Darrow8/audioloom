@@ -4,8 +4,10 @@ import { router as recordRouter } from "./routes/records.js";
 import { app, authCheck } from "../server.js";
 import { mongo_startup } from "./mongo_interface.js";
 import { getAudioURLFromS3 } from './aws.js';
-import { doesIdExist, doesSubExist } from './mongo_methods.js';
+import { deleteMongoDocument, doesIdExist, doesSubExist } from './mongo_methods.js';
 import { ObjectId } from 'mongodb';
+import { deleteUserFromAuth0 } from './auth0_manager.js';
+import { createUser } from './manage_user.js';
 
 
 export async function dbRoutes() {
@@ -39,7 +41,7 @@ export async function dbRoutes() {
                 });
             }
 
-            const exists = await doesIdExist(collection, new ObjectId(id));
+            const exists = await doesIdExist(collection, new ObjectId(id), req.envMode);
             res.json({ 'exists': exists });
         } catch (error) {
             console.error('Error checking ID existence:', error);
@@ -59,12 +61,30 @@ export async function dbRoutes() {
                     error: 'Missing required parameters: sub and collection' 
                 });
             }
-            const exists = await doesSubExist(collection, sub);
+            const exists = await doesSubExist(collection, sub, req.envMode);
             res.json({ 'exists': exists });
         } catch (error) {
             console.error('Error checking sub existence:', error);
             res.status(500).json({ error: 'Internal server error' });
         }
+    });
+
+    app.delete('/db/delete_user', authCheck, async (req: JWTRequest, res: Response) => {
+        const id = req.body.id;
+        const sub = req.body.sub;
+        console.log("Attempting to delete user with id:", id, "and sub:", sub);
+        let mongo_response = await deleteMongoDocument("users", new ObjectId(id as string), req.envMode);
+        console.log("Mongo response:", mongo_response);
+        let auth0_response = await deleteUserFromAuth0(sub as string);
+        console.log("Auth0 response:", auth0_response);
+        res.json({ 'success': true, 'mongo_response': mongo_response, 'auth0_response': auth0_response });
+    });
+
+    app.post('/db/create_user', authCheck, async (req: JWTRequest, res: Response) => {
+        let mode = req.envMode;
+        const user = req.body.user;
+        const response = await createUser(user, mode);
+        res.json({ 'success': true, 'response': response });
     });
 
     // Apply authentication to /db/records route

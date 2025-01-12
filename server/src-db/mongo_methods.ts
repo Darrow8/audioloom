@@ -1,10 +1,10 @@
 import { MongoClient, ServerApiVersion, ObjectId, Db, ChangeStream, PullOperator } from "mongodb";
 import { app } from '../server.js'
 import { MongoDocument, ChangeStreamUpdate } from '../../shared/src/mongodb.js';
-import { db } from './mongo_interface.js';
 import { Socket } from 'socket.io';
 import { Document } from 'bson';
-
+import { getDatabase } from "./routes/records.js";
+import { client } from "./mongo_interface.js";
 
 /**
  * Checks if a document with the given _id exists in the specified collection
@@ -12,10 +12,10 @@ import { Document } from 'bson';
  * @param id - The _id to check (can be string or ObjectId)
  * @returns Promise<boolean> - True if document exists, false otherwise
  */
-export async function doesIdExist(collectionName: string, id: ObjectId): Promise<boolean> {
+export async function doesIdExist(collectionName: string, id: ObjectId, mode: "prod" | "dev"): Promise<boolean> {
   try {
     // Convert string ID to ObjectId if necessary
-
+    let db = client.db(getDatabase(mode));
     const collection = db.collection(collectionName);
     const document = await collection.findOne({ _id: id }, { projection: { _id: 1 } });
 
@@ -26,10 +26,10 @@ export async function doesIdExist(collectionName: string, id: ObjectId): Promise
   }
 }
 
-export async function doesSubExist(collectionName: string, sub: string): Promise<boolean> {
+export async function doesSubExist(collectionName: string, sub: string, mode: "prod" | "dev"): Promise<boolean> {
   try {
     // Convert string ID to ObjectId if necessary
-
+    let db = client.db(getDatabase(mode));
     const collection = db.collection(collectionName);
     const document = await collection.findOne({ sub: sub }, { projection: { sub: 1 } });
 
@@ -40,13 +40,10 @@ export async function doesSubExist(collectionName: string, sub: string): Promise
   }
 }
 
-export async function createMongoData(collectionName: string, data: Document) {
+export async function createMongoData(collectionName: string, data: Document, mode: "prod" | "dev") {
   try {
-    if (collectionName == 'users') {
-      let pods = addPodsToUser(data);
-      data.pods = pods;
-    }
     console.log('data', data);
+    const db = client.db(getDatabase(mode));
     const collection = db.collection(collectionName);
     const result = await collection.insertOne(data);
     console.log(`Successfully inserted document with _id: ${result.insertedId}`);
@@ -57,8 +54,9 @@ export async function createMongoData(collectionName: string, data: Document) {
   }
 }
 
-export async function getMongoDataById(collectionName: string, id: ObjectId) {
+export async function getMongoDataById(collectionName: string, id: ObjectId, mode: "prod" | "dev") {
   try {
+    const db = client.db(getDatabase(mode));
     const collection = db.collection(collectionName);
     const data = await collection.findOne({ _id: id });
     if (!data) {
@@ -71,8 +69,9 @@ export async function getMongoDataById(collectionName: string, id: ObjectId) {
   }
 }
 
-export async function updateMongoData(collectionName: string, data: Document) {
+export async function updateMongoData(collectionName: string, data: Document, mode: "prod" | "dev") {
   try {
+    const db = client.db(getDatabase(mode));
     const collection = db.collection(collectionName);
     const result = await collection.updateOne({ _id: data._id }, { $set: data });
     if (result.matchedCount === 0) {
@@ -88,7 +87,8 @@ export async function updateMongoData(collectionName: string, data: Document) {
 }
 
 export async function updateMongoArrayDoc<T extends Document>(collectionName: string, documentId: ObjectId, arrayField: any,
-  newItem: any) {
+  newItem: any, mode: "prod" | "dev") {
+  const db = client.db(getDatabase(mode));
   const collection = db.collection(collectionName);
 
   const result = await collection.updateOne(
@@ -107,13 +107,14 @@ export async function updateMongoArrayDoc<T extends Document>(collectionName: st
  * @param emit_name 
  * @returns 
  */
-export async function watchDocuments(socket: Socket, collectionName: string, documentIds: ObjectId[], emit_name: string, callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
+export async function watchDocuments(socket: Socket, collectionName: string, documentIds: ObjectId[], emit_name: string, mode: "prod" | "dev", callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
   try {
     // Validate IDs
     if (!documentIds.every(id => ObjectId.isValid(id))) {
       socket.emit('error', 'Invalid document IDs');
       return;
     }
+    const db = client.db(getDatabase(mode));
     const collection = db.collection<MongoDocument>(collectionName);
     const objectIds = documentIds.map(id => new ObjectId(id));
 
@@ -149,8 +150,9 @@ export async function watchDocuments(socket: Socket, collectionName: string, doc
  * @param emit_name 
  * @returns 
  */
-export async function watchDocument(socket: Socket, collectionName: string, documentId: ObjectId, emit_name: string, callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
+export async function watchDocument(socket: Socket, collectionName: string, documentId: ObjectId, emit_name: string, mode: "prod" | "dev", callback?: (change: ChangeStream<ChangeStreamUpdate>) => void): Promise<void> {
   try {
+    const db = client.db(getDatabase(mode));
     // Validate ID
     if (!ObjectId.isValid(documentId)) {
       socket.emit('error', 'Invalid document ID');
@@ -189,9 +191,11 @@ export async function removeFromMongoArray(
   collectionName: string,
   documentId: ObjectId,
   arrayField: string,
-  itemToRemove: any
+  itemToRemove: any,
+  mode: "prod" | "dev"  
 ) {
   try {
+    const db = client.db(getDatabase(mode));
     const collection = db.collection(collectionName);
 
     const pullOperation = {
@@ -216,20 +220,29 @@ export async function removeFromMongoArray(
   }
 }
 
+
+
 /**
- * Temporary function to add pods to user
- * @param data 
- * @returns 
+ * Deletes a document from the specified collection by its ID
+ * @param collectionName - Name of the MongoDB collection
+ * @param id - The _id of the document to delete
+ * @returns Promise with the deletion result
  */
-export function addPodsToUser(data: any) {
-  if (process.env.NODE_ENV == 'production') {
-    console.log('creating user with additional pods');
-    let intro_pod = new ObjectId('6727006b22da058cbd4d4665');
-    let humanities_pod = new ObjectId('676f5ad4ecf2e78fe10012dc');
-    let science_pod = new ObjectId('676f5880aa561fca5b4a5bd7');
-    return [intro_pod, humanities_pod, science_pod];
-  } else {
-    console.log('not in production');
-    return [];
+export async function deleteMongoDocument(collectionName: string, id: ObjectId, mode: "prod" | "dev") {
+  try {
+    const db = client.db(getDatabase(mode));
+    const collection = db.collection(collectionName);
+    const result = await collection.deleteOne({ _id: id });
+    
+    if (result.deletedCount === 0) {
+      console.log(`No document found with _id: ${id} in ${collectionName}`);
+    } else {
+      console.log(`Successfully deleted document with _id: ${id}`);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error(`Error deleting document from ${collectionName}:`, error);
+    throw error;
   }
 }

@@ -6,6 +6,7 @@ import { useAuth0 } from 'react-native-auth0';
 import { resetUser } from '@/scripts/mixpanel';
 import { fullLogout } from '@/scripts/auth';
 import { useToast } from '@/state/ToastContext';
+import { Colors } from '@/constants/Colors';
 const Profile = () => {
   const { clearSession, hasValidCredentials } = useAuth0();
   const { state, dispatch } = useStateContext();
@@ -37,14 +38,14 @@ const Profile = () => {
         
       </View>
 
-      <View style={styles.content}>
+      {/* <View style={styles.content}>
 
         <View style={styles.actionSection}>
           <TouchableOpacity style={styles.actionButton} onPress={() => fullLogout(dispatch, clearSession)}>
-            <Text style={styles.actionButtonText}>Log Out</Text>
+            <Text style={styles.actionButtonText}>Settings</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </View> */}
     </View>
   );
 };
@@ -98,13 +99,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   actionButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: Colors.theme.settings,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
   },
   actionButtonText: {
-    color: '#fff',
+    color: Colors.theme.darkText,
     fontSize: 16,
     fontWeight: 'bold',
   },

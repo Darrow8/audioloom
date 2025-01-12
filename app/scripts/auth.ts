@@ -1,5 +1,5 @@
 import { User, UserMetadata } from "@shared/user";
-import { createUser, getUserById, getUserBySub, getUserBySubForAuth, updateUser, watchDocumentUser } from "./mongoClient";
+import { callDeleteUser, getUserById, getUserBySub, getUserBySubForAuth, updateUser, watchDocumentUser } from "./mongoClient";
 import { UserAction } from "../state/userReducer";
 import { Credentials } from "react-native-auth0";
 import * as SecureStore from 'expo-secure-store';
@@ -11,6 +11,7 @@ import { User as Auth0User } from "react-native-auth0";
 import { env } from '@/config/env';
 import { identifyUser, resetUser, trackEvent } from './mixpanel';
 import { getUserByIdForAuth } from "./mongoClient";
+import { createUser } from "./mongoHandle";
 /**
  * Initialize a new user in the database
  */
@@ -29,11 +30,7 @@ export async function initUser(auth0_user: Auth0User): Promise<User | null> {
   } as Partial<User>;
   let status = await createUser(partial_user)
   console.log("status", status);
-  if(status.acknowledged){
-    return partial_user as User;
-  } else {
-    return null;
-  }
+  return status;
 }
 
 
@@ -128,4 +125,14 @@ export async function fullLogout(dispatch: Dispatch<UserAction>, clearSession: (
   } catch (e) {
     console.log('Log out cancelled');
   }
+}
+
+export async function deleteAccount(dispatch: Dispatch<UserAction>, clearSession: () => Promise<void>, user: User) {
+
+  // resetUser();
+  await callDeleteUser(user._id, user.sub);
+  await clearSession()
+  await SecureStore.deleteItemAsync('auth0AccessToken');
+  await SecureStore.deleteItemAsync('signingUp');
+  dispatch({ type: 'LOGOUT' });
 }

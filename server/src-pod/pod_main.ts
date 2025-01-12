@@ -148,7 +148,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
   sendUpdate(new_pod_id, initMessage);
 
   // Check if the pod already exists
-  if (await doesIdExist('pods', new_pod_id)) {
+  if (await doesIdExist('pods', new_pod_id, req.envMode)) {
     return res.status(400).json({ message: 'Pod already exists' });
   }
 
@@ -182,19 +182,19 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
         status: ProcessingStatus.ERROR,
         step: "article",
         message: `Article processing failed: ${error.message}`
-      }, res);
+      }, res, req);
     }
 
     // Create screenplay
     let scriptData: Script;
     try {
-      const scriptResponse = await createScript(articlePath, articleId, newPod, user_id);
+      const scriptResponse = await createScript(articlePath, articleId, newPod, user_id, req.envMode);
       if (scriptResponse.status === ProcessingStatus.ERROR) {
         return onPodError(newPod, user_id, {
           status: ProcessingStatus.ERROR,
           step: "script",
           message: `Script creation failed: ${scriptResponse.message}`
-        }, res);
+        }, res, req);
       }
       console.log('scriptResponse.message: ' + scriptResponse.message)
       scriptData = scriptResponse.script;
@@ -203,17 +203,17 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
         status: ProcessingStatus.ERROR,
         step: "script",
         message: `Script creation failed: ${error.message}`
-      }, res);
+      }, res, req);
     }
 
     // Create podcast
-    const podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res);
+    const podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res, req.envMode);
     if (podResponse.status === ProcessingStatus.ERROR) {
       return onPodError(newPod, user_id, {
         status: ProcessingStatus.ERROR,
         step: "pod",
         message: `Pod creation failed: ${podResponse.message}`
-      }, res);
+      }, res, req);
     }
     sendUpdate(new_pod_id, podResponse);
 
@@ -233,7 +233,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     if (podResponse.filename) {
       newPod.audio_key = `pod-audio/${podResponse.filename}`;
     }
-    await updateMongoData('pods', newPod);
+    await updateMongoData('pods', newPod, req.envMode);
 
     sendUpdate(new_pod_id, {
       status: ProcessingStatus.COMPLETED,
@@ -248,25 +248,25 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
         step: "cleanup",
         message: "Internal server error",
         error: error.message
-      }, res);
+      }, res, req);
     } else {
       onPodError(newPod, user_id, {
         status: ProcessingStatus.ERROR,
         step: "cleanup",
         message: error.message
-      }, res);
+      }, res, req);
     }
   }
 }
 
 
-function onPodError(pod: Partial<Pod>, user_id: ObjectId, message: ProcessingStep, res: Response) {
+function onPodError(pod: Partial<Pod>, user_id: ObjectId, message: ProcessingStep, res: Response, req: Request) {
   pod.status = PodStatus.ERROR;
   console.log('Reach onPodError')
   console.log(message)
   if (pod.created_at != undefined) {
-    updateMongoData('pods', pod);
-    updateMongoArrayDoc('users', user_id, 'pods', pod._id);
+    updateMongoData('pods', pod, req.envMode);
+    updateMongoArrayDoc('users', user_id, 'pods', pod._id, req.envMode);
   }
   sendUpdate(pod._id, message);
   res.end();

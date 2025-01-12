@@ -1,4 +1,4 @@
-import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection, getRecordByField, checkIfIdExists, checkIfSubExists } from './mongoHandle';
+import { getRecordById, createRecord, updateRecord, deleteRecord, getRecordsByCollection, getRecordByField, checkIfIdExists, checkIfSubExists, deleteUser } from './mongoHandle';
 import { isValidPod } from './validateData';
 import { User } from '@shared/user';
 import { socket } from './socket';
@@ -21,17 +21,7 @@ export const getAllUsers = async () => {
     return users;
 }
 
-export const createUser = async (data: Partial<User>) : Promise<DocumentCreated> => {
-    // Add created_at timestamp
-    data.created_at = new Date().toISOString();
-    data.updated_at = data.created_at;
-    console.log('data', data);
-    let new_data = await createRecord('users', data).catch((error) => {
-        console.error('Error creating user:', error);
-        return false;
-    });
-    return new_data as DocumentCreated;
-}
+
 /**
  * 0 means create new user
  * -1 means error
@@ -84,12 +74,11 @@ export const updateUser = async (id: ObjectId, data: any) => {
 
 }
 
-export const deleteUser = async (id: ObjectId) => {
+export const callDeleteUser = async (id: ObjectId, sub: string) : Promise<boolean> => {
     if (id) {
-        await deleteRecord('users', id).catch((error) => {
-            console.error('Error deleting user:', error);
-            return false;
-        });
+        console.log("Attempting to delete user with id:", id, "and sub:", sub);
+        let response = await deleteUser(id, sub)
+        console.log('response', response);
         return true;
     } else {
         console.error('Invalid user id:', id);
@@ -98,7 +87,6 @@ export const deleteUser = async (id: ObjectId) => {
 }
 
 // Pod endpoints
-
 export const watchDocumentsPods = async (documentIds: ObjectId[], setPods: (stream_data: MongoChangeStreamData) => void) => {
     socket.emit('watchDocumentsPods', documentIds);
     socket.on('podsChange', (data: MongoChangeStreamData) => {

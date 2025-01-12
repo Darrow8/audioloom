@@ -96,8 +96,8 @@ export async function processMusicLine(line: MusicLine, script: Script): Promise
 export async function processBMusicLine(music_line: MusicLine, script: Script): Promise<AudioFile> {
     let line_order = music_line.order;
     let dialogue_desc = "";
-    if (line_order < script.lines.length) {
-        dialogue_desc = script.lines[line_order].raw_string;
+    if (line_order < script.lines.length && script.lines[line_order] instanceof CharLine) {
+        dialogue_desc = script.lines[line_order].dialogue;
     }
     console.log(`dialogue_desc: ${dialogue_desc}`);
     let music_choice = await musicChooser(music_line.music_description, dialogue_desc)

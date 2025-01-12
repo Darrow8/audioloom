@@ -98,7 +98,7 @@ export async function scriptwriter(articleName: string, instructions: FullLLMPro
 // /**
 //  * Start with reading that has been uploaded earlier, ends with script in S3
 //*/
-export async function createScript(local_file_path: string, articleId: string, newPod: Partial<Pod>, user_id: ObjectId): Promise<ProcessingStep> {
+export async function createScript(local_file_path: string, articleId: string, newPod: Partial<Pod>, user_id: ObjectId, mode: "prod" | "dev"): Promise<ProcessingStep> {
   try {
     // Validate file extension
     if (!local_file_path.match(/\.(txt)$/i)) {
@@ -147,8 +147,8 @@ export async function createScript(local_file_path: string, articleId: string, n
       newPod.title = titleStep.data.title || "Untitled";
       newPod.created_at = new Date();
       console.log(newPod)
-      await createMongoData('pods', newPod);
-      await updateMongoArrayDoc('users', user_id, 'pods', newPod._id);
+      await createMongoData('pods', newPod, mode);
+      await updateMongoArrayDoc('users', user_id, 'pods', newPod._id, mode);
       // deleteTempFiles()
     } catch (dbError) {
       return {
