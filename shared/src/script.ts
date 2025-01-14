@@ -45,22 +45,45 @@ export class Script {
 
 
 // Base Script Schema is for when all we have is the lines
-export const BaseScriptSchema = z.array(LineUnionSchema);
-export type BaseScriptType = z.infer<typeof BaseScriptSchema>;
+// export const BaseScriptSchema = z.array(LineUnionSchema);
 
 // Script schema
-export const ScriptSchema = z.object({
-    lines: z.array(LineUnionSchema),
-    title: z.string(),
-    authors: z.array(z.string()),
-    lineCount: z.number(),
-    file_path: z.string(),
-  });
-  
-// Type inference
-export type ScriptType = z.infer<typeof ScriptSchema>;
-  
-  
+export interface BaseScriptType {
+    lines: LineUnionType[];
+}
+
+export type LineUnionType = (CharLineType | MusicLineType);
+
+export interface CharLineType {
+    kind: "character";
+    character: string;
+    dialogue: string;
+    adjective: string;
+}
+
+export interface MusicLineType {
+    kind: "music";
+    type: "Background Music" | "Sound Effect";
+    music_description: string;
+}
+export const BaseScriptSchema = z.object({
+    lines: z.array(LineUnionSchema)
+});
+
+
+// Script schema
+// export const ScriptSchema = z.object({
+//     lines: z.array(LineUnionSchema),
+//     title: z.string(),
+//     authors: z.array(z.string()),
+//     lineCount: z.number(),
+//     file_path: z.string(),
+// });
+
+// // Type inference
+// export type ScriptType = z.infer<typeof ScriptSchema>;
+
+
 
 export enum InstructionType {
     CLEAN = "clean",

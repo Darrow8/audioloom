@@ -9,10 +9,10 @@ import { Readable } from 'stream';
 import { saveStreamToFile } from '@pod/local.js';
 import { TEMP_DATA_PATH } from '@pod/init.js';
 import { Character } from '@shared/voice.js';
-import { ScriptType, Script } from '@shared/script.js';
+import { Script } from '@shared/script.js';
 import path from 'path';
 
-/**
+/** 
  * Create audio file for a character line and save it to the temp data path
  */
 export async function processCharacterLine(current_line: CharLine, prev_line: CharLine | null, 
@@ -69,9 +69,29 @@ export async function processCharacterDialogue(line: CharLine, prev_line: CharLi
     }
 
     dialogue = dialogue.trim();
-
-    return await textToSpeech(voice_model, dialogue, prev_dialogue, next_dialogue, line.adjective);
-
+    // try 3 times 
+    let lastError: Error;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            // On first attempt, use all context. On subsequent attempts, simplify the request
+            if (attempt === 1) {
+                const response = await textToSpeech(voice_model, dialogue, prev_dialogue, next_dialogue, line.adjective);
+                return response;
+            } else {
+                console.log(`Retrying with simplified request for ${character}`);
+                const response = await textToSpeech(voice_model, dialogue, "", "", "");
+                return response;
+            }
+        } catch (error) {
+            console.error(`Attempt ${attempt} failed for character ${character}:`, error);
+            lastError = error;
+            if (attempt === 3) {
+                throw new Error(`Failed to process dialogue after 3 attempts: ${error.message}`);
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    }
+    throw lastError;
 }
 
 

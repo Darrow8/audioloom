@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { Multer } from "multer";
 import { ConvertAPI } from 'convertapi';
-
+import { v4 as uuidv4 } from 'uuid';
 export async function convertToTXT(file: Express.Multer.File, save_path: string): Promise<{ path: string, updated_file: any, article_id: string }> {
   const convertapi = new ConvertAPI(process.env.CONVERT_API_SECRET);
 
@@ -20,12 +20,13 @@ export async function convertToTXT(file: Express.Multer.File, save_path: string)
 
   // save to file
   let primitive_name = file.originalname.split('.')[0];
-  let file_path = `${save_path}/${primitive_name}.txt`;
+  let new_name = uuidv4();
+  let file_path = `${save_path}/${new_name}.txt`;
   let updated_file = await result.file.save(file_path);
   console.log("File saved: " + file);
   return {
     path: file_path,
     updated_file: updated_file,
-    article_id: primitive_name
+    article_id: new_name
   };
 }

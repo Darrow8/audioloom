@@ -35,7 +35,7 @@ export async function initUser(auth0_user: Auth0User): Promise<User | null> {
 
 
 export async function AttemptAuthentication(auth0_user: Auth0User, dispatch: Dispatch<UserAction>) {
-  try {
+  try { 
     let credentials = await SecureStore.getItemAsync('auth0AccessToken');
     if (credentials == null) {
       throw new Error('No credentials found');

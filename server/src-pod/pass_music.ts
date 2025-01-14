@@ -89,8 +89,9 @@ export async function fetchEpidemicTracks(genre:string, mood:string) : Promise<u
       headers: myHeaders,
       redirect: "follow"
     };
+    // https://www.epidemicsound.com/json/search/tracks/?mood=busy%20&%20frantic&order=desc&page=1&segment_types=music-structure%40v2&segment_types=soundly-sfx&sort=neutral-pop28
     try {
-        let search = `?order=desc&page=1&limit=10&segment_types=music-structure&sort=date`;
+        let search = `order=desc&page=1&segment_types=music-structure%40v2&segment_types=soundly-sfx&sort=neutral-pop28&limit=10`;
         if(genre != "" && genres.includes(genre)){
             search += `&genres=${encodeURI(genre)}`;
         }
@@ -98,7 +99,7 @@ export async function fetchEpidemicTracks(genre:string, mood:string) : Promise<u
             search += `&moods=${encodeURI(mood)}`;
         }
         // console.log(search);
-        const response = await fetch(`https://www.epidemicsound.com/json/search/tracks/${search}`, requestOptions as any);
+        const response = await fetch(`https://www.epidemicsound.com/json/search/tracks/?${search}`, requestOptions as any);
         const result = await response.json() as DataStructure;
         return processTrackJSON(result);
     } catch (error) {

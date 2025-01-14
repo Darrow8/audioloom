@@ -1,5 +1,5 @@
 # Build stage
-FROM --platform=$BUILDPLATFORM node:20-alpine as builder
+FROM node:20-alpine as builder
 
 WORKDIR /usr/src/app
 
@@ -15,7 +15,7 @@ COPY . .
 COPY assets ./dist/server/assets
 
 # Production stage
-FROM --platform=$TARGETPLATFORM node:20-alpine
+FROM node:20-alpine
 
 # Install FFmpeg
 RUN apk add --no-cache ffmpeg

@@ -6,7 +6,7 @@ import { Clip, Line } from "@shared/line.js";
 import { Script } from "@shared/script.js";
 
 
-export async function saveClipToLogs(data: Clip, fileName: string){
+export async function saveClipsToLogs(data: Clip[], fileName: string){
     // Ensure the folder exists
     let folderPath = path.join(TEMP_DATA_PATH, 'logs');
     if (!fs.existsSync(folderPath)) {
@@ -18,10 +18,10 @@ export async function saveClipToLogs(data: Clip, fileName: string){
 
     // Check if the file exists
     if (fs.existsSync(filePath)) {
-        await addToJsonArray(filePath, data);
+        // await addToJsonArray(filePath, data);
         console.log(`Data appended to existing file: ${filePath}`);
     } else{
-        await saveAsJson([data], folderPath, fileName);
+        await saveAsJson(data, folderPath, fileName);
     }
 }
 

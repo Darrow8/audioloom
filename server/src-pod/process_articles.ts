@@ -68,7 +68,7 @@ export async function uploadArticleToS3(articleId: string, local_file_path: stri
 }
 
 export async function uploadScriptToS3(scriptId:string, local_file_path: string, _id: ObjectId) {
-  const scriptKey = `scripts/${scriptId.toString()}.json`;
+  const scriptKey = `scripts/${scriptId.toString()}`;
   let file = fs.readFileSync(local_file_path);
   let uploadDetails = {
     Bucket: 'main-server',

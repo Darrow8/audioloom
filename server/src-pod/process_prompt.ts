@@ -1,5 +1,5 @@
 import { ProcessingStatus, ProcessingStep } from "@shared/processing.js";
-import { BaseScriptSchema, FullLLMPrompt, FullPrompts, GPTModel, InstructionType, PromptLLM, RawPrompts, ScriptSchema } from "@shared/script.js";
+import { BaseScriptSchema, FullLLMPrompt, FullPrompts, GPTModel, InstructionType, PromptLLM, RawPrompts } from "@shared/script.js";
 import { countTokens } from "@pod/process_script.js";
 import { openaiClient } from "@pod/init.js";
 import fs from "fs";
@@ -7,10 +7,6 @@ import { getFileFromS3 } from "@pod/pass_files.js";
 import { ChatModel } from "openai/resources";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
-
-// const BaseFormat = z.object({
-//   type: z.enum(['podcast', 'clean', 'title', 'author'])
-// });
 
 const formats = {
   podcast: BaseScriptSchema,
@@ -25,8 +21,8 @@ const formats = {
   })
 };
 
-export async function promptLLM(articleName: string, instructions: FullLLMPrompt): Promise<ProcessingStep> {
-    let intructionsTokens = countTokens(instructions.instructions, instructions.GPTModel.version);
+export async function promptLLM(articleName: string, instructions: FullLLMPrompt, type: InstructionType): Promise<ProcessingStep> {
+    let intructionsTokens = countTokens(instructions.instructions, instructions.GPTModel.version, type);
     
     if (intructionsTokens > instructions.GPTModel.tokenLimit) {
         return {
@@ -39,7 +35,7 @@ export async function promptLLM(articleName: string, instructions: FullLLMPrompt
     let format: z.ZodType;
     let format_name: string;
 
-    switch (instructions.type) {
+    switch (type) {
         case InstructionType.PODCAST:
             format = formats.podcast;
             format_name = "podcast";
@@ -56,8 +52,6 @@ export async function promptLLM(articleName: string, instructions: FullLLMPrompt
             format = formats.author;
             format_name = "author";
             break;
-        default:
-            throw new Error(`Unknown instruction type: ${instructions.type}`);
     }
 
     const completion = await openaiClient.beta.chat.completions.parse({
@@ -67,14 +61,50 @@ export async function promptLLM(articleName: string, instructions: FullLLMPrompt
         ],
         response_format: zodResponseFormat(format, format_name),
     });
-    console.log(completion.choices[0].message.parsed);
+    let response = completion.choices[0].message.parsed;
+    console.log(response);
+    let parsedResponse;
+    switch (type) {
+        case InstructionType.PODCAST:
+            parsedResponse = BaseScriptSchema.parse(response);
+            break;
+        case InstructionType.CLEAN:
+            parsedResponse = formats.clean.parse(response);
+            break;
+        case InstructionType.TITLE:
+            parsedResponse = formats.title.parse(response);
+            break;
+        case InstructionType.AUTHOR:
+            parsedResponse = formats.author.parse(response);
+            break;
+    }
+    console.log(parsedResponse);
     return {
         status: ProcessingStatus.IN_PROGRESS,
         step: instructions.type,
         message: "Prompt completed",
-        data: completion.choices[0].message.parsed
+        data: parsedResponse
     } as ProcessingStep;
 }
+
+/**
+ * We will prompt the LLM in chunks of 1000 tokens
+ */
+export async function promptLLMChunks(articleName: string, instructions: FullLLMPrompt, chunkSize:number=1000, chunkOverlap:number=100){
+    
+    // let format: z.ZodType = formats.podcast;
+    // let format_name: string = "podcast";
+    
+    // const completion = await openaiClient.beta.chat.completions.parse({
+    //     model: instructions.GPTModel.version as ChatModel,
+    //     messages: [
+    //         { role: "system", content: instructions.instructions },
+    //     ],
+    //     response_format: zodResponseFormat(format, format_name),
+    // });
+
+}
+
 
 export function saveLocalFile(fileName: string, content: string) {
     fs.writeFileSync(`${fileName}`, content);

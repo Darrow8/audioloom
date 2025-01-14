@@ -41,6 +41,7 @@ function AppContent() {
   useEffect(() => {
     async function init() {
       // setup socket and mixpanel
+      console.log('on init')
       connectSocket();
       initMixpanel();
       StatusBar.setBarStyle('dark-content');

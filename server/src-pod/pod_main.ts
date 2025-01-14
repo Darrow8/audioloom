@@ -162,7 +162,6 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     audio_key: "init"
   }
 
-  try {
     // Process and upload article
     let articlePath: string;
     let articleId: string;
@@ -216,7 +215,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
       }, res, req);
     }
     sendUpdate(new_pod_id, podResponse);
-
+    try {
     // Cleanup - Save to S3
     if (articlePath) {
       await uploadArticleToS3(articleId, articlePath, req.body.user_id);
@@ -227,7 +226,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     if (scriptData) {
       let local_path = path.join(TEMP_DATA_PATH, 'scripts', scriptData.filename);
       await uploadScriptToS3(scriptData.filename, local_path, req.body.user_id);
-      newPod.script_key = `scripts/${scriptData.filename}.json`;
+      newPod.script_key = `scripts/${scriptData.filename}`;
     }
     newPod.status = PodStatus.READY;
     if (podResponse.filename) {
@@ -239,6 +238,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
       status: ProcessingStatus.COMPLETED,
       step: "powerdown"
     });
+    console.log("finished with pod creation for pod: " + new_pod_id.toString())
     res.end();
   } catch (error) {
     // Only send error response if headers haven't been sent
