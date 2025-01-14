@@ -9,7 +9,7 @@ import { processCharacterVoices } from '@pod/pass_voice.js';
 import { parallelMerge } from '@pod/process_merging.js';
 import path from 'path';
 import fs from 'fs';
-import { saveClipToLogs } from '@pod/local.js'; // Add this import at the top of the file
+import { saveClipsToLogs } from '@pod/local.js'; // Add this import at the top of the file
 import { Request, Response, Express } from 'express';
 import fsPromises from 'fs/promises';
 import { ProcessingStatus, ProcessingStep } from '@shared/processing.js';
@@ -76,9 +76,9 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
         }
 
         // save clips to logs
-        for (const clip of cur_clips) {
-            saveClipToLogs(clip, `pod_${pod_id}_id_${clip.line.id}`);
-        }
+        // for (const clip of cur_clips) {
+        //     saveClipToLogs(clip, `pod_${pod_id}_id_${clip.line.id}`);
+        // }
 
         await uploadAudioToS3(`${pod_id}.wav`);
         await updateMongoData('pods', {
@@ -103,7 +103,7 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
         } as ProcessingStep;
     } finally {
         // Cleanup temp files
-        await cleanupTempFiles(tempFiles);
+        // await cleanupTempFiles(tempFiles);
     }
 }
 
@@ -166,6 +166,3 @@ function shouldMergeClips(clips: Clip[]): boolean {
            'dialogue' in clips[clips.length - 1].line &&
            (clips[clips.length - 1].line as CharLine).dialogue?.length > 0;
 }
-
-
-

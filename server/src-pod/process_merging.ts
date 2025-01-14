@@ -18,9 +18,9 @@ export async function parallelMerge(runningTime: number, cur_clips: Clip[], file
     const original = path.join(TEMP_DATA_PATH, 'result', `${filename}.wav`);
     const temp = path.join(TEMP_DATA_PATH, 'result', `${filename}-temp.wav`);
 
-    for (const clip of cur_clips) {
-        await normalizeAudioInPlace(clip.audio.url);
-    }
+    // for (const clip of cur_clips) {
+    //     await normalizeAudioInPlace(clip.audio.url);
+    // }
 
     // Perform merge process
     runningTime = await parallelMergeProcess(runningTime, cur_clips, original, temp, script);

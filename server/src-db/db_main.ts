@@ -31,6 +31,7 @@ export async function dbRoutes() {
     app.get('/db/id_exists', authCheck, async (req: JWTRequest, res: Response) => {
         try {
             // Use query parameters instead of body for GET request
+            
             const id = req.query.id as string;
             const collection = req.query.collection as string;
 

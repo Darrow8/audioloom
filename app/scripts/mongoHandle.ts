@@ -18,9 +18,10 @@ export async function checkIfIdExists(collection: string, id: ObjectId): Promise
 
 export async function checkIfSubExists(collection: string, sub: string): Promise<boolean> {
   const record = await makeAuthenticatedRequest(BASE_URL + `db/sub_exists?collection=${collection}&sub=${sub}`, 'GET');
-  if(record['exists'] == true){
+  if(record && record?.exists === true){
     return true;
   }
+  console.log('error', record)
   return false;
 }
 

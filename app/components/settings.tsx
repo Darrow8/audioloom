@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Switch, StyleSheet, ScrollView, Linking, TouchableOpacity, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { sendEmail } from '@/scripts/mailing';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { fullLogout, deleteAccount } from '@/scripts/auth';
 import { useStateContext } from '@/state/StateContext';
@@ -77,11 +76,7 @@ return (
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => {
-            sendEmail({
-                to: 'darrowrh@audioloom.io',
-                subject: 'Help & Support',
-                body: 'I am sorry to hear you\'re having issues with the app. Please provide your issue or question here. And I will get back to you as soon as possible.',
-            });
+            Linking.openURL('https://forms.gle/rgd1fCVhnu62ufvJ7');
         }} style={styles.settingItem}>
             <View style={styles.settingInfo}>
                 <Ionicons name="help-circle-outline" size={24} color="black" />

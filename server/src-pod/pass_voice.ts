@@ -26,12 +26,12 @@ export async function textToSpeech(voice: string, text: string, prev_text: strin
       text: text,
       previous_text: prev_text != "" ? prev_text : undefined,
       next_text: next_text != "" ? next_text : undefined,
-      voice_settings: {
-        stability: 0.35,
-        similarity_boost: 0.4,
-        style: 0.15,
-        use_speaker_boost: true,
-      }
+      // voice_settings: {
+      //   stability: 0.35,
+      //   // similarity_boost: 0.4,
+      //   // style: 0.15,
+      //   // use_speaker_boost: true,
+      // }
     }).then((audio) => {
       resolve(audio);
     }).catch((err) => {

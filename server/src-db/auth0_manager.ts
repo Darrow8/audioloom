@@ -26,8 +26,5 @@ export async function deleteUserFromAuth0(sub: string) {
 export async function assignAuth0Role(sub: string, role: string) {
     // let formatted_sub = sub.split('|')[1];
     let res = await auth0.users.assignRoles({ id: sub }, { roles: [role] });
-    if(res == undefined) {
-        return true;
-    }
-    return false;
+    return true;
 }

@@ -72,10 +72,15 @@ export async function downloadFile(track_id: string, url: string, outputPath: st
                 ffmpegCommand
                     .on('end', async () => {
                         console.log(`Audio processing completed: ${outputPath}`);
+                        // fs.unlink(tempPath, (err) => {
+                        //     if (err) console.error(`Error deleting temporary file: ${err}`);
+                        //     else console.log(`Temporary file ${tempPath} deleted`);
+                        // });
                         resolveFFmpeg();
                     })
                     .on('error', (err: Error) => {
                         console.error(`Error processing audio file: ${err.message}`);
+                        // fs.unlink(tempPath, () => {});
                         rejectFFmpeg(err);
                     })
                     .run();

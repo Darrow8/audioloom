@@ -19,6 +19,7 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "components/SwipeableModal.jsx",
-    "../shared/src/**/*"
-, "app/_layout.tsx", "../_layout copy.tsx"  ]
+    "../shared/src/**/*",
+     "app/_layout.tsx",
+      "../_layout copy.tsx"  ]
 }
