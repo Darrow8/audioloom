@@ -354,3 +354,4 @@ package-lock.json
 
 ios/
 android/
+.env.docker

@@ -52,9 +52,9 @@ export async function downloadFile(track_id: string, url: string, outputPath: st
             const fileStream = fs.createWriteStream(tempPath);
             response.body.pipe(fileStream);
             
-            await new Promise((resolveStream, rejectStream) => {
-                fileStream.on('finish', resolveStream);
-                fileStream.on('error', rejectStream);
+            await new Promise<void>((resolveStream, rejectStream) => {
+                fileStream.on('finish', () => resolveStream());
+                fileStream.on('error', (err) => rejectStream(err));
             });
             
             console.log(`Download of ${tempPath} completed!`);

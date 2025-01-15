@@ -15,7 +15,7 @@ import { dbRoutes } from './src-db/db_main.js';
 import { routerFunctions } from './src-db/routes/records.js';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { mongo_startup, watchDocumentPods, watchDocumentUser } from './src-db/mongo_interface.js';
+import { client, mongo_startup, watchDocumentPods, watchDocumentUser } from './src-db/mongo_interface.js';
 import fs from 'fs';
 
 dotenv.config();
@@ -56,9 +56,10 @@ app.get('/public', (req: Request, res: Response) => {
 
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
     console.log('SIGTERM signal received: closing server');
     // Close database connections here if needed
+    await client?.close();
     process.exit(0);
 });
 

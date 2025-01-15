@@ -65,4 +65,14 @@ To update docker image and restart container:
 `docker compose pull`
 `docker compose up -d`
 
+To automatically go into docker container:
+`docker exec -it $(docker ps -ql) /bin/sh`
 
+To copy files from container to host:
+`docker cp $(docker ps -ql):/app/data/ ./`
+
+To copy files from host to container:
+`docker cp ./ $(docker ps -ql):/app/data/`
+
+Get the IP address of the container:
+`docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -ql)`

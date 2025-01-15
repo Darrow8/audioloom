@@ -41,7 +41,7 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
     const command = ffmpeg();
 
     let start_filter = []; // step a
-    let duration_filter = []; // step b
+    let trim_filter = []; // step b
     let volume_filter = []; // step c
     let global_volume = 1;
 
@@ -50,8 +50,6 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
         command.input(input);
         // skip from a to c because we don't need to trim the duration or delay the start
         volume_filter.push(`[${input_count}:a]volume=${global_volume}[c${input_count}];`);
-        // duration_filter.push(`[a${input_count}]atrim=duration=${i}[b${input_count}];`);
-        // start_filter.push(`[b${input_count}]adelay=0|0[c${input_count}];`);
         input_count++;
     }
 
@@ -65,7 +63,7 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
                 clip.audio.start = runningTime;
             }
             volume_filter.push(`[${input_count}:a]volume=${global_volume}[a${input_count}];`);
-            duration_filter.push(`[a${input_count}]atrim=duration=${clip.audio.duration}[b${input_count}];`);
+            trim_filter.push(`[a${input_count}]atrim=duration=${clip.audio.duration}[b${input_count}];`);
             start_filter.push(`[b${input_count}]adelay=${clip.audio.start * 1000}|${clip.audio.start * 1000}[c${input_count}];`);
             runningTime = Number((runningTime + clip.audio.duration).toFixed(2));
         } else {
@@ -73,7 +71,7 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
             let nearest_char_duration = getNearestAfterCharDuration(i, cur_clips);
             let music_filter = getMusicFilter(clip, global_volume, runningTime, nearest_char_duration, script);
             volume_filter.push(`[${input_count}:a]volume=${music_filter.volume}${music_filter.fade.length > 0 ? ',' + music_filter.fade : ''}[a${input_count}];`);
-            duration_filter.push(`[a${input_count}]atrim=duration=${music_filter.duration}[b${input_count}];`);
+            trim_filter.push(`[a${input_count}]atrim=duration=${music_filter.duration}[b${input_count}];`);
             start_filter.push(`[b${input_count}]adelay=${music_filter.start}|${music_filter.start}[c${input_count}];`);
         }
         input_count++;
@@ -83,7 +81,8 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
 
     // Construct filter_complex for concatenation
     const filterInputs = [...Array(input_count).keys()].map(i => `[c${i}]`).join('');
-    const filterComplex = `${volume_filter.join('')}${duration_filter.join('')}${start_filter.join('')}${filterInputs}amix=inputs=${input_count}:duration=longest:dropout_transition=0:normalize=0[outa]`;
+    // order here matters, volume first, then adelay, then atrim
+    const filterComplex = `${volume_filter.join('')}${start_filter.join('')}${trim_filter.join('')}${filterInputs}amix=inputs=${input_count}:duration=longest:dropout_transition=0:normalize=0[outa]`;
 
     // Set output options
     command.complexFilter(filterComplex)
@@ -145,18 +144,24 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
     let percent_volume = 0.3;
     if (aud_type === MusicType.BMusic) {
         // if the next line is a character line, then we need to make sure the music clip is longer than the character line
-        let next_line = script.lines.find((line) => line.order == mclip.line.order + 1);        
-        if (next_line && 'character' in next_line) {
-            // cap at 60 seconds extra
+        let next_line = script.lines.find((line) => line.order == mclip.line.order + 1);       
+        // cap at 60 seconds extra
+        if(next_line){
             if (durationMs > nearestCharDuration + 60000) {
                 durationMs = nearestCharDuration + 60000;
             }
-        } else {
-            // cap at 25 seconds extra
-            if (durationMs > nearestCharDuration + 25000) {
-                durationMs = nearestCharDuration + 25000;
-            }
         }
+        // if (next_line && 'character' in next_line) {
+        //     // cap at 60 seconds extra
+        //     if (durationMs > nearestCharDuration + 60000) {
+        //         durationMs = nearestCharDuration + 60000;
+        //     }
+        // } else {
+        //     // cap at 25 seconds extra
+        //     if (durationMs > nearestCharDuration + 25000) {
+        //         durationMs = nearestCharDuration + 25000;
+        //     }
+        // }
         musicVolume = char_volume * percent_volume;
     } else if (aud_type === MusicType.SFX) {
         musicVolume = char_volume * percent_volume;
@@ -183,7 +188,7 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
 */
 function getFadeInAndOutDuration(durationMs: number) {
     // Don't apply fades for clips shorter than 3 seconds
-    if (durationMs < 3000) {
+    if (durationMs < 5000) {
         return '';
     }
     // For longer clips, use up to 1/4 of duration, capped at 6 seconds
