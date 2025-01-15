@@ -165,14 +165,14 @@ interface Meta {
   export const moods = [
     "angry", "busy & frantic", "changing tempo", "chasing", "dark", "dreamy", 
     "eccentric", "elegant", "epic", "euphoric", "fear", "floating", "funny", 
-    "glamorous", "happy", "heavy & ponderous", "hopeful", "laid back", "marching", 
+    "glamorous", "happy", "heavy & ponderous", "hopeful", /*"laid back",*/ "marching", 
     "mysterious", "peaceful", "quirky", "relaxing", "restless", "romantic", 
     "running", "sad", "scary", "sentimental", "sexy", "smooth", "sneaking", 
     "suspense", "weird"
   ];
   
   export const genres = [
-    "abstract hip hop", "acoustic", "solo guitar", "solo piano", "ambient", "asmr", 
+    "abstract hip hop", "acoustic",/* "solo guitar", "solo piano",*/ "ambient", "asmr", 
     "binaural beats", "drone", "new age", "ambient americana", "ambient dub", 
     "ambient pop", "ballad", "batida", "beats", "bloopers", "blues", "acoustic blues", 
     "african blues", "blues rock", "classic blues", "country blues", "delta blues", 

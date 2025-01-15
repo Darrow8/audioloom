@@ -16,11 +16,20 @@ export async function mongo_startup() {
       strict: true,
       deprecationErrors: true,
     },
-    connectTimeoutMS: 10000, // 10 seconds
-    socketTimeoutMS: 45000, // 45 seconds
+    connectTimeoutMS: 30000,     // Increased to 30 seconds
+    socketTimeoutMS: 45000,      // 45 seconds
+    // Retry settings
+    retryWrites: true,
+    retryReads: true,
     // TLS settings
     tls: true,
-    tlsAllowInvalidCertificates: false, // Change to true only for testing if you're having certificate issues
+    tlsAllowInvalidCertificates: false,
+    // Additional reliability options
+    maxPoolSize: 50,
+    minPoolSize: 0,
+    maxIdleTimeMS: 120000,
+    waitQueueTimeoutMS: 30000,
+    
   });
   try {
     // Connect the client to the server

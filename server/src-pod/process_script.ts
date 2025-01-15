@@ -45,9 +45,9 @@ export async function getInstructions(articleContent: string): Promise<FullPromp
       // add additional instructions
       let wpm = 150;
       const wordCount = articleContent.trim().split(/\s+/).length;
-      let minCount = Math.ceil(wordCount / wpm);
+      let minCount = 10;//Math.ceil(wordCount / wpm);
       // Add word count context to help GPT generate appropriate length podcast
-      let additionalInstructions = `\nThe article is ${wordCount} words long. Please ensure the podcast script has enough content and discussion to fill at least ${minCount} minutes considering the average talking speed of ${wpm} words per minute.`;
+      let additionalInstructions = `\n Please ensure the podcast script has enough content and discussion to fill at least ${minCount} minutes considering the average talking speed of ${wpm} words per minute. This means that the total amount of dialogue should be at least ${minCount*wpm} words long.`;
       fullInstructions[key].instructions = prompt.raw_instructions + additionalInstructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
     } else {
       fullInstructions[key].instructions = prompt.raw_instructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
