@@ -233,6 +233,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
       newPod.audio_key = `pod-audio/${podResponse.filename}`;
     }
     await updateMongoData('pods', newPod, req.envMode);
+    await updateMongoArrayDoc('users', user_id, 'pods', newPod._id, req.envMode);
 
     sendUpdate(new_pod_id, {
       status: ProcessingStatus.COMPLETED,
