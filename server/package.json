@@ -5,13 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "npx tsx server.ts",
-    "dbuild": "docker build --platform linux/amd64 -t registry.digitalocean.com/audioloom/server:latest .",
-    "drun": "docker run --platform linux/amd64 --env-file .env.docker -p 3000:3000 registry.digitalocean.com/audioloom/server:latest",
+    "dbuild": "docker build --platform linux/arm64/v8 -t registry.digitalocean.com/audioloom/server:latest .",
+    "drun": "docker run --platform linux/arm64/v8 --env-file .env.docker -p 3000:3000 registry.digitalocean.com/audioloom/server:latest",
     "dpush": "docker push registry.digitalocean.com/audioloom/server:latest",
+    "dpull": "docker pull registry.digitalocean.com/audioloom/server:latest",
+    "dbuild-prod": "docker build --platform linux/amd64 -t registry.digitalocean.com/audioloom/server:latest .",
+    "drun-prod": "docker run --platform linux/amd64 --env-file .env.docker -p 3000:3000 registry.digitalocean.com/audioloom/server:latest",
+    "dpush-prod": "docker push registry.digitalocean.com/audioloom/server:latest",
+    "dpull-prod": "docker pull registry.digitalocean.com/audioloom/server:latest",
     "start": "node dist/server/server.js",
     "build": "npx tsc && npx tsc-alias",
     "type-check": "npx tsc --noEmit",
-    "dfull": "npm run build && npm run dbuild && npm run drun"
+    "dprod": "npm run build && npm run dbuild-prod && npm run drun-prod",
+    "dtest": "npm run build && npm run dbuild && npm run drun"
   },
   "author": "Darrow Hartman",
   "license": "ISC",
