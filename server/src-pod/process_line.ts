@@ -1,4 +1,4 @@
-import { AudioFile, CharLine, Clip, createClip, Line, MusicLine, MusicType } from '@shared/line.js';
+import { AudioFile, CharLine, Clip, createClip, Line, LineKind, MusicLine, MusicType } from '@shared/line.js';
 import { textToSpeech, processCharacterVoices } from '@pod/pass_voice.js';
 import { musicChooser } from '@pod/process_track.js';
 import { getAudioDuration } from '@pod/process_audio.js';
@@ -22,7 +22,7 @@ export async function processCharacterLine(current_line: CharLine, prev_line: Ch
     let url = path.join(TEMP_DATA_PATH, 'dialogue', fileName);
     await saveStreamToFile(stream, url);
     let duration = await getAudioDuration(url);
-    let audio = new AudioFile(current_line.id, url, runningStartTime, duration, duration);
+    let audio = new AudioFile(current_line.id, url, runningStartTime, duration);
     return audio;
 }
 
@@ -143,9 +143,9 @@ export async function processLine(
     characters: Character[], 
     runningTime: number
 ): Promise<Clip | null> {
-    if (line.kind == "character") {
+    if (line.kind == LineKind.CHARACTER) {
         return await processCharacterLineWithRetry(line as CharLine, script, characters, runningTime);
-    } else if (line.kind == "music") {
+    } else if (line.kind == LineKind.MUSIC) {
         return await processMusicLineWithRetry(line as MusicLine, script);
     } else {
         throw `error, found line with bad kind: ${line}`;
