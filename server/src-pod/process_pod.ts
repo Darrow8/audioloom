@@ -74,12 +74,6 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
                 throw new Error(`Failed to process line ${i}: ${error.message}`);
             }
         }
-
-        // save clips to logs
-        // for (const clip of cur_clips) {
-        //     saveClipToLogs(clip, `pod_${pod_id}_id_${clip.line.id}`);
-        // }
-
         await uploadAudioToS3(`${pod_id}.wav`);
         await updateMongoData('pods', {
             _id: new ObjectId(pod_id),
