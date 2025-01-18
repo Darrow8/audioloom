@@ -35,9 +35,9 @@ export const LineUnionSchema = z.discriminatedUnion("kind", [
 export class Line {
     id: string;
     order: number;
-    kind: "character" | "music";
+    kind: LineKind;
 
-    constructor(order: number, id: string, kind: "character" | "music") {
+    constructor(order: number, id: string, kind: LineKind) {
         this.order = order;
         this.id = id;
         this.kind = kind;
@@ -49,7 +49,7 @@ export class CharLine extends Line {
     dialogue: string;
     adjective: string;
 
-    constructor(dialogue: string, character: string, adjective: string, order: number, id: string, kind: "character") {
+    constructor(dialogue: string, character: string, adjective: string, order: number, id: string, kind: LineKind.CHARACTER) {
         super(order, id, kind);
         this.dialogue = dialogue;
         this.character = character;
@@ -107,11 +107,16 @@ export enum MusicType {
     SFX = "Sound Effect"
 }
 
+export enum LineKind {
+    CHARACTER = "character",
+    MUSIC = "music"
+}
+
 export class MusicLine extends Line {
     type: MusicType;
     music_description: string;
 
-    constructor(type: MusicType, music_description: string, order: number, id: string, kind: "music") {
+    constructor(type: MusicType, music_description: string, order: number, id: string, kind: LineKind.MUSIC) {
         super(order, id, kind);
         this.type = type;
         this.music_description = music_description;
