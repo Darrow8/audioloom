@@ -7,7 +7,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
 import { normalizeAudioInPlace } from "@pod/process_normalize.js";
-
+import { LineKind } from "@shared/line.js";
 
 /**
  * parallelMerge
@@ -58,7 +58,7 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
     for (let i = 0; i < cur_clips.length; i++) {
         const clip = cur_clips[i];
         command.input(clip.audio.url);
-        if ((clip.line as CharLine).dialogue?.length > 0) {
+        if (clip.line.kind === LineKind.CHARACTER) {
             if (clip.audio.start == -1) {
                 clip.audio.start = runningTime;
             }
@@ -66,7 +66,7 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
             trim_filter.push(`[a${input_count}]atrim=duration=${clip.audio.duration}[b${input_count}];`);
             start_filter.push(`[b${input_count}]adelay=${clip.audio.start * 1000}|${clip.audio.start * 1000}[c${input_count}];`);
             runningTime = Number((runningTime + clip.audio.duration).toFixed(2));
-        } else {
+        } else if (clip.line.kind === LineKind.MUSIC) {
             // For non-dialogue clips, just pass through without volume adjustment
             let nearest_char_duration = getNearestAfterCharDuration(i, cur_clips);
             let music_filter = getMusicFilter(clip, global_volume, runningTime, nearest_char_duration, script);
@@ -162,7 +162,6 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
         //         durationMs = nearestCharDuration + 25000;
         //     }
         // }
-        musicVolume = char_volume * percent_volume;
     } else if (aud_type === MusicType.SFX) {
         musicVolume = char_volume * percent_volume;
         // if the sound effect clip is longer than 15 seconds, then we need to add a fade in and fade out and cap at 15 seconds
