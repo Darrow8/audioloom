@@ -7,7 +7,7 @@ export async function createUser(user: User, mode: "dev" | "prod") {
     console.log('creating user', user);
     let pods = addPodsToUser(user);
     user.pods = pods;
-    // user._id = new ObjectId(user._id);
+    user._id = new ObjectId(user._id);
     let response = await createMongoData('users', user, mode);
     let role_id = mode == "prod" ? process.env.PROD_USER_ROLE_ID : process.env.DEV_USER_ROLE_ID;
     let auth0_response = await assignAuth0Role(user.sub, role_id);
