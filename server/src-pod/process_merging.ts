@@ -63,16 +63,16 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
                 clip.audio.start = runningTime;
             }
             volume_filter.push(`[${input_count}:a]volume=${global_volume}[a${input_count}];`);
-            trim_filter.push(`[a${input_count}]atrim=duration=${clip.audio.duration}[b${input_count}];`);
             start_filter.push(`[b${input_count}]adelay=${clip.audio.start * 1000}|${clip.audio.start * 1000}[c${input_count}];`);
+            trim_filter.push(`[a${input_count}]atrim=duration=${clip.audio.duration}[b${input_count}];`);
             runningTime = Number((runningTime + clip.audio.duration).toFixed(2));
         } else if (clip.line.kind === LineKind.MUSIC) {
             // For non-dialogue clips, just pass through without volume adjustment
             let nearest_char_duration = getNearestAfterCharDuration(i, cur_clips);
             let music_filter = getMusicFilter(clip, global_volume, runningTime, nearest_char_duration, script);
             volume_filter.push(`[${input_count}:a]volume=${music_filter.volume}${music_filter.fade.length > 0 ? ',' + music_filter.fade : ''}[a${input_count}];`);
-            trim_filter.push(`[a${input_count}]atrim=duration=${music_filter.duration}[b${input_count}];`);
             start_filter.push(`[b${input_count}]adelay=${music_filter.start}|${music_filter.start}[c${input_count}];`);
+            trim_filter.push(`[a${input_count}]atrim=duration=${music_filter.duration}[b${input_count}];`);
         }
         input_count++;
     }
@@ -98,10 +98,10 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
                 console.log(`Started: ${cmd}`);
             })
             .on('progress', (progress) => {
-                // Optional: Add progress reporting here
+                console.log(`Progress: ${progress.timemark}`);
             })
             .on('end', () => {
-                console.log('Finished processing');
+                console.log(`Finished processing file ${output}`);
                 resolve(runningTime);
             })
             .on('error', (err) => {
@@ -121,7 +121,7 @@ function getNearestAfterCharDuration(start: number, cur_clips: Clip[]) {
             return cur_clips[i].audio.duration;
         }
     }
-    return 10; // default duration
+    return 60; // default duration
 }
 
 /**
@@ -129,7 +129,7 @@ function getNearestAfterCharDuration(start: number, cur_clips: Clip[]) {
     atrim expects duration values in seconds.
  */
 function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, nearestCharDuration: number, script: Script) {
-    let musicVolume = 0;
+    let musicVolume = 0.25;
     let durationMs = -1;
 
     if(mclip.audio.rawDuration && mclip.audio.rawDuration > 0){
@@ -141,7 +141,6 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
     }
 
     const aud_type = (mclip.line as MusicLine).type;
-    let percent_volume = 0.3;
     if (aud_type === MusicType.BMusic) {
         // if the next line is a character line, then we need to make sure the music clip is longer than the character line
         let next_line = script.lines.find((line) => line.order == mclip.line.order + 1);       
@@ -163,7 +162,6 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
         //     }
         // }
     } else if (aud_type === MusicType.SFX) {
-        musicVolume = char_volume * percent_volume;
         // if the sound effect clip is longer than 15 seconds, then we need to add a fade in and fade out and cap at 15 seconds
         if (durationMs > 1000 * 15) {
             // cap the duration of music to 15 seconds

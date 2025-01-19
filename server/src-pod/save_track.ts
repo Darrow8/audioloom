@@ -14,7 +14,7 @@ export async function saveMusicAsAudio(tracks: usefulTrack[], id:string): Promis
     if (tracks.length == 0) {
         return undefined;
     }
-    let outputPath = path.join(TEMP_DATA_PATH, 'music', `${id}.mp3`); // Replace with your desired local output file name
+    let outputPath = path.join(TEMP_DATA_PATH, 'music', `${id}.mp3`);
     let url = track.stems.full.lqMp3Url;
     let segment = undefined;
 
@@ -33,8 +33,8 @@ export async function saveMusicAsAudio(tracks: usefulTrack[], id:string): Promis
         }
     }
 
-    let duration : number = await downloadFile(id, url, outputPath, segment);
-
+    let duration : number = await downloadFile(id, url, outputPath, undefined);
+    console.log(`current file duration: ${duration}`);
     return new AudioFile(id,outputPath,duration,-1);
 
 
@@ -61,13 +61,13 @@ export async function downloadFile(track_id: string, url: string, outputPath: st
             
             await new Promise<void>((resolveFFmpeg, rejectFFmpeg) => {
                 const ffmpegCommand = ffmpeg(tempPath).output(outputPath);
-
-                if (segment != undefined) {
-                    ffmpegCommand.setStartTime(segment.startTime);
-                    ffmpegCommand.setDuration(segment.duration < 60 ? segment.duration : 60);
-                } else {
-                    ffmpegCommand.setDuration(60);
-                }
+                ffmpegCommand.setDuration(60); // get 60 seconds of music
+                // if (segment != undefined) {
+                //     ffmpegCommand.setStartTime(segment.startTime);
+                //     ffmpegCommand.setDuration(segment.duration < 60 ? segment.duration : 60);
+                // } else {
+                //     ffmpegCommand.setDuration(60);
+                // }
                 
                 ffmpegCommand
                     .on('end', async () => {
@@ -88,8 +88,8 @@ export async function downloadFile(track_id: string, url: string, outputPath: st
 
             // Get duration after ffmpeg processing is complete
             if(segment == undefined) {
-                let dur = await getAudioDuration(outputPath);
-                resolve(round(dur, 2));
+                // let dur = await getAudioDuration(outputPath);
+                resolve(60);
             } else {
                 resolve(round(segment.duration, 2));
             }

@@ -92,13 +92,18 @@ export async function podRoutes() {
   });
 
   app.post('/pod/trigger_creation', upload.single('file'), authCheck, async (req: JWTRequest, res: Response) => {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
     if (req.file.size === 0) {
-      return res.status(400).json({ error: 'File size is 0 bytes' });
+        return res.status(400).json({ error: 'File size is 0 bytes' });
+      }
+      await triggerPodCreation(req, res);
+    } catch (error) {
+      console.error('Error in /pod/trigger_creation:', error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
-    await triggerPodCreation(req, res);
   });
 
   // Catch-all route for /pod should be last
