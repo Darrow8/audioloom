@@ -32,7 +32,7 @@ export async function dbRoutes() {
         try {
             // Use query parameters instead of body for GET request
             
-            const id = req.query.id as string;
+            let id = new ObjectId(req.query.id as string);
             const collection = req.query.collection as string;
 
             // Validate inputs
@@ -71,10 +71,10 @@ export async function dbRoutes() {
     });
 
     app.delete('/db/delete_user', authCheck, async (req: JWTRequest, res: Response) => {
-        const id = req.body.id;
+        let id = new ObjectId(req.body.id as string);
         const sub = req.body.sub;
         console.log("Attempting to delete user with id:", id, "and sub:", sub);
-        let mongo_response = await deleteMongoDocument("users", new ObjectId(id as string), req.envMode);
+        let mongo_response = await deleteMongoDocument("users", id, req.envMode);
         console.log("Mongo response:", mongo_response);
         let auth0_response = await deleteUserFromAuth0(sub as string);
         console.log("Auth0 response:", auth0_response);
