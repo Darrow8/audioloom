@@ -7,6 +7,7 @@ import { getFileFromS3 } from "@pod/pass_files.js";
 import { ChatModel } from "openai/resources";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
+import { ChatCompletionMessageParam } from "openai/resources";
 
 const formats = {
   podcast: BaseScriptSchema,
@@ -90,18 +91,21 @@ export async function promptLLM(articleName: string, instructions: FullLLMPrompt
 /**
  * We will prompt the LLM in chunks of 1000 tokens
  */
-export async function promptLLMChunks(articleName: string, instructions: FullLLMPrompt, chunkSize:number=1000, chunkOverlap:number=100){
+export async function promptLLMChunks(article: string, raw_instructions: FullLLMPrompt, chunkSize:number=1000, chunkOverlap:number=100){
+    let article_by_chunks = [];
+    // step 1: split the article into chunks
     
-    // let format: z.ZodType = formats.podcast;
-    // let format_name: string = "podcast";
+
     
-    // const completion = await openaiClient.beta.chat.completions.parse({
-    //     model: instructions.GPTModel.version as ChatModel,
-    //     messages: [
-    //         { role: "system", content: instructions.instructions },
-    //     ],
-    //     response_format: zodResponseFormat(format, format_name),
-    // });
+    let full_script = [];
+    let format: z.ZodType = formats.podcast;
+    let format_name: string = "podcast";
+    let messages : ChatCompletionMessageParam[] = [{ role: "system", content: raw_instructions.instructions }];
+    let response = await openaiClient.beta.chat.completions.parse({
+        model: raw_instructions.GPTModel.version as ChatModel,
+        messages: messages,
+        response_format: zodResponseFormat(format, format_name),
+    });
 
 }
 
