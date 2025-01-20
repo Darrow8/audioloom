@@ -73,8 +73,6 @@ export function listenToPodGen(pod_id: ObjectId, onUpdate: (update: ProcessingSt
 }
 
 export const getAudioFromS3 = async (audio_key: string) => {
-    const response = await makeAuthenticatedRequest(`${BASE_URL}db/get_audio`, 'POST', {
-        "audio_key": audio_key
-    });
+    const response = await makeAuthenticatedRequest(`${BASE_URL}db/get_audio?audio_key=${audio_key}`, 'GET');
     return response;
 }

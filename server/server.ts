@@ -64,12 +64,12 @@ process.on('SIGTERM', async () => {
 });
 
 // Rate limiting
-// const limiter = rateLimit({
-//     windowMs: 1 * 60 * 1000, // 1 minute
-//     max: 200 // limit each IP to 200 requests per windowMs
-// });
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 200 // limit each IP to 200 requests per windowMs
+});
 
-// app.use(limiter);
+app.use(limiter);
 
 // Auth0 JWT validation middleware
 const jwtCheck = expressjwt({
@@ -101,6 +101,20 @@ export const authCheck = (req: Request, res: Response, next: NextFunction) => {
         });
     });
 };
+
+export const weakAuthCheck = (req: Request, res: Response, next: NextFunction) => {
+    const apiKey = req.header('X-API-Key');
+    if (process.env.DEV_RIVET_API_KEY == apiKey) {
+        req.envMode = 'dev';
+        return next();
+    }
+    if (process.env.PROD_RIVET_API_KEY == apiKey) {
+        req.envMode = 'prod';
+        return next();
+    }
+    console.log('Request from Invalid API key');
+    return res.status(401).json({ error: 'Unauthorized: Invalid API key' });
+}
 
 // API key middleware
 const apiKeyCheck = (req: Request, res: Response, next: NextFunction) => {

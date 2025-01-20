@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { Request as JWTRequest } from 'express-jwt';
 import { router as recordRouter } from "./routes/records.js";
-import { app, authCheck } from "../server.js";
+import { app, authCheck, weakAuthCheck } from "../server.js";
 import { mongo_startup } from "./mongo_interface.js";
 import { getAudioURLFromS3 } from './aws.js';
-import { deleteMongoDocument, doesIdExist, doesSubExist } from './mongo_methods.js';
+import { deleteMongoDocument, doesIdExist, doesSubExist, getMongoDataById } from './mongo_methods.js';
 import { ObjectId } from 'mongodb';
 import { deleteUserFromAuth0 } from './auth0_manager.js';
 import { createUser } from './manage_user.js';
@@ -90,9 +90,10 @@ export async function dbRoutes() {
 
     // Apply authentication to /db/records route
     app.use("/db/records", authCheck, recordRouter);
-
-    app.use("/db/get_audio", authCheck, getAudio);
-
+    // weak auth check to get audio
+    app.use("/db/get_audio", weakAuthCheck, getAudio);
+    // weak auth check to get podcast
+    app.use("/db/get_podcast", weakAuthCheck, getPodcast);
     // Catch-all route for /db should be last
     app.use('/db', authCheck, (req: JWTRequest, res: Response) => {
         res.send(`DB Server: You accessed ${req.method} ${req.path}`);
@@ -103,7 +104,13 @@ export async function dbRoutes() {
 }
 
 async function getAudio(req: JWTRequest, res: Response) {
-    const audio_key = req.body.audio_key;
+    const audio_key = req.query.audio_key as string;
     const audio_data = await getAudioURLFromS3(audio_key);
     res.send(audio_data);
+}
+
+async function getPodcast(req: JWTRequest, res: Response) {
+    const podcast_id = new ObjectId(req.query.podcast_id as string);
+    const podcast_data = await getMongoDataById("pods", podcast_id, req.envMode);
+    res.send(podcast_data);
 }
