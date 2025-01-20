@@ -8,7 +8,7 @@ import { fullLogout } from '@/scripts/auth';
 import { useToast } from '@/state/ToastContext';
 import { Colors } from '@/constants/Colors';
 const Profile = () => {
-  const { clearSession, hasValidCredentials } = useAuth0();
+  const { clearSession, hasValidCredentials, getCredentials } = useAuth0();
   const { state, dispatch } = useStateContext();
   const { showToast } = useToast();
   if(state.user == undefined) {
@@ -37,15 +37,6 @@ const Profile = () => {
         }
         
       </View>
-
-      {/* <View style={styles.content}>
-
-        <View style={styles.actionSection}>
-          <TouchableOpacity style={styles.actionButton} onPress={() => fullLogout(dispatch, clearSession)}>
-            <Text style={styles.actionButtonText}>Settings</Text>
-          </TouchableOpacity>
-        </View>
-      </View> */}
     </View>
   );
 };
