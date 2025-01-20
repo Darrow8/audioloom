@@ -19,6 +19,7 @@ import { STORAGE_PATH } from "@pod/init.js";
 import { InstructionType } from "@shared/script.js";
 import { cleanText, cleanTextFile } from "@pod/cleaner.js";
 import { readFile, writeFile } from "fs/promises";
+import { promptLLMChunks } from "@pod/process_prompt.js";
 
 // // step 1: get instructions
 export async function getCleanInstructions(articleContent): Promise<FullLLMPrompt> {
@@ -45,9 +46,9 @@ export async function getInstructions(articleContent: string): Promise<FullPromp
       // add additional instructions
       let wpm = 150;
       const wordCount = articleContent.trim().split(/\s+/).length;
-      let minCount = 10;//Math.ceil(wordCount / wpm);
+      let minCount = Math.ceil(wordCount / wpm);
       // Add word count context to help GPT generate appropriate length podcast
-      let additionalInstructions = `\n Please ensure the podcast script has enough content and discussion to fill at least ${minCount} minutes considering the average talking speed of ${wpm} words per minute. This means that the total amount of dialogue should be at least ${minCount*wpm} words long.`;
+      let additionalInstructions = `\n Please ensure the podcast script has enough content and discussion to fill about ${minCount} minutes considering the average talking speed of ${wpm} words per minute. This means that the total amount of dialogue should be about ${minCount*wpm} words long.`;
       fullInstructions[key].instructions = prompt.raw_instructions + additionalInstructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
     } else {
       fullInstructions[key].instructions = prompt.raw_instructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
@@ -55,13 +56,6 @@ export async function getInstructions(articleContent: string): Promise<FullPromp
   }
   return fullInstructions;
 }
-
-// step 2: clean article
-export async function cleanArticle(articleName: string, instructions: FullLLMPrompt): Promise<ProcessingStep> {
-  let clean_file_path = await promptLLM(articleName, instructions, InstructionType.CLEAN);
-  return clean_file_path as ProcessingStep;
-}
-
 // step 3: get title
 export async function getTitle(articleName: string, instructions: FullLLMPrompt): Promise<ProcessingStep> {
   let title = await promptLLM(articleName, instructions, InstructionType.TITLE);
@@ -93,6 +87,33 @@ export async function scriptwriter(articleName: string, instructions: FullLLMPro
   }
   return response;
 }
+
+export async function scriptwriterChunks(article: string, instructions: PromptLLM): Promise<ProcessingStep> {
+  console.log("Start of ScriptwriterChunks")
+
+  
+  let response = await promptLLMChunks(article, instructions);
+  if (response.status != ProcessingStatus.ERROR) {
+    let baseScript = response.data as BaseScriptType;
+    // Ensure required properties are present before creating Script
+    const validatedLines = baseScript.lines.map((line, index) => ({
+      ...line,
+      id: uuidv4().toString(),
+      order: (index + 1),
+      kind: line.kind
+    }));
+    return {
+      status: ProcessingStatus.IN_PROGRESS,
+      step: "script",
+      message: "Script created",
+      script: validatedLines
+    } as ProcessingStep;
+  }
+  return response;
+}
+
+
+
 
 // /**
 //  * Start with reading that has been uploaded earlier, ends with script in S3
@@ -136,9 +157,18 @@ export async function createScript(local_file_path: string, articleId: string, n
     const authorStep = await getAuthor(local_file_path, instructions.author);
     if (authorStep.status === ProcessingStatus.ERROR) return authorStep;
     let author = authorStep.data.author || "Unknown Author";
-    console.log(authorStep)
-    console.log(instructions.podcast)
-    const scriptStep = await scriptwriter(local_file_path, instructions.podcast);
+    // // determine if the article is a discussion or a worksheet
+    // const typeOfArticle = await determineTypeOfArticle(local_file_path, instructions.author);
+
+    // if article is over 2000 tokens, we will use chunking method
+    let tokens = countTokens(articleContent, instructions.podcast.GPTModel.version as ChatModel, InstructionType.PODCAST);
+    let scriptStep;
+    if (tokens > 2000) {
+      scriptStep = await scriptwriterChunks(articleContent, base_instructions.podcast);
+    } else {
+      scriptStep = await scriptwriter(articleContent, instructions.podcast);
+    }
+    
     if (scriptStep.status === ProcessingStatus.ERROR) return scriptStep;
     let script_file_path = `${uuidv4().toString()}.json`;
     const newScript = new Script(scriptStep.script, title, [author], script_file_path);
@@ -175,32 +205,33 @@ export function countTokens(message: string, model: ChatModel, type: Instruction
 }
 
 /**
- * Gets the first n tokens from a string using the specified GPT encoding
+ * Chop into n tokens with overlap
  * @param text The input text to tokenize
  * @param n The number of tokens to return
  * @param model Optional GPT model name to determine encoding (defaults to 'gpt-4')
  * @returns The text corresponding to the first n tokens
  */
-export async function getFirstNTokens(
+export async function chopIntoNTokens(
   text: string, 
   n: number, 
-  model: TiktokenModel = "gpt-4o"
-): Promise<string> {
+  model: TiktokenModel = "gpt-4o",
+  overlap: number = 0
+): Promise<string[]> {
   // Get the appropriate encoding for the model
   const encoding = encoding_for_model(model);
-
+  console.log('chopIntoNTokens', model, "num tokens", n, "overlap", overlap)
   // Encode the full text to tokens
-  const tokens = encoding.encode(text);
-
-  // Take first n tokens
-  const truncatedTokens = tokens.slice(0, n);
-
-  // Decode back to text
-  const result = encoding.decode(truncatedTokens);
-
-  // Free up memory
+  const all_tokens = encoding.encode(text);
+  let chunks : string[] = [];
+  for (let i = 0; i < all_tokens.length; i += n - overlap) {
+    chunks.push(new TextDecoder().decode(encoding.decode(all_tokens.slice(i, i + n))));
+    console.log(chunks[chunks.length-1])
+  }
   encoding.free();
 
-  return result.toString();
+  return chunks;
 }
 
+export async function determineTypeOfArticle(article: string, instructions: PromptLLM): Promise<InstructionType> {
+  return InstructionType.PODCAST;
+}

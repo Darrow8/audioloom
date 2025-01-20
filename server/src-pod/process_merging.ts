@@ -113,15 +113,31 @@ async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], inpu
 }
 
 /**
- * Returns nearest char duration after the current music clip in seconds
+ * Returns the duration of the nearest character line after the given index.
+ * Used to determine appropriate durations for music and sound effects.
+ * 
+ * @param start - Starting index in the clips array
+ * @param cur_clips - Array of audio clips
+ * @param defaultDuration - Optional default duration in seconds if no character line is found
+ * @returns Duration in seconds of the nearest character line, or default duration if none found
  */
-function getNearestAfterCharDuration(start: number, cur_clips: Clip[]) {
+function getNearestAfterCharDuration(start: number, cur_clips: Clip[], defaultDuration: number = 60): number {
+    // Input validation
+    if (!Array.isArray(cur_clips) || start < 0 || start >= cur_clips.length) {
+        return defaultDuration;
+    }
+
+    // Find the next character line
     for (let i = start; i < cur_clips.length; i++) {
-        if (cur_clips[i].line instanceof CharLine) {
-            return cur_clips[i].audio.duration;
+        const clip = cur_clips[i];
+        if (!clip?.line) continue;  // Skip if clip or line is undefined
+        
+        if (clip.line instanceof CharLine && clip.audio?.duration > 0) {
+            return clip.audio.duration;
         }
     }
-    return 60; // default duration
+
+    return defaultDuration;
 }
 
 /**
@@ -129,62 +145,56 @@ function getNearestAfterCharDuration(start: number, cur_clips: Clip[]) {
     atrim expects duration values in seconds.
  */
 function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, nearestCharDuration: number, script: Script) {
-    let musicVolume = 0.25;
-    let durationMs = -1;
+    const MUSIC_VOLUME = 0.25;
+    const MS_TO_SEC = 1000;
+    const PADDING_MS = 10000;
+    const MAX_SFX_DURATION_MS = 15 * MS_TO_SEC;
+    const MAX_MUSIC_AFTER_CHAR_MS = 60 * MS_TO_SEC;
+    const MAX_MUSIC_NO_CHAR_MS = 25 * MS_TO_SEC;
 
-    if(mclip.audio.rawDuration && mclip.audio.rawDuration > 0){
-        durationMs = (mclip.audio.rawDuration * 1000);
-    }else if(mclip.audio.duration && mclip.audio.duration > 0){
-        durationMs = (mclip.audio.duration * 1000) + 10000;
-    }else{
-        durationMs = (nearestCharDuration * 1000) + 10000;
-    }
+    // Calculate initial duration
+    let durationMs = calculateInitialDuration(mclip, nearestCharDuration);
 
+    // Apply type-specific duration limits
     const aud_type = (mclip.line as MusicLine).type;
     if (aud_type === MusicType.BMusic) {
-        // if the next line is a character line, then we need to make sure the music clip is longer than the character line
-        let next_line = script.lines.find((line) => line.order == mclip.line.order + 1);       
-        // cap at 60 seconds extra
-        if(next_line){
-            if (durationMs > nearestCharDuration + 60000) {
-                durationMs = nearestCharDuration + 60000;
-            }
+        let next_line = script.lines.find((line) => line.order == mclip.line.order + 1);
+        
+        // Different caps based on whether next line exists and is a character line
+        if (next_line) {
+            const isCharacterLine = 'character' in next_line;
+            const maxExtra = isCharacterLine ? MAX_MUSIC_AFTER_CHAR_MS : MAX_MUSIC_NO_CHAR_MS;
+            durationMs = Math.min(durationMs, nearestCharDuration * MS_TO_SEC + maxExtra);
         }
-        // if (next_line && 'character' in next_line) {
-        //     // cap at 60 seconds extra
-        //     if (durationMs > nearestCharDuration + 60000) {
-        //         durationMs = nearestCharDuration + 60000;
-        //     }
-        // } else {
-        //     // cap at 25 seconds extra
-        //     if (durationMs > nearestCharDuration + 25000) {
-        //         durationMs = nearestCharDuration + 25000;
-        //     }
-        // }
     } else if (aud_type === MusicType.SFX) {
-        // if the sound effect clip is longer than 15 seconds, then we need to add a fade in and fade out and cap at 15 seconds
-        if (durationMs > 1000 * 15) {
-            // cap the duration of music to 15 seconds
-            durationMs = 1000 * 15;
-        }
+        durationMs = Math.min(durationMs, MAX_SFX_DURATION_MS);
     }
 
-    // Move fade calculation after duration capping
-    let fade = getFadeInAndOutDuration(durationMs);
-
     return {
-        volume: musicVolume,
-        duration: durationMs / 1000,
-        start: Math.max(0, runningTime * 1000),
-        fade: fade,
+        volume: MUSIC_VOLUME,
+        duration: durationMs / MS_TO_SEC,
+        start: Math.max(0, runningTime * MS_TO_SEC),
+        fade: getFadeInAndOutDuration(durationMs),
     };
+}
+
+function calculateInitialDuration(clip: Clip, nearestCharDuration: number): number {
+    const PADDING_MS = 10000;
+    
+    if (clip.audio.rawDuration && clip.audio.rawDuration > 0) {
+        return clip.audio.rawDuration * 1000;
+    }
+    if (clip.audio.duration && clip.audio.duration > 0) {
+        return (clip.audio.duration * 1000) + PADDING_MS;
+    }
+    return (nearestCharDuration * 1000) + PADDING_MS;
 }
 
 /*
  Only add fade in and fade out if the duration is longer than 10 seconds
 */
 function getFadeInAndOutDuration(durationMs: number) {
-    // Don't apply fades for clips shorter than 3 seconds
+    // Don't apply fades for clips shorter than 5 seconds
     if (durationMs < 5000) {
         return '';
     }

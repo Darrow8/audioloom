@@ -97,7 +97,7 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
         } as ProcessingStep;
     } finally {
         // Cleanup temp files
-        // await cleanupTempFiles(tempFiles);
+        await cleanupTempFiles(tempFiles);
     }
 }
 
