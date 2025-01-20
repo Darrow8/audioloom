@@ -25,7 +25,7 @@ const AuthButtons = () => {
   const debouncedLogin = debounce(async () => {
     try {
       await authorize({
-        // scope: 'openid profile email',
+        scope: 'openid profile email offline_access',
         audience: env.AUTH0_AUDIENCE,
         additionalParameters: {
           prompt: 'select_account',
@@ -40,7 +40,7 @@ const AuthButtons = () => {
   const debouncedSignup = debounce(async () => {
     try {
       await authorize({
-        // scope: 'openid profile email', 
+        scope: 'openid profile email offline_access', 
         audience: env.AUTH0_AUDIENCE,
         additionalParameters: {
           prompt: 'select_account',
