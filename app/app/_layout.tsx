@@ -47,13 +47,15 @@ function AppContent() {
       StatusBar.setBarStyle('dark-content');
       // checking to see if the user is already logged in
       let cur_credentials = await SecureStore.getItemAsync('auth0AccessToken');
-      let cred_status = await hasValidCredentials(1000);
+      let cred_status = await hasValidCredentials();
       if (cur_credentials == null && cred_status == false) {
         console.log('no credentials saved')
         setIsLoading(false);
-      } else if (cur_credentials == null || cred_status == false) {
+      } 
+      else if (cur_credentials == null || cred_status == false) {
         console.log('issue with credentials')
         let new_credentials = await getCredentials();
+        console.log('new_credentials', new_credentials)
         if (new_credentials == null) {
           console.error('No credentials found in server');
           await SecureStore.deleteItemAsync('auth0AccessToken');
@@ -63,7 +65,7 @@ function AppContent() {
           // delete the old token and set the new token
           await SecureStore.deleteItemAsync('auth0AccessToken');
           await SecureStore.setItemAsync('auth0AccessToken', new_credentials.accessToken);
-          let new_cred_status = await hasValidCredentials(1000);
+          let new_cred_status = await hasValidCredentials();
           if (new_cred_status == false) {
             await SecureStore.deleteItemAsync('auth0AccessToken');
             clearSession();
@@ -81,6 +83,7 @@ function AppContent() {
         console.log('auth0_user', auth0_user)
         setIsAuthenticating(true);
         let storageCredentials = await SecureStore.getItemAsync('auth0AccessToken');
+        console.log('storageCredentials', storageCredentials)
         if (storageCredentials == null) {
           let newCredentials = await getCredentials();
           if (newCredentials == null) {
