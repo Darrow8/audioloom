@@ -4,11 +4,12 @@ import { Feather } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Pod, PodStatus } from '@shared/pods';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { Colors } from '@/constants/Colors';
 
-const PodComponent: React.FC<{ pod: Pod, onPodClick: () => void }> = ({ pod, onPodClick }) => {
+const PodComponent: React.FC<{ pod: Pod, onPodClick: () => void, onShareClick: () => void }> = ({ pod, onPodClick, onShareClick }) => {
     return (
         <View style={styles.podItem}>
-            {/* <Image source={{ uri: pod.coverImage }} style={styles.podCover} /> */}
             <View style={styles.podInfo}>  
                 <Text style={styles.podTitle}>
                     {pod.title.split(' ').length > 15 
@@ -21,22 +22,25 @@ const PodComponent: React.FC<{ pod: Pod, onPodClick: () => void }> = ({ pod, onP
                             ? pod.author.split(' ').slice(0, 10).join(' ') + '...'
                             : pod.author
                     )}
+
                 </Text>
             </View>
             <View style={styles.podStatus}>
                 <TouchableOpacity style={styles.playButton} onPress={onPodClick}>
                     {pod.status == PodStatus.READY && (
-                    <Entypo name="controller-play" size={24} color="#007AFF" />
-                )}
-                {pod.status == PodStatus.PENDING && (
-                    <ActivityIndicator size={24} color="#007AFF" />
-                )}
-                {pod.status == PodStatus.ERROR && (
-                        <MaterialIcons name="error-outline" size={24} color="#007AFF" />
+                        <Entypo name="controller-play" size={24} color={Colors.theme.lightBlue} />
+                    )}
+                    {pod.status == PodStatus.PENDING && (
+                        <ActivityIndicator size={24} color={Colors.theme.lightBlue} />
+                    )}
+                    {pod.status == PodStatus.ERROR && (
+                        <MaterialIcons name="error-outline" size={24} color={Colors.theme.lightBlue} />
                     )}
                 </TouchableOpacity>
+                <TouchableOpacity  onPress={onShareClick} style={styles.shareButton}>
+                    <FontAwesome5 name="share" size={14} color={Colors.theme.lightBlue} />
+                </TouchableOpacity>
             </View>
-
         </View>
     );
 };
@@ -76,6 +80,12 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#666',
     },
+    podStatus: {
+        flex: 2,
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 8,
+    },
     playButton: {
         backgroundColor: '#fff',
         padding: 8,
@@ -91,9 +101,14 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
         marginLeft: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    podStatus: {
-        flex: 2,
+    shareButton: {
+        borderRadius: 20,
+        marginLeft: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     modalContainer: {
         flex: 1,
@@ -113,6 +128,7 @@ const styles = StyleSheet.create({
         borderRadius: 3,
         alignSelf: 'center',
         marginBottom: 10,
-    },
+    }
 });
 export default PodComponent;
+

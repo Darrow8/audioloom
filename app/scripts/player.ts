@@ -15,6 +15,7 @@ import { useStateContext } from '@/state/StateContext';
 
 let isPlayerInitialized = false;
 
+
 export const setupPlayer = async (pod: Pod, user_id: string) => {
   try {
     if (isPlayerInitialized) {
@@ -72,12 +73,15 @@ export const loadTrack = async (pod: Pod, user_id: string) => {
       artist: pod.author,
       id: pod._id,
     });
-    trackEvent('pod_play', {
+    // start listening timestamp
+
+    trackEvent('pod_play_init', {
       pod_id: pod._id,
       pod_title: pod.title,
       pod_author: pod.author,
       listener_id: user_id,
     });
+
     await TrackPlayer.play();
   })
 }
@@ -90,18 +94,32 @@ export const loadTrack = async (pod: Pod, user_id: string) => {
 
 
 
-export const playSound = async () => {
+export const playSound = async (pod: Pod, user_id: string, elapsedTime: number) => {
   try {
     await TrackPlayer.play();
+    trackEvent('pod_play_init', {
+      pod_id: pod._id,
+      pod_title: pod.title,
+      pod_author: pod.author,
+      listener_id: user_id,
+      elapsed_time: elapsedTime,
+    });
   } catch (error) {
     console.error('Error playing track:', error);
     //   setError('Failed to play audio');
   }
 };
 
-export const pauseSound = async () => {
+export const pauseSound = async (pod: Pod, user_id: string, elapsedTime: number) => {
   try {
     await TrackPlayer.pause();
+    trackEvent('pod_pause', {
+      pod_id: pod._id,
+      pod_title: pod.title,
+      pod_author: pod.author,
+      listener_id: user_id,
+      elapsed_time: elapsedTime,
+    });
   } catch (error) {
     console.error('Error pausing track:', error);
     //   setError('Failed to pause audio');
