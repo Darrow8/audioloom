@@ -64,7 +64,9 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
         pod_title: pod.title,
         pod_author: pod.author,
         listener_id: state.user?._id.toString(),
+        elapsed_time: elapsedTime,
       });
+      setElapsedTime(0);
     }
     
     return () => {
