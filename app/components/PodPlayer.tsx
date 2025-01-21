@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
@@ -7,7 +7,6 @@ import { getAudioFromS3 } from '@/scripts/s3';
 import { AudioUrlTransporter } from '@shared/s3';
 import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
 import { Marquee } from '@animatereactnative/marquee';
-import { trackEvent } from '@/scripts/mixpanel';
 import { useStateContext } from '@/state/StateContext';
 import TrackPlayer, {
   useTrackPlayerEvents,
@@ -19,12 +18,14 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 import { Colors } from '@/constants/Colors';
 import { skipBackward, skipForward, pauseSound, playSound, handlePlaybackProgress, setupPlayer, loadTrack } from '@/scripts/player';
+import { trackEvent } from '@/scripts/mixpanel';
 
 const PodPlayer = ({ pod }: { pod: Pod }) => {
   const [playerInitialized, setPlayerInitialized] = useState(false);
   const { position, duration } = useProgress();
   const playbackState = usePlaybackState();
   const { state } = useStateContext();
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   if (pod == null) {
     return null;
@@ -40,12 +41,43 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
           setPlayerInitialized(true);
         }
         await TrackPlayer.setQueue([]);
-
         await loadTrack(pod, uid);
+        setElapsedTime(0);
       })();
     }
   }, [pod]);
 
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+    if(playbackState.state === State.Playing) {
+      intervalId = setInterval(() => {
+        setElapsedTime(prevTime => prevTime + 1);  // Use functional update
+      }, 1000);
+    } else {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    }
+    if(playbackState.state == State.None) {
+      trackEvent('pod_play_end', {
+        pod_id: pod._id,
+        pod_title: pod.title,
+        pod_author: pod.author,
+        listener_id: state.user?._id.toString(),
+      });
+    }
+    
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [playbackState.state]);
+
+
+  useEffect(() => {
+    console.log('elapsedTime', elapsedTime);
+  }, [elapsedTime]);
 
   return (
     <View style={styles.container}>
@@ -75,7 +107,15 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
           <TouchableOpacity style={styles.controlButton} onPress={skipBackward}>
             <MaterialIcons name="replay-30" size={24} color={Colors.theme.lightBlue} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.controlButton} onPress={playbackState.state == State.Playing ? pauseSound : playSound}>
+          <TouchableOpacity style={styles.controlButton} onPress={() => {
+            if (state.user) {
+              if (playbackState.state == State.Playing) {
+                pauseSound(pod, state.user._id.toString(), elapsedTime);
+              } else {
+                playSound(pod, state.user._id.toString(), elapsedTime);
+              }
+            }
+          }}>
             {playbackState.state == State.Playing ? (
               <AntDesign name="pause" size={24} color={Colors.theme.lightBlue} />
             ) : (playbackState.state == State.Paused || playbackState.state == State.Ready) ? (
@@ -167,11 +207,8 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#fff',
     borderRadius: 50,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   centerContent: {
     flex: 1,

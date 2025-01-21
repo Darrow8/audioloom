@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, StyleSheet, View, ScrollView, PanResponder, Text, Button, ActivityIndicator } from 'react-native';
+import { Modal, StyleSheet, View, ScrollView, PanResponder, Text, Button, ActivityIndicator, Share } from 'react-native';
 import UploadButton from '../../components/UploadButton';
 import PodComponent from '../../components/Pod';
 import PodPlayer from '@/components/PodPlayer';
@@ -96,6 +96,12 @@ const Listen = () => {
       TrackPlayer.seekTo(0);
     }
   }
+  const handleShareClick = (pod: Pod) => {
+    Share.share({
+      message: `Check out this podcast: ${pod.title} by ${pod.author}`,
+      url: `https://audioloom.io/listen?pod=${pod._id}`
+    });
+  }
 
   const panResponder = useRef(
     PanResponder.create({
@@ -154,6 +160,7 @@ const Listen = () => {
                     <PodComponent
                       pod={pod}
                       onPodClick={() => handlePodClick(pod)}
+                      onShareClick={() => handleShareClick(pod)}
                     />
                   </View>
                 )
