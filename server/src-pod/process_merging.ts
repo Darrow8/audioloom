@@ -6,7 +6,6 @@ import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
-import { normalizeAudioInPlace } from "@pod/process_normalize.js";
 import { LineKind } from "@shared/line.js";
 
 /**
@@ -17,77 +16,75 @@ import { LineKind } from "@shared/line.js";
 export async function parallelMerge(runningTime: number, cur_clips: Clip[], filename: string, script: Script): Promise<number> {
     const original = path.join(TEMP_DATA_PATH, 'result', `${filename}.wav`);
     const temp = path.join(TEMP_DATA_PATH, 'result', `${filename}-temp.wav`);
-
-    // for (const clip of cur_clips) {
-    //     await normalizeAudioInPlace(clip.audio.url);
-    // }
-
     // Perform merge process
     runningTime = await parallelMergeProcess(runningTime, cur_clips, original, temp, script);
 
-    // Clean up
-    if (fs.existsSync(original)) {
-        await fsPromises.unlink(original);
+    // Batch file operations
+    try {
+        const originalExists = fs.existsSync(original);
+        if (originalExists) {
+            await fsPromises.unlink(original)
+        }
+        await fsPromises.rename(temp, original)
+    } catch (error) {
+        console.error('Error in batch file operations:', error);
     }
-    await fsPromises.rename(temp, original);
 
     return runningTime;
 }
 
-
 async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], input: string, output: string, script: Script) {
-
-    let input_count = 0;
     const command = ffmpeg();
-
-    let start_filter = []; // step a
-    let trim_filter = []; // step b
-    let volume_filter = []; // step c
+    let input_count = 0;
     let global_volume = 1;
+    let filter_steps = [];
 
-    // Include the existing audio file as input only if it exists and runningTime > 0
-    if (runningTime > 0 && fs.existsSync(input)) {
+    // Include the existing audio file if it exists and runningTime > 0
+    if (runningTime > 0) {
         command.input(input);
-        // skip from a to c because we don't need to trim the duration or delay the start
-        volume_filter.push(`[${input_count}:a]volume=${global_volume}[c${input_count}];`);
+        // For existing audio, just pass through with volume adjustment
+        filter_steps.push(`[${input_count}:a]volume=${global_volume}[c${input_count}]`);
         input_count++;
     }
 
-
-    // Add new clips as inputs
+    // Process all clips in a single pass
     for (let i = 0; i < cur_clips.length; i++) {
         const clip = cur_clips[i];
         command.input(clip.audio.url);
+        
         if (clip.line.kind === LineKind.CHARACTER) {
             if (clip.audio.start == -1) {
                 clip.audio.start = runningTime;
             }
-            volume_filter.push(`[${input_count}:a]volume=${global_volume}[a${input_count}];`);
-            start_filter.push(`[b${input_count}]adelay=${clip.audio.start * 1000}|${clip.audio.start * 1000}[c${input_count}];`);
-            trim_filter.push(`[a${input_count}]atrim=duration=${clip.audio.duration}[b${input_count}];`);
+            // Chain the filters in correct order: trim -> delay -> volume
+            filter_steps.push(`[${input_count}:a]atrim=duration=${clip.audio.duration}[t${input_count}]`);
+            filter_steps.push(`[t${input_count}]adelay=${clip.audio.start * 1000}|${clip.audio.start * 1000}[d${input_count}]`);
+            filter_steps.push(`[d${input_count}]volume=${global_volume}[c${input_count}]`);
+            
             runningTime = Number((runningTime + clip.audio.duration).toFixed(2));
         } else if (clip.line.kind === LineKind.MUSIC) {
-            // For non-dialogue clips, just pass through without volume adjustment
             let nearest_char_duration = getNearestAfterCharDuration(i, cur_clips);
             let music_filter = getMusicFilter(clip, global_volume, runningTime, nearest_char_duration, script);
-            volume_filter.push(`[${input_count}:a]volume=${music_filter.volume}${music_filter.fade.length > 0 ? ',' + music_filter.fade : ''}[a${input_count}];`);
-            start_filter.push(`[b${input_count}]adelay=${music_filter.start}|${music_filter.start}[c${input_count}];`);
-            trim_filter.push(`[a${input_count}]atrim=duration=${music_filter.duration}[b${input_count}];`);
+            
+            // Chain the filters in correct order for music
+            filter_steps.push(`[${input_count}:a]atrim=duration=${music_filter.duration}[t${input_count}]`);
+            filter_steps.push(`[t${input_count}]adelay=${music_filter.start}|${music_filter.start}[d${input_count}]`);
+            filter_steps.push(`[d${input_count}]volume=${music_filter.volume}${music_filter.fade.length > 0 ? ',' + music_filter.fade : ''}[c${input_count}]`);
         }
         input_count++;
     }
 
-    // Get the total number of inputs
-
-    // Construct filter_complex for concatenation
+    // Add the final mix step
     const filterInputs = [...Array(input_count).keys()].map(i => `[c${i}]`).join('');
-    // order here matters, volume first, then adelay, then atrim
-    const filterComplex = `${volume_filter.join('')}${start_filter.join('')}${trim_filter.join('')}${filterInputs}amix=inputs=${input_count}:duration=longest:dropout_transition=0:normalize=0[outa]`;
+    filter_steps.push(`${filterInputs}amix=inputs=${input_count}:duration=longest:dropout_transition=0:normalize=0[outa]`);
+
+    // Join all filter steps with semicolons
+    const filterComplex = filter_steps.join(';');
 
     // Set output options
     command.complexFilter(filterComplex)
         .outputOptions('-map [outa]')
-        .audioCodec('pcm_s16le')  // Use WAV codec for intermediate file
+        .audioCodec('pcm_s16le')
         .audioChannels(2)
         .audioFrequency(44100)
         .output(output);
@@ -171,7 +168,7 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
     }
 
     return {
-        volume: MUSIC_VOLUME,
+        volume: MUSIC_VOLUME, // "30dB"
         duration: durationMs / MS_TO_SEC,
         start: Math.max(0, runningTime * MS_TO_SEC),
         fade: getFadeInAndOutDuration(durationMs),
@@ -199,8 +196,9 @@ function getFadeInAndOutDuration(durationMs: number) {
         return '';
     }
     // For longer clips, use up to 1/4 of duration, capped at 6 seconds
-    const fadeInDuration = durationMs / 4;
+    const fadeInDuration = durationMs / 8;
     const fadeOutDuration = durationMs / 4;
     const fadeOutStart = durationMs - fadeOutDuration;
-    return `afade=t=in:st=0:d=${(fadeInDuration / 1000).toFixed(2)}:curve=exp,afade=t=out:st=${(fadeOutStart / 1000).toFixed(2)}:d=${(fadeOutDuration / 1000).toFixed(2)}:curve=exp`;
+    return `afade=t=in:st=0:d=${(fadeInDuration / 1000).toFixed(2)}:curve=tri,afade=t=out:st=${(fadeOutStart / 1000).toFixed(2)}:d=${(fadeOutDuration / 1000).toFixed(2)}:curve=tri`;
+    // return `afade=t=in:st=0:d=${(fadeInDuration / 1000).toFixed(2)}:curve=exp,afade=t=out:st=${(fadeOutStart / 1000).toFixed(2)}:d=${(fadeOutDuration / 1000).toFixed(2)}:curve=exp`;
 }

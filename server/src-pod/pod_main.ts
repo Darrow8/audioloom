@@ -17,6 +17,8 @@ import { Voices } from '@shared/voice.js';
 import { RawPrompts, Script } from '@shared/script.js';
 import { localInstructions } from '@pod/process_prompt.js';
 import { getVoices } from '@pod/pass_voice.js';
+import { sendOneSignalNotification } from './sender.js';
+import { Music_Choice } from './process_track.js';
 
 
 export let base_voices: Voices;
@@ -120,9 +122,11 @@ export function sendUpdate(pod_id: ObjectId, update: ProcessingStep) {
   io.emit(`pod:${pod_id.toString()}:status`, update);
 }
 
+let current_pod_creators: string[] = [];
 
 async function triggerPodCreation(req: JWTRequest, res: Response) {
   // Validate request
+  let start_time = Date.now();
   if (!req.file || !req.body.user_id || !req.body.new_pod_id) {
     return res.status(400).json({
       message: 'Missing required fields',
@@ -134,7 +138,15 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     });
   }
   console.log('triggerPodCreation by user: ' + req.body.user_id)
-
+  console.log('current_pod_creators: ' + current_pod_creators)
+  if(current_pod_creators.includes(req.body.user_id as string)) {
+    console.log('user already has a pod in progress')
+    return res.status(400).json({
+      message: 'User already has a pod in progress'
+    });
+  }
+  
+  current_pod_creators.push(req.body.user_id as string);
   // Validate file type
   if (!supportedTypes[req.file.mimetype]) {
     return res.status(400).json({
@@ -191,17 +203,20 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
 
     // Create screenplay
     let scriptData: Script;
+    let theme: Music_Choice;
     try {
       const scriptResponse = await createScript(articlePath, articleId, newPod, user_id, req.envMode);
       if (scriptResponse.status === ProcessingStatus.ERROR) {
         return onPodError(newPod, user_id, {
           status: ProcessingStatus.ERROR,
           step: "script",
-          message: `Script creation failed: ${scriptResponse.message}`
+          message: `Script creation failed: ${scriptResponse.message}`,
+          theme: scriptResponse.theme
         }, res, req);
       }
       console.log('scriptResponse.message: ' + scriptResponse.message)
       scriptData = scriptResponse.script;
+      theme = scriptResponse.theme;
     } catch (error) {
       return onPodError(newPod, user_id, {
         status: ProcessingStatus.ERROR,
@@ -211,7 +226,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
     }
 
     // Create podcast
-    const podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res, req.envMode);
+    const podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res, req.envMode, theme);
     if (podResponse.status === ProcessingStatus.ERROR) {
       return onPodError(newPod, user_id, {
         status: ProcessingStatus.ERROR,
@@ -243,7 +258,14 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
       status: ProcessingStatus.COMPLETED,
       step: "powerdown"
     });
+    sendOneSignalNotification({
+      externalUserId: user_id.toString(),
+      message: 'Your podcast is ready!',
+      title: 'Podcast Ready',
+    });
+    current_pod_creators = current_pod_creators.filter(id => id.toString() !== user_id.toString());
     console.log("finished with pod creation for pod: " + new_pod_id.toString())
+    console.log("time taken: " + (Date.now() - start_time) / 1000 + " seconds")
     res.end();
   } catch (error) {
     // Only send error response if headers haven't been sent
@@ -272,6 +294,7 @@ function onPodError(pod: Partial<Pod>, user_id: ObjectId, message: ProcessingSte
   if (pod.created_at != undefined) {
     updateMongoData('pods', pod, req.envMode);
     updateMongoArrayDoc('users', user_id, 'pods', pod._id, req.envMode);
+    current_pod_creators = current_pod_creators.filter(id => id.toString() !== user_id.toString());
   }
   sendUpdate(pod._id, message);
   res.end();

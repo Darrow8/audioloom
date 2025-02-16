@@ -3,8 +3,8 @@ import * as aws from "@pod/pass_files.js";
 import { encoding_for_model, Tiktoken, TiktokenModel } from "tiktoken";
 import { ChatModel } from "openai/resources/index";
 import { ProcessingStatus, ProcessingStep } from "@shared/processing.js";
-import { promptLLM } from "@pod/process_prompt.js";
-import { BaseScriptType, FullLLMPrompt, FullPrompts, PromptLLM, RawPrompts } from "@shared/script.js";
+import { determineTypeOfArticle, getAuthor, getTitle, summarizer } from "@pod/process_prompt.js";
+import { BaseScriptType, PromptLLM, RawPrompts } from "@shared/script.js";
 import { Pod } from "@shared/pods.js";
 import { createMongoData } from "@db/mongo_methods.js";
 import { updateMongoArrayDoc } from "@db/mongo_methods.js";
@@ -20,81 +20,15 @@ import { InstructionType } from "@shared/script.js";
 import { cleanText, cleanTextFile } from "@pod/cleaner.js";
 import { readFile, writeFile } from "fs/promises";
 import { promptLLMChunks } from "@pod/process_prompt.js";
+import { Music_Choice } from "@pod/process_track.js";
 
-// // step 1: get instructions
-export async function getCleanInstructions(articleContent): Promise<FullLLMPrompt> {
-  let init = base_instructions["clean"] as PromptLLM;
-  let resp = {
-    response_type: init.response_type,
-    GPTModel: init.GPTModel,
-    type: init.type
-  } as FullLLMPrompt;
-  resp.instructions = init.raw_instructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
-  return resp
-}
-
-export async function getInstructions(articleContent: string): Promise<FullPrompts> {
-  let fullInstructions: FullPrompts = {} as FullPrompts;
-  for (let key of Object.keys(base_instructions)) {
-    let prompt = base_instructions[key] as PromptLLM;
-    fullInstructions[key] = {
-      response_type: prompt.response_type,
-      GPTModel: prompt.GPTModel,
-      type: prompt.type
-    } as FullLLMPrompt;
-    if (prompt.type === 'podcast') {
-      // add additional instructions
-      let wpm = 150;
-      const wordCount = articleContent.trim().split(/\s+/).length;
-      let minCount = Math.ceil(wordCount / wpm);
-      // Add word count context to help GPT generate appropriate length podcast
-      let additionalInstructions = `\n Please ensure the podcast script has enough content and discussion to fill about ${minCount} minutes considering the average talking speed of ${wpm} words per minute. This means that the total amount of dialogue should be about ${minCount*wpm} words long.`;
-      fullInstructions[key].instructions = prompt.raw_instructions + additionalInstructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
-    } else {
-      fullInstructions[key].instructions = prompt.raw_instructions + '\nDOCUMENT_START\n' + articleContent + '\nDOCUMENT_END';
-    }
-  }
-  return fullInstructions;
-}
-// step 3: get title
-export async function getTitle(articleName: string, instructions: FullLLMPrompt): Promise<ProcessingStep> {
-  let title = await promptLLM(articleName, instructions, InstructionType.TITLE);
-  return title as ProcessingStep;
-}
-// step 4: get author
-export async function getAuthor(articleName: string, instructions: FullLLMPrompt): Promise<ProcessingStep> {
-  let author = await promptLLM(articleName, instructions, InstructionType.AUTHOR);
-  return author as ProcessingStep;
-}
-//step 5: create script
-export async function scriptwriter(articleName: string, instructions: FullLLMPrompt): Promise<ProcessingStep> {
-  let response = await promptLLM(articleName, instructions, InstructionType.PODCAST);
-  if (response.status != ProcessingStatus.ERROR) {
-    let baseScript = response.data as BaseScriptType;
-    // Ensure required properties are present before creating Script
-    const validatedLines = baseScript.lines.map((line, index) => ({
-      ...line,
-      id: uuidv4().toString(),
-      order: (index + 1),
-      kind: line.kind
-    }));
-    return {
-      status: ProcessingStatus.IN_PROGRESS,
-      step: "script",
-      message: "Script created",
-      script: validatedLines
-    } as ProcessingStep;
-  }
-  return response;
-}
-
-export async function scriptwriterChunks(article: string, instructions: PromptLLM): Promise<ProcessingStep> {
+export async function scriptwriterChunks(article: string, instructions: PromptLLM, typeOfArticle: string): Promise<ProcessingStep> {
   console.log("Start of ScriptwriterChunks")
 
-  
   let response = await promptLLMChunks(article, instructions);
   if (response.status != ProcessingStatus.ERROR) {
     let baseScript = response.data as BaseScriptType;
+    let theme = response.theme as Music_Choice;
     // Ensure required properties are present before creating Script
     const validatedLines = baseScript.lines.map((line, index) => ({
       ...line,
@@ -106,7 +40,8 @@ export async function scriptwriterChunks(article: string, instructions: PromptLL
       status: ProcessingStatus.IN_PROGRESS,
       step: "script",
       message: "Script created",
-      script: validatedLines
+      script: validatedLines,
+      theme: theme
     } as ProcessingStep;
   }
   return response;
@@ -148,25 +83,35 @@ export async function createScript(local_file_path: string, articleId: string, n
     }
 
     await writeFile(`${STORAGE_PATH}/clean-${articleId}.txt`, articleContent);
-    let instructions = await getInstructions(articleContent);
     // Process each step and check for errors
-    const titleStep = await getTitle(local_file_path, instructions.title);
+    const titleStep = await getTitle(articleContent);
     if (titleStep.status === ProcessingStatus.ERROR) return titleStep;
-    let title = titleStep.data.title || "Untitled";
+    let title = titleStep.data || "Untitled";
     console.log(titleStep)
-    const authorStep = await getAuthor(local_file_path, instructions.author);
+    const authorStep = await getAuthor(articleContent);
     if (authorStep.status === ProcessingStatus.ERROR) return authorStep;
-    let author = authorStep.data.author || "Unknown Author";
+    console.log(authorStep)
+    let author = authorStep.data || "Unknown Author";
     // // determine if the article is a discussion or a worksheet
-    // const typeOfArticle = await determineTypeOfArticle(local_file_path, instructions.author);
-
-    // if article is over 2000 tokens, we will use chunking method
-    let tokens = countTokens(articleContent, instructions.podcast.GPTModel.version as ChatModel, InstructionType.PODCAST);
-    let scriptStep;
-    if (tokens > 2000) {
-      scriptStep = await scriptwriterChunks(articleContent, base_instructions.podcast);
+    const typeOfArticle = await determineTypeOfArticle(articleContent);
+    console.log("typeOfArticle", typeOfArticle)
+    let instructions_podcast;
+    if (typeOfArticle === "discussion") {
+      instructions_podcast = base_instructions.discussion_podcast;
     } else {
-      scriptStep = await scriptwriter(articleContent, instructions.podcast);
+      instructions_podcast = base_instructions.worksheet_podcast;
+    }
+    // if article is over 2000 tokens, we will use chunking method
+    let tokens = countTokens(articleContent, instructions_podcast.GPTModel.version as ChatModel, instructions_podcast.type);
+    let scriptStep;
+    if (tokens < 100000) {
+      scriptStep = await scriptwriterChunks(articleContent, instructions_podcast, typeOfArticle);
+    } else {
+      return {
+        status: ProcessingStatus.ERROR,
+        step: "script",
+        message: "Article is too long"
+      };
     }
     
     if (scriptStep.status === ProcessingStatus.ERROR) return scriptStep;
@@ -182,7 +127,8 @@ export async function createScript(local_file_path: string, articleId: string, n
       status: ProcessingStatus.IN_PROGRESS,
       step: "script",
       message: "Script created",
-      script: newScript
+      script: newScript,
+      theme: scriptStep.theme
     } as ProcessingStep;
   } catch (dbError) {
     return {
@@ -225,13 +171,9 @@ export async function chopIntoNTokens(
   let chunks : string[] = [];
   for (let i = 0; i < all_tokens.length; i += n - overlap) {
     chunks.push(new TextDecoder().decode(encoding.decode(all_tokens.slice(i, i + n))));
-    console.log(chunks[chunks.length-1])
+    // console.log(chunks[chunks.length-1])
   }
   encoding.free();
 
   return chunks;
-}
-
-export async function determineTypeOfArticle(article: string, instructions: PromptLLM): Promise<InstructionType> {
-  return InstructionType.PODCAST;
 }

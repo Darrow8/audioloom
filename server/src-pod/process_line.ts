@@ -3,7 +3,7 @@ import { textToSpeech, processCharacterVoices } from '@pod/pass_voice.js';
 import { musicChooser } from '@pod/process_track.js';
 import { getAudioDuration } from '@pod/process_audio.js';
 import { usefulTrack } from '@shared/music.js';
-import { saveMusicAsAudio } from '@pod/save_track.js';
+import { improvedSaveMusicAsAudio, saveMusicAsAudio } from '@pod/save_track.js';
 import { fetchTracks, fetchEpidemicSFX } from '@pod/pass_music.js';
 import { Readable } from 'stream';
 import { saveStreamToFile } from '@pod/local.js';
@@ -96,10 +96,10 @@ export async function processCharacterDialogue(line: CharLine, prev_line: CharLi
 
 
 
-export async function processMusicLine(line: MusicLine, script: Script): Promise<AudioFile> {
+export async function processMusicLine(line: MusicLine, script: Script, theme_tracks: usefulTrack[]): Promise<AudioFile> {
     let audio: AudioFile | null = null;
     if (line.type == MusicType.BMusic) {
-        audio = await processBMusicLine(line, script);
+        audio = await processBMusicLine(line, script, theme_tracks);
     } else if (line.type == MusicType.SFX) {
         audio = await processSFXMusicLine(line)
     } else {
@@ -113,17 +113,30 @@ export async function processMusicLine(line: MusicLine, script: Script): Promise
  * processMusicLine
  * An audio clip is going to play during this line
  */
-export async function processBMusicLine(music_line: MusicLine, script: Script): Promise<AudioFile> {
+export async function processBMusicLine(music_line: MusicLine, script: Script, theme_tracks: usefulTrack[]): Promise<AudioFile> {
     let line_order = music_line.order;
     let dialogue_desc = "";
+
+    // if theme tracks are provided, use them
+    if (theme_tracks.length > 0) {
+        return await improvedSaveMusicAsAudio(theme_tracks, music_line.id);
+    }
+    // normal case
     if (line_order < script.lines.length && script.lines[line_order] instanceof CharLine) {
         dialogue_desc = script.lines[line_order].dialogue;
     }
     console.log(`dialogue_desc: ${dialogue_desc}`);
-    let music_choice = await musicChooser(music_line.music_description, dialogue_desc)
-
+    let music_choice : {genre?: string, mood?: string, duration?: number} = await musicChooser(music_line.music_description, dialogue_desc)
+    if(music_choice == undefined){
+        throw `error, music_choice is undefined`;
+    }
     let tracks: usefulTrack[] = await fetchTracks(music_choice.genre, music_choice.mood);
-
+    if(tracks == undefined){
+        throw `error, tracks is undefined`;
+    }
+    if(music_choice.duration == undefined){
+        throw `error, music_choice.duration is undefined`;
+    }
     return await saveMusicAsAudio(tracks, music_line.id);
 }
 
@@ -141,12 +154,13 @@ export async function processLine(
     line: Line, 
     script: Script, 
     characters: Character[], 
-    runningTime: number
+    runningTime: number,
+    theme_tracks: usefulTrack[]
 ): Promise<Clip | null> {
     if (line.kind == LineKind.CHARACTER) {
         return await processCharacterLineWithRetry(line as CharLine, script, characters, runningTime);
     } else if (line.kind == LineKind.MUSIC) {
-        return await processMusicLineWithRetry(line as MusicLine, script);
+        return await processMusicLineWithRetry(line as MusicLine, script, theme_tracks);
     } else {
         throw `error, found line with bad kind: ${line}`;
     }
@@ -181,12 +195,13 @@ export async function processCharacterLineWithRetry(
 async function processMusicLineWithRetry(
     line: MusicLine, 
     script: Script,
+    theme_tracks: usefulTrack[],
     maxRetries = 3
 ): Promise<Clip> {
     let lastError: Error;
     for (let i = 0; i < maxRetries; i++) {
         try {
-            const music_processed = await processMusicLine(line, script);
+            const music_processed = await processMusicLine(line, script, theme_tracks);
             return createClip(music_processed, line);
         } catch (error) {
             console.error(`Attempt ${i + 1} failed for music line ${line.order}:`, error);

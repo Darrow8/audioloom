@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { Pod } from '@shared/pods';
 import { getAudioFromS3 } from '@/scripts/s3';
 import { AudioUrlTransporter } from '@shared/s3';
@@ -17,7 +17,7 @@ import TrackPlayer, {
   Capability
 } from 'react-native-track-player';
 import { Colors } from '@/constants/Colors';
-import { skipBackward, skipForward, pauseSound, playSound, handlePlaybackProgress, setupPlayer, loadTrack } from '@/scripts/player';
+import { setPlaybackSpeed, skipBackward, skipForward, pauseSound, playSound, handlePlaybackProgress, setupPlayer, loadTrack } from '@/scripts/player';
 import { trackEvent } from '@/scripts/mixpanel';
 
 const PodPlayer = ({ pod }: { pod: Pod }) => {
@@ -26,6 +26,7 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
   const playbackState = usePlaybackState();
   const { state } = useStateContext();
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [playbackDisplay, setPlaybackDisplay] = useState(1.0);
 
   if (pod == null) {
     return null;
@@ -76,10 +77,13 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
     };
   }, [playbackState.state]);
 
-
-  useEffect(() => {
-    console.log('elapsedTime', elapsedTime);
-  }, [elapsedTime]);
+  const cyclePlaybackSpeed = async () => {
+    const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+    const currentIndex = speeds.indexOf(playbackDisplay);
+    const nextSpeed = speeds[(currentIndex + 1) % speeds.length];
+    setPlaybackDisplay(nextSpeed);
+    await setPlaybackSpeed(nextSpeed);
+  };
 
   return (
     <View style={styles.container}>
@@ -93,6 +97,9 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
       <View style={styles.controls}>
         <View style={styles.timeDisplay}>
           <Text style={styles.timeText}>{formatTime(position)}</Text>
+          <TouchableOpacity style={styles.speedButton} onPress={cyclePlaybackSpeed}>
+            <Text style={styles.speedText}>{playbackDisplay}x</Text>
+          </TouchableOpacity>
           <Text style={styles.timeText}>{formatTime(duration)}</Text>
         </View>
         <Slider
@@ -184,6 +191,7 @@ const styles = StyleSheet.create({
   timeDisplay: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
     paddingHorizontal: 4,
   },
@@ -222,6 +230,18 @@ const styles = StyleSheet.create({
     color: '#dc3545',  // red color for error
     fontSize: 16,
     textAlign: 'center',
+  },
+  speedButton: {
+    padding: 4,
+    backgroundColor: '#fff',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  speedText: {
+    fontSize: 14,
+    color: '#495057',
+    fontWeight: '500',
   },
 });
 

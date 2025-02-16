@@ -12,6 +12,9 @@ import { env } from '@/config/env';
 import { identifyUser, resetUser, trackEvent } from './mixpanel';
 import { getUserByIdForAuth } from "./mongoClient";
 import { createUser } from "./mongoHandle";
+import { LogLevel, OneSignal } from 'react-native-onesignal';
+import { loginOneSignal, logoutOneSignal } from "./onesignal";
+
 /**
  * Initialize a new user in the database
  */
@@ -51,7 +54,7 @@ export async function AttemptAuthentication(auth0_user: Auth0User, dispatch: Dis
         if(user == false){
           throw new Error('User not found');
         }
-
+        loginOneSignal(user);
         watchAndDispatch(user._id.toString(), user, dispatch, false);
         return true;
       }else{
@@ -63,6 +66,7 @@ export async function AttemptAuthentication(auth0_user: Auth0User, dispatch: Dis
           if(user == false){
             throw new Error('User not found');
           }
+          loginOneSignal(user);
           watchAndDispatch(user._id.toString(), user, dispatch, true);
           return true;
         }else {
@@ -117,6 +121,7 @@ const watchAndDispatch = async (mongo_id: string, user: User, dispatch: Dispatch
 
 export async function fullLogout(dispatch: Dispatch<UserAction>, clearSession: () => Promise<void>) {
   try {
+    logoutOneSignal();
     await clearSession()
     await SecureStore.deleteItemAsync('auth0AccessToken');
     await SecureStore.deleteItemAsync('signingUp');
@@ -134,5 +139,6 @@ export async function deleteAccount(dispatch: Dispatch<UserAction>, clearSession
   await clearSession()
   await SecureStore.deleteItemAsync('auth0AccessToken');
   await SecureStore.deleteItemAsync('signingUp');
+  logoutOneSignal();
   dispatch({ type: 'LOGOUT' });
 }

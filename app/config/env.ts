@@ -12,3 +12,4 @@ export const env =  {
 console.log('environment:', env.ENV);
 console.log('auth0 client id:', env.AUTH0_CLIENT_ID);
 console.log('auth0 domain:', env.AUTH0_DOMAIN);
+console.log('base url:', env.BASE_URL);

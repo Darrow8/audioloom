@@ -8,6 +8,7 @@ export interface usefulTrack {
     durationMs: number;
     bpm: number;
     energyLevel: string;
+    hasVocals: boolean;
     stems: {
       full: Stem;
       bass: Stem;
@@ -161,8 +162,58 @@ interface Meta {
 }
 
 
+export const moods = [
+  "angry", "busy & frantic", "changing tempo", "chasing", "dreamy", 
+  "eccentric", "elegant", "euphoric", "floating", 
+  "glamorous", "happy", "heavy & ponderous", "hopeful", 
+ "peaceful","relaxing", "restless",
+   "sad",  "sentimental", "sexy", "smooth","weird", "dark",  "quirky"
+];
 
-  export const moods = [
+export const genres = [
+  "abstract hip hop", "acoustic", "ambient", 
+   "new age", "ambient americana", "ambient dub", 
+  "ambient pop", "ballad", "batida", "beats", "blues", "acoustic blues", 
+  "african blues", "blues rock", "classic blues", "country blues", "delta blues", 
+  "modern blues", 
+  "oompah", "breakbeat", "2-step", "big beat", "drum and bass", "dubstep", 
+  "future garage", "jungle",  "uk garage",
+  "adventure", "beautiful", 
+  "drama",  
+  
+   "classical", "choral", "classical crossover", 
+  "contemporary classical", "indian classical", "orchestral", "orchestral hybrid", 
+  "small ensemble", "solo instrumental", "string ensemble", "waltz", "classical period", 
+   "conscious hip hop", "country", 
+  "bluegrass", "contemporary country", "country pop", "country rock", "traditional country", 
+  "western", "dance", "disco", "boogie", 
+  "downtempo", "chillout", "chillstep", "chillwave",
+  "electro-funk", "electronic",
+  "edm", "electro", "electro swing", 
+  "melodic techno", "midtempo bass", "minimal techno", 
+  "synthwave", "techno", "trance", "trap edm", 
+  "folk", 
+  "contemporary folk", "folk pop", "indie folk", "klezmer", "polka", "funk", 
+   "hip hop", "alternative hip hop", 
+ "bounce", 
+  "hip hop soul", "house", 
+  "huapango", "indian pop", "indie surf", 
+  "jazz", "acid jazz", "bebop", "big band", "classic jazz", "contemporary jazz", 
+  "cool jazz",  "latin", "bolero", "bossa nova", 
+  "calypso", "chachachá", "corrido tumbado", "mambo", "mariachi", "reggaeton", "rumba", "salsa", 
+  "samba", "tango", 
+ "pop", 
+
+  "k-pop", "pop rock", 
+  "post-classical", "praise & worship", "psychedelic soul", "punk", "pop punk", 
+  "punk rock", "r&b", "contemporary r&b", "motown", "reggae",
+  "ska", "rock", "alternative rock", 
+  "electronic rock", "folk rock", "garage rock", "grunge", "hard rock", 
+  "indie rock", "post-rock", "psychedelic rock", "rock and roll", "rockabilly", 
+  "roots rock", "soft rock", "surf rock", 
+];
+
+  export const all_moods = [
     "angry", "busy & frantic", "changing tempo", "chasing", "dark", "dreamy", 
     "eccentric", "elegant", "epic", "euphoric", "fear", "floating", "funny", 
     "glamorous", "happy", "heavy & ponderous", "hopeful", /*"laid back",*/ "marching", 
@@ -171,7 +222,7 @@ interface Meta {
     "suspense", "weird"
   ];
   
-  export const genres = [
+  export const all_genres = [
     "abstract hip hop", "acoustic",/* "solo guitar", "solo piano",*/ "ambient", "asmr", 
     "binaural beats", "drone", "new age", "ambient americana", "ambient dub", 
     "ambient pop", "ballad", "batida", "beats", "bloopers", "blues", "acoustic blues", 

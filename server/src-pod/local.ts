@@ -138,13 +138,15 @@ export function deleteAllFilesInFolder(folderPath) {
                 }
 
                 // Delete the file
-                fs.unlink(filePath, (unlinkErr) => {
-                    if (unlinkErr) {
-                        console.error(`Error deleting file ${filePath}: ${unlinkErr}`);
+                if (process.env.UNLINK_FILES === 'true') {
+                    fs.unlink(filePath, (unlinkErr) => {
+                        if (unlinkErr) {
+                            console.error(`Error deleting file ${filePath}: ${unlinkErr}`);
                     } else {
-                        console.log(`Successfully deleted file ${filePath}`);
-                    }
-                });
+                            console.log(`Successfully deleted file ${filePath}`);
+                        }
+                    });
+                }
             });
         });
     });

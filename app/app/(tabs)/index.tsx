@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, StyleSheet, View, ScrollView, PanResponder, Text, Button, ActivityIndicator, Share } from 'react-native';
+import { Modal, StyleSheet, View, ScrollView, PanResponder, Text, Button, ActivityIndicator, Share, TouchableOpacity } from 'react-native';
 import UploadButton from '../../components/UploadButton';
 import PodComponent from '../../components/Pod';
 import PodPlayer from '@/components/PodPlayer';
@@ -18,6 +18,7 @@ import TrackPlayer from 'react-native-track-player';
 import { router, SplashScreen } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { ProgressBanner } from '@/components/ProgressBanner';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 const Listen = () => {
   // const [sound, setSound] = useState<Audio.Sound>();
@@ -141,18 +142,18 @@ const Listen = () => {
             onRequestClose={() => {
               setUploadVisible(!uploadVisible);
             }}>
-            
+
           </Modal>
           {showProcessingBanner && (
             <ProgressBanner time={2} />
           )}
-          <ScrollView 
-            style={styles.scrollView} 
+          <ScrollView
+            style={styles.scrollView}
             contentContainerStyle={styles.songList}
           >
             {isPodsLoading ?
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color={Colors.theme.lightBlue} /> 
+                <ActivityIndicator size="large" color={Colors.theme.lightBlue} />
               </View>
               : pods.map((pod: Pod) =>
                 pod.status != PodStatus.ERROR && (
@@ -184,6 +185,9 @@ const Listen = () => {
               <View style={styles.modalOverlay}>
                 <View style={styles.modalContainer} {...panResponder.panHandlers}>
                   <View style={styles.modalContent}>
+                    <TouchableOpacity style={styles.shareButton} onPress={() => handleShareClick(currentPod as Pod)}>
+                      <FontAwesome5 name="share" size={16} color={Colors.theme.lightBlue} />
+                    </TouchableOpacity>
                     <View style={styles.dragIndicator} />
                     <PodPlayer pod={currentPod as Pod} />
                   </View>
@@ -277,6 +281,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     padding: 4,
   },
+  shareButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    padding: 5,
+    // backgroundColor: '#fff',
+    // borderRadius: 50,
+    // borderWidth: 1,
+    // borderColor: 'rgba(0, 0, 0, 0.1)',
+  }
 });
 
 export default Listen;

@@ -38,7 +38,7 @@ const PodComponent: React.FC<{ pod: Pod, onPodClick: () => void, onShareClick: (
                     )}
                 </TouchableOpacity>
                 <TouchableOpacity  onPress={onShareClick} style={styles.shareButton}>
-                    <FontAwesome5 name="share" size={14} color={Colors.theme.lightBlue} />
+                    <FontAwesome5 name="share" size={12} color={Colors.theme.lightBlue} />
                 </TouchableOpacity>
             </View>
         </View>
@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingHorizontal: 5,
+        paddingVertical: 8,
         backgroundColor: '#f5f5f5',
         borderRadius: 8,
     },
@@ -70,25 +70,29 @@ const styles = StyleSheet.create({
     },
     podInfo: {
         flex: 9,
+        padding: 8,
+        // marginRight: 16,
     },
     podTitle: {
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 4,
+        marginLeft: 16,
     },
     podArtist: {
         fontSize: 14,
         color: '#666',
+        marginLeft: 16,
     },
     podStatus: {
         flex: 2,
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 8,
+        gap: 2,
     },
     playButton: {
         backgroundColor: '#fff',
-        padding: 8,
+        // padding: 8,
         borderRadius: 20,
         shadowColor: '#000',
         shadowOffset: {
@@ -99,16 +103,17 @@ const styles = StyleSheet.create({
         height: 40,
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
-        elevation: 5,
-        marginLeft: 20,
+        elevation: 8,
+        // marginLeft: 20,
         justifyContent: 'center',
         alignItems: 'center',
     },
     shareButton: {
         borderRadius: 20,
-        marginLeft: 20,
+        // marginLeft: 20,
         justifyContent: 'center',
         alignItems: 'center',
+        padding: 4,
     },
     modalContainer: {
         flex: 1,

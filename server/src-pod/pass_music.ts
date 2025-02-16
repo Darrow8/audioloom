@@ -2,13 +2,15 @@ import {DataStructure, Track, usefulTrack, TrackMap, genres, moods, Hit} from '@
 import fetch from 'node-fetch';
 
 
-export function processTrackJSON(raw_tracks : DataStructure){
-  let processed_arr = [];
+export function processTrackJSON(raw_tracks : DataStructure): usefulTrack[] {
+  let processed_arr : usefulTrack[] = [];
   let tracks: Track[] = convertMapToArray(raw_tracks.entities.tracks, raw_tracks.meta.hits);
   
   for(let track of tracks){
       let new_track = transformTrack(track);
-      processed_arr.push(new_track);
+      if(new_track.hasVocals == false || new_track.segmentGroups.length == 0){ // we want tracks without vocals and with segments
+        processed_arr.push(new_track);
+      }
   }
 
   return processed_arr;
@@ -26,6 +28,8 @@ export function transformTrack(oldTrack: Track): usefulTrack {
     energyLevel: oldTrack.energyLevel,
     stems: oldTrack.stems,
     segmentGroups: oldTrack.segmentGroups,
+    hasVocals: oldTrack.hasVocals,
+
   };
   return newTrack;
 }
@@ -91,7 +95,7 @@ export async function fetchEpidemicTracks(genre:string, mood:string) : Promise<u
     };
     // https://www.epidemicsound.com/json/search/tracks/?mood=busy%20&%20frantic&order=desc&page=1&segment_types=music-structure%40v2&segment_types=soundly-sfx&sort=neutral-pop28
     try {
-        let search = `order=desc&page=1&segment_types=music-structure%40v2&segment_types=soundly-sfx&sort=neutral-pop28&limit=10`;
+        let search = `order=desc&page=1&segment_types=music-structure%40v2&segment_types=soundly-sfx&sort=neutral-pop28&limit=20`;
         if(genre != "" && genres.includes(genre)){
             search += `&genres=${encodeURI(genre)}`;
         }

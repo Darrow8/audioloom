@@ -2,13 +2,13 @@ export default {
     expo: {
       name: "Audioloom",
       slug: "frontend",
-      version: "1.0.0",
+      version: "1.1.0",
       orientation: "portrait",
       icon: "./assets/images/audioloom_icon.png",
       scheme: "myapp",
       userInterfaceStyle: "automatic",
       ios: {
-        buildNumber: "9",
+        buildNumber: "1",
         supportsTablet: false,
         bundleIdentifier: "com.audioloom.frontend",
         infoPlist: {
@@ -17,6 +17,11 @@ export default {
           UIStatusBarStyle: "UIStatusBarStyleDarkContent",
           UIViewControllerBasedStatusBarAppearance: false
         },
+        entitlements: {
+          "com.apple.security.application-groups": [
+            "group.com.audioloom.frontend.onesignal"
+          ]
+        }
       },
       splash: {
         backgroundColor: "#ffffff",
@@ -24,6 +29,12 @@ export default {
         resizeMode: "contain",
       },
       plugins: [
+        [
+          "onesignal-expo-plugin",
+          {
+            "mode": "development",
+          }
+        ],
         "expo-router",
         [
           "react-native-auth0",
@@ -76,6 +87,7 @@ export default {
         typedRoutes: true,
       },
       extra: {
+        oneSignalAppId: "08f4c935-8dbd-4960-a2b5-e89c005bdd6c",
         router: {
           origin: false,
         },

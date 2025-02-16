@@ -1,5 +1,5 @@
 import { uploadFileToS3, getFileFromS3, uploadAudioToS3 } from '@pod/pass_files.js';
-import { CharLine, Clip, MusicLine } from '@shared/line.js';
+import { AudioFile, CharLine, Clip, MusicLine } from '@shared/line.js';
 import { Script } from '@shared/script.js';
 import { v4 as uuidv4 } from 'uuid';
 import { processLine } from '@pod/process_line.js';
@@ -16,12 +16,16 @@ import { ProcessingStatus, ProcessingStep } from '@shared/processing.js';
 import { updateMongoData } from '@db/mongo_methods.js';
 import { ObjectId } from 'bson';
 import { PodStatus } from '@shared/pods.js';
+import { sendOneSignalNotification } from '@pod/sender.js';
+import { Music_Choice } from '@pod/process_track.js';
+import { usefulTrack } from '@shared/music';
+import { fetchTracks } from '@pod/pass_music.js';
 
 /**
  * createPodcastInParallel
  * In each iteration, process a character line and music line to update audio file
  */
-export async function createPodInParallel(script: Script, pod_id: string, res: Response, mode: "prod" | "dev") {
+export async function createPodInParallel(script: Script, pod_id: string, res: Response, mode: "prod" | "dev", theme: Music_Choice) {
     const tempFiles: string[] = [];
     try {
         // Validate script path
@@ -46,7 +50,7 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
         const characters = await processCharacterVoices(Array.from(characters_str));
         let runningTime = 0;
         let cur_clips: Clip[] = [];
-        
+        let theme_tracks: usefulTrack[] = await fetchTracks(theme.genre, theme.mood);
         // Process lines with progress updates
         for (let i = 0; i < script.lines.length; i++) {
             try {
@@ -58,7 +62,7 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
                     message: `Processing line ${i + 1} of ${script.lines.length}`
                 };
                 res.write(JSON.stringify(progressUpdate));
-                const clip = await processLine(line, script, characters, runningTime);
+                const clip = await processLine(line, script, characters, runningTime, theme_tracks);
                 if (clip != null && clip != undefined) {
                     cur_clips.push(clip);
                     tempFiles.push(clip.audio.url);
@@ -80,6 +84,7 @@ export async function createPodInParallel(script: Script, pod_id: string, res: R
             audio_key: `pod-audio/${pod_id}.wav`,
             status: PodStatus.PENDING
         }, mode);
+
 
         return {
             status: ProcessingStatus.COMPLETED,
@@ -144,13 +149,15 @@ async function mergeAndCleanup(
 }
 
 async function cleanupTempFiles(files: string[]) {
-    for (const file of files) {
-        try {
-            if (fs.existsSync(file)) {
-                await fs.promises.unlink(file);
+    if(process.env.UNLINK_FILES === 'true') {
+        for (const file of files) {
+            try {
+                if (fs.existsSync(file)) {
+                    await fs.promises.unlink(file);
+                }
+            } catch (error) {
+                console.error(`Failed to delete temp file ${file}:`, error);
             }
-        } catch (error) {
-            console.error(`Failed to delete temp file ${file}:`, error);
         }
     }
 }

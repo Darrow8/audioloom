@@ -65,7 +65,8 @@ export type BaseScriptType = z.infer<typeof BaseScriptSchema>;
 
 export enum InstructionType {
     CLEAN = "clean",
-    PODCAST = "podcast",
+    DISCUSSION_PODCAST = "discussion_podcast",
+    WORKSHEET_PODCAST = "worksheet_podcast",
     TITLE = "title",
     AUTHOR = "author"
 }
@@ -88,13 +89,15 @@ export interface FullLLMPrompt extends PromptLLM {
 
 export interface RawPrompts {
     clean: PromptLLM;
-    podcast: PromptLLM;
+    discussion_podcast: PromptLLM;
+    worksheet_podcast: PromptLLM;
     title: PromptLLM;
     author: PromptLLM;
 }
-export interface FullPrompts {
-    clean: FullLLMPrompt;
-    podcast: FullLLMPrompt;
-    title: FullLLMPrompt;
-    author: FullLLMPrompt;
-}
+// export interface FullPrompts {
+//     clean: FullLLMPrompt;
+//     discussion_podcast: FullLLMPrompt;
+//     worksheet_podcast: FullLLMPrompt;
+//     title: FullLLMPrompt;
+//     author: FullLLMPrompt;
+// }
