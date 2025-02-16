@@ -19,6 +19,7 @@ import TrackPlayer, {
 import { Colors } from '@/constants/Colors';
 import { setPlaybackSpeed, skipBackward, skipForward, pauseSound, playSound, handlePlaybackProgress, setupPlayer, loadTrack } from '@/scripts/player';
 import { trackEvent } from '@/scripts/mixpanel';
+import { getPlaybackPosition, savePlaybackPosition } from '@/scripts/filesystem';
 
 const PodPlayer = ({ pod }: { pod: Pod }) => {
   const [playerInitialized, setPlayerInitialized] = useState(false);
@@ -39,6 +40,11 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
         if (!playerInitialized) {
           console.log('running setup player!', playbackState.state);
           await setupPlayer(pod, uid);
+          const savedPosition = await getPlaybackPosition(pod._id.toString());
+          console.log('savedPosition', savedPosition);
+          if (savedPosition > 0) {
+            await TrackPlayer.seekTo(savedPosition);
+          }
           setPlayerInitialized(true);
         }
         await TrackPlayer.setQueue([]);
@@ -49,17 +55,26 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
   }, [pod]);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-    if(playbackState.state === State.Playing) {
-      intervalId = setInterval(() => {
-        setElapsedTime(prevTime => prevTime + 1);  // Use functional update
-      }, 1000);
-    } else {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+    if(Math.round(position) > 0) {
+      console.log('saving playback position', Math.round(position));
+      savePlaybackPosition(pod._id.toString(), Math.round(position));
     }
-    if(playbackState.state == State.None) {
+  }, [position]);
+
+  useEffect(() => {
+    // let intervalId: NodeJS.Timeout | null = null;
+    if (playbackState.state === State.Playing) {
+      console.log('saving elapsed time', elapsedTime);
+      // intervalId = setInterval(() => {
+        setElapsedTime(prevTime => prevTime + 1);  // Use functional update
+      // }, 1000);
+    } else {
+      // if (intervalId) {
+      //   clearInterval(intervalId);
+      // }
+    }
+    if (playbackState.state == State.None) {
+      console.log('pod_play_end', elapsedTime);
       trackEvent('pod_play_end', {
         pod_id: pod._id,
         pod_title: pod.title,
@@ -67,15 +82,15 @@ const PodPlayer = ({ pod }: { pod: Pod }) => {
         listener_id: state.user?._id.toString(),
         elapsed_time: elapsedTime,
       });
-      setElapsedTime(0);
+      // setElapsedTime(0);
     }
-    
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [playbackState.state]);
+
+    // return () => {
+    //   if (intervalId) {
+    //     clearInterval(intervalId);
+    //   }
+    // };
+  }, [playbackState.state, position]);
 
   const cyclePlaybackSpeed = async () => {
     const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];

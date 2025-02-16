@@ -20,6 +20,7 @@ import * as Sentry from '@sentry/react-native';
 import { StatusBar } from 'react-native';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { initOneSignal, logoutOneSignal } from '@/scripts/onesignal';
+import { PlaybackProvider } from '@/state/PlaybackContext';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* ignore error */
@@ -53,7 +54,7 @@ function AppContent() {
       if (cur_credentials == null && cred_status == false) {
         console.log('no credentials saved')
         setIsLoading(false);
-      } 
+      }
       else if (cur_credentials == null || cred_status == false) {
         console.log('issue with credentials')
         let new_credentials = await getCredentials();
@@ -176,14 +177,16 @@ export default function RootLayout() {
 
   return (
     <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>
-      <ActionSheetProvider>
-        <StateProvider>
-          <ToastProvider>
-            <StatusBar barStyle="dark-content" />
-            <AppContent />
-          </ToastProvider>
-        </StateProvider>
-      </ActionSheetProvider>
+      <PlaybackProvider>
+        <ActionSheetProvider>
+          <StateProvider>
+            <ToastProvider>
+              <StatusBar barStyle="dark-content" />
+              <AppContent />
+            </ToastProvider>
+          </StateProvider>
+        </ActionSheetProvider>
+      </PlaybackProvider>
     </Auth0Provider>
   );
 }

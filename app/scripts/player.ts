@@ -157,3 +157,4 @@ export const setPlaybackSpeed = async (speed: number) => {
     console.error('Error setting playback speed:', error);
   }
 };
+

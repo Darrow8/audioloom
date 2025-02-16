@@ -94,7 +94,7 @@ const Listen = () => {
     if (currentPod) {
       TrackPlayer.pause();
       TrackPlayer.setQueue([]);
-      TrackPlayer.seekTo(0);
+      // TrackPlayer.seekTo(0);
     }
   }
   const handleShareClick = (pod: Pod) => {
