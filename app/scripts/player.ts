@@ -149,3 +149,11 @@ export const skipBackward = async () => {
     console.error('Error skipping backward:', error);
   }
 };
+
+export const setPlaybackSpeed = async (speed: number) => {
+  try {
+    await TrackPlayer.setRate(speed);
+  } catch (error) {
+    console.error('Error setting playback speed:', error);
+  }
+};

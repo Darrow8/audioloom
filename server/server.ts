@@ -17,6 +17,7 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { client, mongo_startup, watchDocumentPods, watchDocumentUser } from './src-db/mongo_interface.js';
 import fs from 'fs';
+import { sendOneSignalNotification } from '@pod/sender.js';
 
 dotenv.config();
 
@@ -159,6 +160,8 @@ async function startServer() {
         httpServer.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });
+
+
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);

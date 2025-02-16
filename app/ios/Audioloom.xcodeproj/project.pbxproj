@@ -3,63 +3,106 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00060C495CBF4849AF278A84 /* Futura_Heavy_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 75B354FEBBF84153A0597027 /* Futura_Heavy_Italic_font.ttf */; };
-		013733BD6B19CCED05DF2C19 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 34C2B06379245C7A8CA5FEA8 /* PrivacyInfo.xcprivacy */; };
+		0226766049BC44B0B18A9C73 /* Futura_Book_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B2524A30F7004D038D5806AB /* Futura_Book_Italic_font.ttf */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		1BF9909B38A74E96A89AA6F8 /* Futura_Bold_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 457C96D86DA94814914BB770 /* Futura_Bold_font.ttf */; };
-		1DE0E8CB20E648149C6DB92D /* Futura_Light_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 45201E4197344AE9966B8015 /* Futura_Light_font.ttf */; };
-		3BB03DF3DBA143B78FB4D4B7 /* Futura_Book_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B6101D44C1374E5CAA20165F /* Futura_Book_Italic_font.ttf */; };
+		1F36209E74A7831A1A9D7108 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7EA14EBF15A5A50B4021B4F5 /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		5F3FECBD4EBD491A83BE5926 /* Futura_Heavy_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E92A23F7BD93457AAD86614E /* Futura_Heavy_font.ttf */; };
-		6BE0BACA27584BCAB6023909 /* Futura_Book_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 504CCA9E50744FAD8756F087 /* Futura_Book_font.ttf */; };
-		8176CF73E68E47F4B72B3BC3 /* Futura_Light_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 13CCFA1ECCEB405B9859D727 /* Futura_Light_Italic_font.ttf */; };
+		42020C20AE844F56F09A32E3 /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01CB221FAA8F1D0CCEFFEDA5 /* libPods-OneSignalNotificationServiceExtension.a */; };
+		4D778874BF8C4597AC3F6AAE /* Futura_Light_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 33F0A822D4E74BCE9F6AD7CE /* Futura_Light_font.ttf */; };
+		6F01D7743A08466586E7BA28 /* Futura_Extra_Black_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7BA3EFEA3FC749F7BDBB9F5A /* Futura_Extra_Black_font.ttf */; };
+		706F95FA479E4AA6A0D7C460 /* Futura_Heavy_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 82C228CC5E274CBAB6845676 /* Futura_Heavy_font.ttf */; };
+		74B1734512974B6984730B69 /* Futura_Bold_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5E17B89BF6FF474684ED9194 /* Futura_Bold_Italic_font.ttf */; };
 		96905EF65AED1B983A6B3ABC /* libPods-Audioloom.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58EEBF8E8E6FB1BC6CAF49B5 /* libPods-Audioloom.a */; };
-		ACDA15CC657A445A9F6A0D6E /* Futura_Bold_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 51B7A233EB534778935290B1 /* Futura_Bold_Italic_font.ttf */; };
+		ADA2F4E5A67E4E9EA2BF4BB8 /* OneSignalNotificationServiceExtension.appex in Copy Files */ = {isa = PBXBuildFile; fileRef = EF973BD8A51645DF9F3C7334 /* OneSignalNotificationServiceExtension.appex */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
-		B9D0A0BCA35340F38F03F61A /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD7BB9F4A7341CB8AA30CF1 /* noop-file.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		DF6EB850E5054FD8A6A4234C /* futura_medium_bt.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EE864E8BEA0546B3A3EF74D9 /* futura_medium_bt.ttf */; };
-		E44EB19C4685483EB241C2B4 /* Futura_Extra_Black_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F0484C4F9AF744DCB26A7900 /* Futura_Extra_Black_font.ttf */; };
-		F3D7811DC81B405C821CBA09 /* Futura_Medium_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C14FFF7243664BC69DD0272A /* Futura_Medium_Italic_font.ttf */; };
+		BC95ED2A8609408B954CB247 /* Futura_Bold_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3E7B05B2BAAC48FCBD50318C /* Futura_Bold_font.ttf */; };
+		C2DEB4455F344C65BC8FC3F4 /* Futura_Medium_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B44E2D465E3B45E6ADDC954B /* Futura_Medium_Italic_font.ttf */; };
+		C344F982983245BABFF0F987 /* Futura_Light_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2C6E7EB9DE6246E1989FE2C7 /* Futura_Light_Italic_font.ttf */; };
+		C7D28735956C4DD4B6ACE9DE /* Futura_Book_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CA68F0334DA74039B1EE77F1 /* Futura_Book_font.ttf */; };
+		E408E65482DC4533BBE1516D /* NotificationService.m in Sources */ = {isa = PBXBuildFile; fileRef = 6662778BE13C45C8B2670A18 /* NotificationService.m */; };
+		E519F6A61FFB47AFA6C59BD8 /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15AC13664B7C4A1699ACEDE2 /* noop-file.swift */; };
+		E849FF4C95DF40F59BCCA1D2 /* Futura_Heavy_Italic_font.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F26981DDDFB45CDA8C1ECED /* Futura_Heavy_Italic_font.ttf */; };
+		FD55637CF8654178A92D06A7 /* futura_medium_bt.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2E5D9C694E7F4F2A951446D1 /* futura_medium_bt.ttf */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		0B56192EDB2E4846A6631141 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C8202B2E97B64C4B987A6F02;
+			remoteInfo = OneSignalNotificationServiceExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D7E48B108EE04F21B5037571 /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				ADA2F4E5A67E4E9EA2BF4BB8 /* OneSignalNotificationServiceExtension.appex in Copy Files */,
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		01CB221FAA8F1D0CCEFFEDA5 /* libPods-OneSignalNotificationServiceExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-OneSignalNotificationServiceExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1156D30FDAC747138DC792A3 /* Audioloom-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "Audioloom-Bridging-Header.h"; path = "Audioloom/Audioloom-Bridging-Header.h"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Audioloom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Audioloom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Audioloom/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = Audioloom/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Audioloom/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Audioloom/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Audioloom/main.m; sourceTree = "<group>"; };
-		13CCFA1ECCEB405B9859D727 /* Futura_Light_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Light_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Light_Italic_font.ttf; sourceTree = "<group>"; };
-		34C2B06379245C7A8CA5FEA8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Audioloom/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		45201E4197344AE9966B8015 /* Futura_Light_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Light_font.ttf; path = ../assets/fonts/futura/Futura_Light_font.ttf; sourceTree = "<group>"; };
-		457C96D86DA94814914BB770 /* Futura_Bold_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Bold_font.ttf; path = ../assets/fonts/futura/Futura_Bold_font.ttf; sourceTree = "<group>"; };
-		504CCA9E50744FAD8756F087 /* Futura_Book_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Book_font.ttf; path = ../assets/fonts/futura/Futura_Book_font.ttf; sourceTree = "<group>"; };
-		51B7A233EB534778935290B1 /* Futura_Bold_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Bold_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Bold_Italic_font.ttf; sourceTree = "<group>"; };
+		15AC13664B7C4A1699ACEDE2 /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "Audioloom/noop-file.swift"; sourceTree = "<group>"; };
+		15F1AD1B9B47451AA89F9CF7 /* OneSignalNotificationServiceExtension-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "OneSignalNotificationServiceExtension-Info.plist"; path = "OneSignalNotificationServiceExtension-Info.plist"; sourceTree = "<group>"; };
+		193AA7F5F721AB2F23B31830 /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; sourceTree = "<group>"; };
+		2C6E7EB9DE6246E1989FE2C7 /* Futura_Light_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Light_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Light_Italic_font.ttf; sourceTree = "<group>"; };
+		2E5D9C694E7F4F2A951446D1 /* futura_medium_bt.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = futura_medium_bt.ttf; path = ../assets/fonts/futura/futura_medium_bt.ttf; sourceTree = "<group>"; };
+		2F26981DDDFB45CDA8C1ECED /* Futura_Heavy_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Heavy_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Heavy_Italic_font.ttf; sourceTree = "<group>"; };
+		33F0A822D4E74BCE9F6AD7CE /* Futura_Light_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Light_font.ttf; path = ../assets/fonts/futura/Futura_Light_font.ttf; sourceTree = "<group>"; };
+		3CF42B6A7EAB4154821135C7 /* NotificationService.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = NotificationService.h; path = NotificationService.h; sourceTree = "<group>"; };
+		3D4ADDA14BE87DB41EFC76BC /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.release.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.release.xcconfig"; sourceTree = "<group>"; };
+		3E7B05B2BAAC48FCBD50318C /* Futura_Bold_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Bold_font.ttf; path = ../assets/fonts/futura/Futura_Bold_font.ttf; sourceTree = "<group>"; };
 		58EEBF8E8E6FB1BC6CAF49B5 /* libPods-Audioloom.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Audioloom.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E17B89BF6FF474684ED9194 /* Futura_Bold_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Bold_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Bold_Italic_font.ttf; sourceTree = "<group>"; };
+		6662778BE13C45C8B2670A18 /* NotificationService.m */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.objc; name = NotificationService.m; path = NotificationService.m; sourceTree = "<group>"; };
 		6C2E3173556A471DD304B334 /* Pods-Audioloom.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audioloom.debug.xcconfig"; path = "Target Support Files/Pods-Audioloom/Pods-Audioloom.debug.xcconfig"; sourceTree = "<group>"; };
-		75B354FEBBF84153A0597027 /* Futura_Heavy_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Heavy_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Heavy_Italic_font.ttf; sourceTree = "<group>"; };
 		7A4D352CD337FB3A3BF06240 /* Pods-Audioloom.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Audioloom.release.xcconfig"; path = "Target Support Files/Pods-Audioloom/Pods-Audioloom.release.xcconfig"; sourceTree = "<group>"; };
-		8AD7BB9F4A7341CB8AA30CF1 /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "Audioloom/noop-file.swift"; sourceTree = "<group>"; };
+		7BA3EFEA3FC749F7BDBB9F5A /* Futura_Extra_Black_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Extra_Black_font.ttf; path = ../assets/fonts/futura/Futura_Extra_Black_font.ttf; sourceTree = "<group>"; };
+		7EA14EBF15A5A50B4021B4F5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Audioloom/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		82C228CC5E274CBAB6845676 /* Futura_Heavy_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Heavy_font.ttf; path = ../assets/fonts/futura/Futura_Heavy_font.ttf; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Audioloom/SplashScreen.storyboard; sourceTree = "<group>"; };
-		B6101D44C1374E5CAA20165F /* Futura_Book_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Book_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Book_Italic_font.ttf; sourceTree = "<group>"; };
+		B2524A30F7004D038D5806AB /* Futura_Book_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Book_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Book_Italic_font.ttf; sourceTree = "<group>"; };
+		B44E2D465E3B45E6ADDC954B /* Futura_Medium_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Medium_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Medium_Italic_font.ttf; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C14FFF7243664BC69DD0272A /* Futura_Medium_Italic_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Medium_Italic_font.ttf; path = ../assets/fonts/futura/Futura_Medium_Italic_font.ttf; sourceTree = "<group>"; };
-		CCEA8DFA9D934667B81FAB1A /* Audioloom-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "Audioloom-Bridging-Header.h"; path = "Audioloom/Audioloom-Bridging-Header.h"; sourceTree = "<group>"; };
-		E92A23F7BD93457AAD86614E /* Futura_Heavy_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Heavy_font.ttf; path = ../assets/fonts/futura/Futura_Heavy_font.ttf; sourceTree = "<group>"; };
+		CA68F0334DA74039B1EE77F1 /* Futura_Book_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Book_font.ttf; path = ../assets/fonts/futura/Futura_Book_font.ttf; sourceTree = "<group>"; };
+		E3BA48A5AD5A4F8FA7DB2BA2 /* OneSignalNotificationServiceExtension.entitlements */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = OneSignalNotificationServiceExtension.entitlements; path = OneSignalNotificationServiceExtension.entitlements; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		EE864E8BEA0546B3A3EF74D9 /* futura_medium_bt.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = futura_medium_bt.ttf; path = ../assets/fonts/futura/futura_medium_bt.ttf; sourceTree = "<group>"; };
-		F0484C4F9AF744DCB26A7900 /* Futura_Extra_Black_font.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Futura_Extra_Black_font.ttf; path = ../assets/fonts/futura/Futura_Extra_Black_font.ttf; sourceTree = "<group>"; };
+		EF973BD8A51645DF9F3C7334 /* OneSignalNotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = undefined; name = OneSignalNotificationServiceExtension.appex; path = OneSignalNotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Audioloom/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		08988B8DC4B846FBBD6B121F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				42020C20AE844F56F09A32E3 /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -81,9 +124,9 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				8AD7BB9F4A7341CB8AA30CF1 /* noop-file.swift */,
-				CCEA8DFA9D934667B81FAB1A /* Audioloom-Bridging-Header.h */,
-				34C2B06379245C7A8CA5FEA8 /* PrivacyInfo.xcprivacy */,
+				15AC13664B7C4A1699ACEDE2 /* noop-file.swift */,
+				1156D30FDAC747138DC792A3 /* Audioloom-Bridging-Header.h */,
+				7EA14EBF15A5A50B4021B4F5 /* PrivacyInfo.xcprivacy */,
 			);
 			name = Audioloom;
 			sourceTree = "<group>";
@@ -93,26 +136,28 @@
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				58EEBF8E8E6FB1BC6CAF49B5 /* libPods-Audioloom.a */,
+				01CB221FAA8F1D0CCEFFEDA5 /* libPods-OneSignalNotificationServiceExtension.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		424BFD9FB6E541DEA02503A1 /* Resources */ = {
+		7CF88D2B79224FF98207544F /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				E92A23F7BD93457AAD86614E /* Futura_Heavy_font.ttf */,
-				504CCA9E50744FAD8756F087 /* Futura_Book_font.ttf */,
-				45201E4197344AE9966B8015 /* Futura_Light_font.ttf */,
-				457C96D86DA94814914BB770 /* Futura_Bold_font.ttf */,
-				F0484C4F9AF744DCB26A7900 /* Futura_Extra_Black_font.ttf */,
-				51B7A233EB534778935290B1 /* Futura_Bold_Italic_font.ttf */,
-				B6101D44C1374E5CAA20165F /* Futura_Book_Italic_font.ttf */,
-				75B354FEBBF84153A0597027 /* Futura_Heavy_Italic_font.ttf */,
-				13CCFA1ECCEB405B9859D727 /* Futura_Light_Italic_font.ttf */,
-				C14FFF7243664BC69DD0272A /* Futura_Medium_Italic_font.ttf */,
-				EE864E8BEA0546B3A3EF74D9 /* futura_medium_bt.ttf */,
+				82C228CC5E274CBAB6845676 /* Futura_Heavy_font.ttf */,
+				CA68F0334DA74039B1EE77F1 /* Futura_Book_font.ttf */,
+				33F0A822D4E74BCE9F6AD7CE /* Futura_Light_font.ttf */,
+				3E7B05B2BAAC48FCBD50318C /* Futura_Bold_font.ttf */,
+				7BA3EFEA3FC749F7BDBB9F5A /* Futura_Extra_Black_font.ttf */,
+				5E17B89BF6FF474684ED9194 /* Futura_Bold_Italic_font.ttf */,
+				B2524A30F7004D038D5806AB /* Futura_Book_Italic_font.ttf */,
+				2F26981DDDFB45CDA8C1ECED /* Futura_Heavy_Italic_font.ttf */,
+				2C6E7EB9DE6246E1989FE2C7 /* Futura_Light_Italic_font.ttf */,
+				B44E2D465E3B45E6ADDC954B /* Futura_Medium_Italic_font.ttf */,
+				2E5D9C694E7F4F2A951446D1 /* futura_medium_bt.ttf */,
 			);
 			name = Resources;
+			path = "";
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -131,7 +176,8 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				D65327D7A22EEC0BE12398D9 /* Pods */,
 				D7E4C46ADA2E9064B798F356 /* ExpoModulesProviders */,
-				424BFD9FB6E541DEA02503A1 /* Resources */,
+				7CF88D2B79224FF98207544F /* Resources */,
+				C47AB3A0F24C44AB96298523 /* OneSignalNotificationServiceExtension */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -142,6 +188,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* Audioloom.app */,
+				EF973BD8A51645DF9F3C7334 /* OneSignalNotificationServiceExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -163,11 +210,25 @@
 			path = Audioloom/Supporting;
 			sourceTree = "<group>";
 		};
+		C47AB3A0F24C44AB96298523 /* OneSignalNotificationServiceExtension */ = {
+			isa = PBXGroup;
+			children = (
+				3CF42B6A7EAB4154821135C7 /* NotificationService.h */,
+				E3BA48A5AD5A4F8FA7DB2BA2 /* OneSignalNotificationServiceExtension.entitlements */,
+				15F1AD1B9B47451AA89F9CF7 /* OneSignalNotificationServiceExtension-Info.plist */,
+				6662778BE13C45C8B2670A18 /* NotificationService.m */,
+			);
+			name = OneSignalNotificationServiceExtension;
+			path = OneSignalNotificationServiceExtension;
+			sourceTree = "<group>";
+		};
 		D65327D7A22EEC0BE12398D9 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
 				6C2E3173556A471DD304B334 /* Pods-Audioloom.debug.xcconfig */,
 				7A4D352CD337FB3A3BF06240 /* Pods-Audioloom.release.xcconfig */,
+				193AA7F5F721AB2F23B31830 /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */,
+				3D4ADDA14BE87DB41EFC76BC /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -188,23 +249,43 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Audioloom" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				FC07039923A5CEED52F0E78F /* [Expo] Configure project */,
+				AEC77A371FA9DFF5EB26C6CD /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				A291C87FA04F4D5A969D5E1F /* Upload Debug Symbols to Sentry */,
-				CB1ED2003B2AABA5BF81D060 /* [CP] Embed Pods Frameworks */,
+				DB25B4CF6DC8452E85FA16D2 /* Upload Debug Symbols to Sentry */,
+				D7E48B108EE04F21B5037571 /* Copy Files */,
+				393514138B3C78C366B04441 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				D2A7AE94DC544FC8B599BEAE /* PBXTargetDependency */,
 			);
 			name = Audioloom;
 			productName = Audioloom;
 			productReference = 13B07F961A680F5B00A75B9A /* Audioloom.app */;
 			productType = "com.apple.product-type.application";
+		};
+		C8202B2E97B64C4B987A6F02 /* OneSignalNotificationServiceExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A570FFEBE8874920B0FAF56B /* Build configuration list for PBXNativeTarget "OneSignalNotificationServiceExtension" */;
+			buildPhases = (
+				D3A8C886162536A220FCBA70 /* [CP] Check Pods Manifest.lock */,
+				E4D0D85F461D47D09B79E08A /* Sources */,
+				FBD5384C8A10448AA162E229 /* Resources */,
+				08988B8DC4B846FBBD6B121F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OneSignalNotificationServiceExtension;
+			productName = OneSignalNotificationServiceExtension;
+			productReference = EF973BD8A51645DF9F3C7334 /* OneSignalNotificationServiceExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -215,7 +296,13 @@
 				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
+						DevelopmentTeam = "Q83KXHA9M9";
 						LastSwiftMigration = 1250;
+						ProvisioningStyle = Automatic;
+					};
+					C8202B2E97B64C4B987A6F02 = {
+						DevelopmentTeam = "Q83KXHA9M9";
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -233,6 +320,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* Audioloom */,
+				C8202B2E97B64C4B987A6F02 /* OneSignalNotificationServiceExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -245,18 +333,25 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				5F3FECBD4EBD491A83BE5926 /* Futura_Heavy_font.ttf in Resources */,
-				6BE0BACA27584BCAB6023909 /* Futura_Book_font.ttf in Resources */,
-				1DE0E8CB20E648149C6DB92D /* Futura_Light_font.ttf in Resources */,
-				1BF9909B38A74E96A89AA6F8 /* Futura_Bold_font.ttf in Resources */,
-				E44EB19C4685483EB241C2B4 /* Futura_Extra_Black_font.ttf in Resources */,
-				ACDA15CC657A445A9F6A0D6E /* Futura_Bold_Italic_font.ttf in Resources */,
-				3BB03DF3DBA143B78FB4D4B7 /* Futura_Book_Italic_font.ttf in Resources */,
-				00060C495CBF4849AF278A84 /* Futura_Heavy_Italic_font.ttf in Resources */,
-				8176CF73E68E47F4B72B3BC3 /* Futura_Light_Italic_font.ttf in Resources */,
-				F3D7811DC81B405C821CBA09 /* Futura_Medium_Italic_font.ttf in Resources */,
-				DF6EB850E5054FD8A6A4234C /* futura_medium_bt.ttf in Resources */,
-				013733BD6B19CCED05DF2C19 /* PrivacyInfo.xcprivacy in Resources */,
+				706F95FA479E4AA6A0D7C460 /* Futura_Heavy_font.ttf in Resources */,
+				C7D28735956C4DD4B6ACE9DE /* Futura_Book_font.ttf in Resources */,
+				4D778874BF8C4597AC3F6AAE /* Futura_Light_font.ttf in Resources */,
+				BC95ED2A8609408B954CB247 /* Futura_Bold_font.ttf in Resources */,
+				6F01D7743A08466586E7BA28 /* Futura_Extra_Black_font.ttf in Resources */,
+				74B1734512974B6984730B69 /* Futura_Bold_Italic_font.ttf in Resources */,
+				0226766049BC44B0B18A9C73 /* Futura_Book_Italic_font.ttf in Resources */,
+				E849FF4C95DF40F59BCCA1D2 /* Futura_Heavy_Italic_font.ttf in Resources */,
+				C344F982983245BABFF0F987 /* Futura_Light_Italic_font.ttf in Resources */,
+				C2DEB4455F344C65BC8FC3F4 /* Futura_Medium_Italic_font.ttf in Resources */,
+				FD55637CF8654178A92D06A7 /* futura_medium_bt.ttf in Resources */,
+				1F36209E74A7831A1A9D7108 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FBD5384C8A10448AA162E229 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,6 +393,44 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		393514138B3C78C366B04441 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignal/OneSignalFramework.framework/OneSignalFramework",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignalCore/OneSignalCore.framework/OneSignalCore",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignalExtension/OneSignalExtension.framework/OneSignalExtension",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignalInAppMessages/OneSignalInAppMessages.framework/OneSignalInAppMessages",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignalLiveActivities/OneSignalLiveActivities.framework/OneSignalLiveActivities",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignalLocation/OneSignalLocation.framework/OneSignalLocation",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignalNotifications/OneSignalNotifications.framework/OneSignalNotifications",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignalOSCore/OneSignalOSCore.framework/OneSignalOSCore",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignalOutcomes/OneSignalOutcomes.framework/OneSignalOutcomes",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OneSignalXCFramework/OneSignalUser/OneSignalUser.framework/OneSignalUser",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalFramework.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalCore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalExtension.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalInAppMessages.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalLiveActivities.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalLocation.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalNotifications.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalOSCore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalOutcomes.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OneSignalUser.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
@@ -348,39 +481,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A291C87FA04F4D5A969D5E1F /* Upload Debug Symbols to Sentry */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Upload Debug Symbols to Sentry";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/bin/sh `${NODE_BINARY:-node} --print \"require('path').dirname(require.resolve('@sentry/react-native/package.json')) + '/scripts/sentry-xcode-debug-files.sh'\"`";
-		};
-		CB1ED2003B2AABA5BF81D060 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Audioloom/Pods-Audioloom-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FC07039923A5CEED52F0E78F /* [Expo] Configure project */ = {
+		AEC77A371FA9DFF5EB26C6CD /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -399,6 +500,42 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Audioloom/expo-configure-project.sh\"\n";
 		};
+		D3A8C886162536A220FCBA70 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-OneSignalNotificationServiceExtension-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DB25B4CF6DC8452E85FA16D2 /* Upload Debug Symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Upload Debug Symbols to Sentry";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh `${NODE_BINARY:-node} --print \"require('path').dirname(require.resolve('@sentry/react-native/package.json')) + '/scripts/sentry-xcode-debug-files.sh'\"`";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -409,11 +546,27 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
-				B9D0A0BCA35340F38F03F61A /* noop-file.swift in Sources */,
+				E519F6A61FFB47AFA6C59BD8 /* noop-file.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E4D0D85F461D47D09B79E08A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E408E65482DC4533BBE1516D /* NotificationService.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D2A7AE94DC544FC8B599BEAE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C8202B2E97B64C4B987A6F02 /* OneSignalNotificationServiceExtension */;
+			targetProxy = 0B56192EDB2E4846A6631141 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
@@ -424,7 +577,6 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Audioloom/Audioloom.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Q83KXHA9M9;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -432,10 +584,7 @@
 				);
 				INFOPLIST_FILE = Audioloom/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -450,6 +599,9 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "Q83KXHA9M9";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
@@ -461,13 +613,9 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Audioloom/Audioloom.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Q83KXHA9M9;
 				INFOPLIST_FILE = Audioloom/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -481,6 +629,9 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "Q83KXHA9M9";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};
@@ -536,10 +687,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD = "";
 				LDPLUSPLUS = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					/usr/lib/swift,
-					"$(inherited)",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -598,10 +746,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD = "";
 				LDPLUSPLUS = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					/usr/lib/swift,
-					"$(inherited)",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = (
@@ -614,6 +759,48 @@
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
+		};
+		DDD3B475FB574B9D86A6CC3A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3D4ADDA14BE87DB41EFC76BC /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = OneSignalNotificationServiceExtension/OneSignalNotificationServiceExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "Q83KXHA9M9";
+				INFOPLIST_FILE = "OneSignalNotificationServiceExtension/OneSignalNotificationServiceExtension-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
+				PRODUCT_BUNDLE_IDENTIFIER = com.audioloom.frontend.OneSignalNotificationServiceExtension;
+				PRODUCT_NAME = OneSignalNotificationServiceExtension;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				CODE_SIGN_IDENTITY = "Apple Development";
+			};
+			name = Release;
+		};
+		FE0B26FE0D484F9BB0DE3B23 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 193AA7F5F721AB2F23B31830 /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = OneSignalNotificationServiceExtension/OneSignalNotificationServiceExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "Q83KXHA9M9";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "OneSignalNotificationServiceExtension/OneSignalNotificationServiceExtension-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.audioloom.frontend.OneSignalNotificationServiceExtension;
+				PRODUCT_NAME = OneSignalNotificationServiceExtension;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				CODE_SIGN_IDENTITY = "Apple Development";
+			};
+			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
@@ -632,6 +819,15 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A570FFEBE8874920B0FAF56B /* Build configuration list for PBXNativeTarget "OneSignalNotificationServiceExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE0B26FE0D484F9BB0DE3B23 /* Debug */,
+				DDD3B475FB574B9D86A6CC3A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -27,11 +27,12 @@ export function trackEvent(eventName: string, properties: Record<string, any>) {
 }
 
 // Identify a user and set their properties
-export function identifyUser(userId: string, userProperties?: Record<string, any>) {
+export function identifyUser(userId: string, userProperties: Record<string, any>) {
     if (!mixpanelInstance) {
         console.warn('Mixpanel not initialized');
         return;
     }
+    userProperties.environment = env.ENV;
     mixpanelInstance.identify(userId);
     if (userProperties) {
         mixpanelInstance.getPeople().set(userProperties);

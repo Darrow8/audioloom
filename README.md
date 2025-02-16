@@ -76,3 +76,11 @@ To copy files from host to container:
 
 Get the IP address of the container:
 `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -ql)`
+
+Move files from VPC to local:
+`scp root@164.90.153.167:/home/manager/ ./`
+
+Move files from local to VPC:
+`scp ./ root@164.90.153.167:/home/manager`
+
+

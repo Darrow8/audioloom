@@ -19,6 +19,7 @@ import { ToastProvider } from '@/state/ToastContext';
 import * as Sentry from '@sentry/react-native';
 import { StatusBar } from 'react-native';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
+import { initOneSignal, logoutOneSignal } from '@/scripts/onesignal';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* ignore error */
@@ -44,6 +45,7 @@ function AppContent() {
       console.log('on init')
       connectSocket();
       initMixpanel();
+      initOneSignal();
       StatusBar.setBarStyle('dark-content');
       // checking to see if the user is already logged in
       let cur_credentials = await SecureStore.getItemAsync('auth0AccessToken');
@@ -60,6 +62,7 @@ function AppContent() {
           console.error('No credentials found in server');
           await SecureStore.deleteItemAsync('auth0AccessToken');
           clearSession();
+          logoutOneSignal();
           setIsLoading(false);
         } else {
           // delete the old token and set the new token
@@ -69,6 +72,7 @@ function AppContent() {
           if (new_cred_status == false) {
             await SecureStore.deleteItemAsync('auth0AccessToken');
             clearSession();
+            logoutOneSignal();
             setIsLoading(false);
           }
         }

@@ -28,7 +28,7 @@ export async function textToSpeech(voice: string, text: string, prev_text: strin
       next_text: next_text != "" ? next_text : undefined,
       voice_settings: {
         stability: 0.35,
-        similarity_boost: 0.4,
+        similarity_boost: 0.7,
         // style: 0.15,
         // use_speaker_boost: true,
       }

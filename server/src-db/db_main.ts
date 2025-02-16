@@ -104,13 +104,27 @@ export async function dbRoutes() {
 }
 
 async function getAudio(req: JWTRequest, res: Response) {
-    const audio_key = req.query.audio_key as string;
+    let audio_key = req.query.audio_key as string;
+    if (audio_key == null || audio_key == undefined || audio_key == "") {
+        audio_key = req.body.audio_key as string;
+    }
+    if (audio_key == null || audio_key == undefined || audio_key == "") {
+        res.status(400).send("No audio key provided");
+        return;
+    }
     const audio_data = await getAudioURLFromS3(audio_key);
     res.send(audio_data);
 }
 
 async function getPodcast(req: JWTRequest, res: Response) {
-    const podcast_id = new ObjectId(req.query.podcast_id as string);
-    const podcast_data = await getMongoDataById("pods", podcast_id, req.envMode);
+    let podcast_id = req.query.podcast_id as string;
+    if (podcast_id == null || podcast_id == undefined || podcast_id == "") {
+        podcast_id = req.body.podcast_id as string;
+    }
+    if (podcast_id == null || podcast_id == undefined || podcast_id == "") {
+        res.status(400).send("No podcast id provided");
+        return;
+    }
+    const podcast_data = await getMongoDataById("pods", new ObjectId(podcast_id), req.envMode);
     res.send(podcast_data);
 }
