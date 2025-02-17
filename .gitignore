@@ -357,3 +357,5 @@ android/
 app/ios/
 app/android/
 .env.docker
+.watchmanconfig
+.DS_Store
