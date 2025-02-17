@@ -12,15 +12,33 @@ import { useDocumentPicker } from '@/hooks/useDocumentPicker';
 import { Colors } from '../constants/Colors';
 import { trackEvent } from '@/scripts/mixpanel';
 import { useToast } from '@/state/ToastContext';
+import { requestNotificationPermission } from '@/scripts/onesignal';
 
 const UploadButton: React.FC<{
   userId: ObjectId,
-  showProcessingBanner: boolean, setShowProcessingBanner: (show: boolean) => void,
+  showProcessingBanner: boolean, 
+  setShowProcessingBanner: (show: boolean) => void,
 }>
   = ({ userId, showProcessingBanner, setShowProcessingBanner }) => {
     const { showToast } = useToast();
-
     const { fileAsset, isLoading, promptIOSPicker } = useDocumentPicker();
+
+    const handleUploadPress = () => {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Choose from Files', 'Choose from Google Drive'],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            promptIOSPicker();
+          } else if (buttonIndex === 2) {
+            // TODO: Implement Google Drive picker
+            showToast('Google Drive integration coming soon');
+          }
+        }
+      );
+    };
 
     useEffect(() => {
       async function startPodGenerator() {
@@ -44,8 +62,7 @@ const UploadButton: React.FC<{
             console.log('completed!')
             setShowProcessingBanner(false);
           }
-          if (update.status === ProcessingStatus.IN_PROGRESS) {
-            
+          if (update.status === ProcessingStatus.SUCCESS) {
             setShowProcessingBanner(true);
           }
           if (update.status === ProcessingStatus.ERROR) {
@@ -56,6 +73,7 @@ const UploadButton: React.FC<{
         })
       }
       startPodGenerator()
+      requestNotificationPermission()
     }, [fileAsset])
 
 
@@ -63,9 +81,11 @@ const UploadButton: React.FC<{
       <>
         {showProcessingBanner == false && (
           <View style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={() => {
-              promptIOSPicker()
-            }} disabled={isLoading}>
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={handleUploadPress} 
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <ActivityIndicator size="large" color="#fff" />
               ) : (

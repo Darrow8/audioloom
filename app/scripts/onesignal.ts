@@ -9,10 +9,12 @@ export const initOneSignal = () => {
     }
     OneSignal.Debug.setLogLevel(LogLevel.Verbose);
     OneSignal.initialize(oneSignalAppId);
-    
-    // Also need enable notifications to complete OneSignal setup
+}
+
+export const requestNotificationPermission = () => {
     OneSignal.Notifications.requestPermission(true);
 }
+
 
 export const logoutOneSignal = () => {
     OneSignal.logout();

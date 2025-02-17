@@ -6,12 +6,13 @@ import { Colors } from '@/constants/Colors';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import SettingsPage from '@/components/settings';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function TabLayout() {
   const [showSettings, setShowSettings] = useState(false);
   const router = useRouter();
   let size = 28;
-  
+
   return (
     <>
       <Tabs
@@ -32,6 +33,14 @@ export default function TabLayout() {
             tabBarIcon: ({ color, focused }) => (
               <FontAwesome6 name="headphones-simple" size={size} color={color} />
             ),
+            // headerRight: () => (
+            //   <TouchableOpacity
+            //     onPress={() => setShowSettings(true)}
+            //     style={{ marginRight: 30 }}
+            //   >
+            //     <MaterialIcons name="workspace-premium" size={24} color={Colors.theme.lightBlue} />
+            //   </TouchableOpacity>
+            // )
           }}
         />
         <Tabs.Screen
@@ -39,9 +48,9 @@ export default function TabLayout() {
           options={{
             title: 'Profile',
             headerRight: () => (
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setShowSettings(true)}
-                style={{ marginRight: 15 }}
+                style={{ marginRight: 30 }}
               >
                 <AntDesign name="setting" size={24} color={Colors.light.header} />
               </TouchableOpacity>
@@ -56,7 +65,7 @@ export default function TabLayout() {
       {showSettings && (
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setShowSettings(false)}
             >
