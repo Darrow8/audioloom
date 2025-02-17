@@ -1,4 +1,4 @@
-import { uploadFileToS3, getFileFromS3, uploadAudioToS3 } from '@pod/pass_files.js';
+import { uploadFileToS3, getFileFromS3, uploadAudioToS3 } from '@pod/s3_files.js';
 import { AudioFile, CharLine, Clip, MusicLine } from '@shared/line.js';
 import { Script } from '@shared/script.js';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,7 +17,7 @@ import { updateMongoData } from '@db/mongo_methods.js';
 import { ObjectId } from 'bson';
 import { PodStatus } from '@shared/pods.js';
 import { sendOneSignalNotification } from '@pod/sender.js';
-import { Music_Choice } from '@pod/process_track.js';
+import { Music_Choice } from '@pod/audio_chooser.js';
 import { usefulTrack } from '@shared/music';
 import { fetchTracks } from '@pod/pass_music.js';
 
@@ -28,128 +28,50 @@ import { fetchTracks } from '@pod/pass_music.js';
 export async function createPodInParallel(script: Script, pod_id: string, res: Response, mode: "prod" | "dev", theme: Music_Choice) {
     const tempFiles: string[] = [];
     try {
-        // Validate script path
-        if (!script) {
-            return {
-                status: ProcessingStatus.ERROR,
-                step: "podcast",
-                message: "Invalid script path. Must be a .txt file"
-            } as ProcessingStep;
-        }
-        
-        // Process characters with validation
         const characters_str = new Set(script.getCharLines().map(line => line.character));
-        if (characters_str.size === 0) {
-            return {
-                status: ProcessingStatus.ERROR,
-                step: "podcast",
-                message: "No characters found in script"
-            } as ProcessingStep;
-        }
-
         const characters = await processCharacterVoices(Array.from(characters_str));
         let runningTime = 0;
         let cur_clips: Clip[] = [];
         let theme_tracks: usefulTrack[] = await fetchTracks(theme.genre, theme.mood);
-        // Process lines with progress updates
         for (let i = 0; i < script.lines.length; i++) {
-            try {
-                const line = script.lines[i];
-                const progressUpdate = {
-                    status: ProcessingStatus.IN_PROGRESS,
-                    step: "podcast",
-                    progress: Math.round((i / script.lines.length) * 100),
-                    message: `Processing line ${i + 1} of ${script.lines.length}`
-                };
-                res.write(JSON.stringify(progressUpdate));
-                const clip = await processLine(line, script, characters, runningTime, theme_tracks);
-                if (clip != null && clip != undefined) {
-                    cur_clips.push(clip);
-                    tempFiles.push(clip.audio.url);
-                    if (shouldMergeClips(cur_clips)) {
-                        runningTime = await mergeAndCleanup(cur_clips, pod_id, runningTime, script, res);
-                        cur_clips = [];
+            const line = script.lines[i];
+            const clip = await processLine(line, script, characters, runningTime, theme_tracks);
+            if (clip != null && clip != undefined) {
+                cur_clips.push(clip);
+                tempFiles.push(clip.audio.url);
+                if (shouldMergeClips(cur_clips)) {
+                    let mergeResult = await parallelMerge(runningTime, cur_clips, pod_id, script);
+                    if (mergeResult.status === ProcessingStatus.ERROR) {
+                        return mergeResult;
                     }
-                }else {
-                    console.log(`clip is null or undefined, skipping`);
+                    runningTime = mergeResult.duration;
+                    cur_clips = [];
                 }
-            } catch (error) {
-                console.error(`Error processing line ${i}:`, error);
-                throw new Error(`Failed to process line ${i}: ${error.message}`);
+            } else {
+                console.error(`clip is null or undefined, skipping`);
             }
         }
-        await uploadAudioToS3(`${pod_id}.wav`);
-        await updateMongoData('pods', {
-            _id: new ObjectId(pod_id),
-            audio_key: `pod-audio/${pod_id}.wav`,
-            status: PodStatus.PENDING
-        }, mode);
-
-
+        await cleanupTempFiles(tempFiles);
         return {
-            status: ProcessingStatus.COMPLETED,
+            status: ProcessingStatus.SUCCESS,
             step: "podcast",
             duration: runningTime,
-            filename: `${pod_id}.wav`
+            filename: `${pod_id}.wav`,
+            message: "Podcast created successfully"
         } as ProcessingStep;
 
     } catch (error) {
-        console.error('Error in createPodInParallel:', error);
+        await cleanupTempFiles(tempFiles);
         return {
             status: ProcessingStatus.ERROR,
             step: "podcast",
             message: error.message
         } as ProcessingStep;
-    } finally {
-        // Cleanup temp files
-        await cleanupTempFiles(tempFiles);
-    }
-}
-
-async function mergeAndCleanup(
-    clips: Clip[], 
-    resultFileName: string, 
-    runningTime: number, 
-    script: Script,
-    res: Response
-): Promise<number> {
-    const resultPath = path.join(TEMP_DATA_PATH, 'result', `${resultFileName}.wav`);
-    
-    try {
-        runningTime = await parallelMerge(runningTime, clips, resultFileName, script);
-        
-        // Verify file exists and is valid
-        if (!fs.existsSync(resultPath)) {
-            throw new Error(`Result file not found: ${resultPath}`);
-        }
-
-        const fileStats = await fs.promises.stat(resultPath);
-        if (fileStats.size === 0) {
-            throw new Error('Generated file is empty');
-        }
-        // TODO: When we want to do quicker production we can upload to S3 here
-        // await uploadAudioToS3(`${resultFileName}.wav`);
-        // await updateMongoData('pods', {
-        //     _id: new ObjectId(resultFileName),
-        //     audio_key: `pod-audio/${resultFileName}.wav`,
-        //     status: PodStatus.PENDING
-        // });
-        res.write(JSON.stringify({
-            status: ProcessingStatus.IN_PROGRESS,
-            step: "podcast",
-            duration: runningTime,
-            message: "Merged audio chunk successfully"
-        }));
-
-        return runningTime;
-
-    } catch (error) {
-        throw new Error(`Failed to merge audio: ${error.message}`);
     }
 }
 
 async function cleanupTempFiles(files: string[]) {
-    if(process.env.UNLINK_FILES === 'true') {
+    if (process.env.UNLINK_FILES === 'true') {
         for (const file of files) {
             try {
                 if (fs.existsSync(file)) {
@@ -163,7 +85,7 @@ async function cleanupTempFiles(files: string[]) {
 }
 
 function shouldMergeClips(clips: Clip[]): boolean {
-    return clips.length > 0 && 
-           'dialogue' in clips[clips.length - 1].line &&
-           (clips[clips.length - 1].line as CharLine).dialogue?.length > 0;
+    return clips.length > 0 &&
+        'dialogue' in clips[clips.length - 1].line &&
+        (clips[clips.length - 1].line as CharLine).dialogue?.length > 0;
 }

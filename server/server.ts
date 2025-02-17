@@ -32,7 +32,6 @@ declare global {
 export const app: Express = express();
 export const httpServer = createServer(app);
 const PORT = parseInt(process.env.PORT || '3000');
-
 // Initialize Socket.IO with the HTTP server
 export const io = new Server(httpServer, {
     cors: {

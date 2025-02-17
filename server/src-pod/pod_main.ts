@@ -18,284 +18,255 @@ import { RawPrompts, Script } from '@shared/script.js';
 import { localInstructions } from '@pod/process_prompt.js';
 import { getVoices } from '@pod/pass_voice.js';
 import { sendOneSignalNotification } from './sender.js';
-import { Music_Choice } from './process_track.js';
+import { Music_Choice } from './audio_chooser.js';
+import { uploadAudioToS3 } from './s3_files.js';
 
 
 export let base_voices: Voices;
 export let base_instructions: RawPrompts;
 
 const supportedTypes = {
-  'application/pdf': 'pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-  'text/plain': 'txt'
+    'application/pdf': 'pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'text/plain': 'txt'
 };
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, `${STORAGE_PATH}/`);
-  },
-  filename: (req, file, cb) => {
-    const ext = supportedTypes[file.mimetype];
-    cb(null, `${file.fieldname}-${Date.now()}.${ext}`);
-  }
+    destination: (req, file, cb) => {
+        cb(null, `${STORAGE_PATH}/`);
+    },
+    filename: (req, file, cb) => {
+        const ext = supportedTypes[file.mimetype];
+        cb(null, `${file.fieldname}-${Date.now()}.${ext}`);
+    }
 });
 
 // Multer upload configuration
 export const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb: multer.FileFilterCallback) => {
-    if (file.mimetype in supportedTypes) {
-      cb(null, true);
-    } else {
-      cb(new Error('Unsupported file type. Only PDF, DOCX, and TXT are allowed.'));
+    storage: storage,
+    fileFilter: (req, file, cb: multer.FileFilterCallback) => {
+        if (file.mimetype in supportedTypes) {
+            cb(null, true);
+        } else {
+            cb(new Error('Unsupported file type. Only PDF, DOCX, and TXT are allowed.'));
+        }
+    },
+    limits: {
+        fileSize: 100 * 1024 * 1024 // 100 MB
     }
-  },
-  limits: {
-    fileSize: 100 * 1024 * 1024 // 100 MB
-  }
 });
 
 export async function podRoutes() {
-  await startup();
-  base_voices = await getVoices();
-  base_instructions = await localInstructions();
-  // Public route should be defined first
-  app.get('/pod/public', (req: Request, res: Response) => {
-    res.send('Hello from the /pod!');
-  });
-
-  // Pod route
-  app.get('/pod', authCheck, (req: JWTRequest, res: Response) => {
-    res.send('Hello from /pod!');
-  });
-  app.get('/pod/test', authCheck, async (req: JWTRequest, res: Response) => {
-    // Set proper headers for SSE
-    console.log('test')
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    // Send initial connection message
-    console.log('sending initial connection message')
-    res.write(`data: ${JSON.stringify({ status: 'connected' })}\n\n`);
-
-    // Keep connection alive
-    const intervalId = setInterval(() => {
-      console.log('sending heartbeat')
-      res.write(`data: ${JSON.stringify({ status: 'heartbeat' })}\n\n`);
-    }, 1000);
-
-    // Clean up on client disconnect
-    req.on('close', () => {
-      clearInterval(intervalId);
-      console.log('client disconnected')
+    await startup();
+    base_voices = await getVoices();
+    base_instructions = await localInstructions();
+    // Public route should be defined first
+    app.get('/pod/public', (req: Request, res: Response) => {
+        res.send('Hello from the /pod!');
     });
-  });
 
-  app.post('/pod/trigger_creation', upload.single('file'), authCheck, async (req: JWTRequest, res: Response) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
-      }
-    if (req.file.size === 0) {
-        return res.status(400).json({ error: 'File size is 0 bytes' });
-      }
-      await triggerPodCreation(req, res);
-    } catch (error) {
-      console.error('Error in /pod/trigger_creation:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  });
+    // Pod route
+    app.get('/pod', authCheck, (req: JWTRequest, res: Response) => {
+        res.send('Hello from /pod!');
+    });
+    app.get('/pod/test', authCheck, async (req: JWTRequest, res: Response) => {
+        // Set proper headers for SSE
+        console.log('test')
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('Access-Control-Allow-Origin', '*');
 
-  // Catch-all route for /pod should be last
-  app.use('/pod', authCheck, (req: JWTRequest, res: Response) => {
-    res.send(`Pod Server: You accessed ${req.method} ${req.path}`);
-  });
-  return new Promise((resolve, reject) => {
-    resolve(true);
-  });
+        // Send initial connection message
+        console.log('sending initial connection message')
+        res.write(`data: ${JSON.stringify({ status: 'connected' })}\n\n`);
+
+        // Keep connection alive
+        const intervalId = setInterval(() => {
+            console.log('sending heartbeat')
+            res.write(`data: ${JSON.stringify({ status: 'heartbeat' })}\n\n`);
+        }, 1000);
+
+        // Clean up on client disconnect
+        req.on('close', () => {
+            clearInterval(intervalId);
+            console.log('client disconnected')
+        });
+    });
+
+    app.post('/pod/trigger_creation', upload.single('file'), authCheck, async (req: JWTRequest, res: Response) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({ error: 'No file uploaded' });
+            }
+            if (req.file.size === 0) {
+                return res.status(400).json({ error: 'File size is 0 bytes' });
+            }
+            await triggerPodCreation(req, res);
+        } catch (error) {
+            console.error('Error in /pod/trigger_creation:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    });
+
+    // Catch-all route for /pod should be last
+    app.use('/pod', authCheck, (req: JWTRequest, res: Response) => {
+        res.send(`Pod Server: You accessed ${req.method} ${req.path}`);
+    });
+    return new Promise((resolve, reject) => {
+        resolve(true);
+    });
 }
 
 
 export function sendUpdate(pod_id: ObjectId, update: ProcessingStep) {
-  io.emit(`pod:${pod_id.toString()}:status`, update);
+    io.emit(`pod:${pod_id.toString()}:status`, update);
 }
 
+// global list of users who have a pod in progress
 let current_pod_creators: string[] = [];
 
+async function validateInput(req: JWTRequest, res: Response, new_pod_id: ObjectId): Promise<ProcessingStep> {
+    try {
+        if (!req.file || !req.body.user_id || !req.body.new_pod_id) {
+            throw new Error('Missing required fields');
+        }
+        if (current_pod_creators.includes(req.body.user_id as string)) {
+            throw new Error('User already has a pod in progress');
+        }
+        // Validate file type
+        if (!supportedTypes[req.file.mimetype]) {
+            throw new Error('Unsupported file type');
+        }
+        console.log('file size: ' + req.file.size);
+        // Check if the pod already exists
+        if (await doesIdExist('pods', new_pod_id, req.envMode)) {
+            throw new Error('Pod already exists');
+        }
+        return {
+            status: ProcessingStatus.SUCCESS,
+            step: "input",
+            message: 'Input validated'
+        };
+    } catch (error) {
+        return {
+            status: ProcessingStatus.ERROR,
+            step: "input",
+            message: error.message
+        };
+    }
+}
+
+/**
+ * This function triggers the creation of a new pod.
+ * It's only job is orchestrating the creation of a new pod and sending updates to the client.
+ */
 async function triggerPodCreation(req: JWTRequest, res: Response) {
-  // Validate request
-  let start_time = Date.now();
-  if (!req.file || !req.body.user_id || !req.body.new_pod_id) {
-    return res.status(400).json({
-      message: 'Missing required fields',
-      details: {
-        file: req.file || null,
-        user_id: req.body.user_id || null,
-        new_pod_id: req.body.new_pod_id || null
-      }
-    });
-  }
-  console.log('triggerPodCreation by user: ' + req.body.user_id)
-  console.log('current_pod_creators: ' + current_pod_creators)
-  if(current_pod_creators.includes(req.body.user_id as string)) {
-    console.log('user already has a pod in progress')
-    return res.status(400).json({
-      message: 'User already has a pod in progress'
-    });
-  }
-  
-  current_pod_creators.push(req.body.user_id as string);
-  // Validate file type
-  if (!supportedTypes[req.file.mimetype]) {
-    return res.status(400).json({
-      message: 'Unsupported file type',
-      supported: Object.keys(supportedTypes)
-    });
-  }
-  console.log('file size: ' + req.file.size);
-
-  const new_pod_id = new ObjectId(req.body.new_pod_id as string);
-
-  let initMessage: ProcessingStep = {
-    step: "init",
-    status: ProcessingStatus.IN_PROGRESS
-  }
-  sendUpdate(new_pod_id, initMessage);
-
-  // Check if the pod already exists
-  if (await doesIdExist('pods', new_pod_id, req.envMode)) {
-    return res.status(400).json({ message: 'Pod already exists' });
-  }
-
-  const user_id = new ObjectId(req.body.user_id as string);
-
-  let newPod: Partial<Pod> = {
-    _id: new_pod_id,
-    status: PodStatus.PENDING,
-    title: "Initializing Pod",
-    author: "init",
-    audio_key: "init"
-  }
-
-    // Process and upload article
-    let articlePath: string;
-    let articleId: string;
+    const new_pod_id = new ObjectId(req.body.new_pod_id as string);
+    const user_id = new ObjectId(req.body.user_id as string);
+    let newPod: Partial<Pod> = {
+        _id: new_pod_id,
+        status: PodStatus.PENDING,
+        title: "Initializing Pod",
+        author: "init",
+        audio_key: "init",
+        processing_time: -1
+    }
     try {
-      const articleProcessResponse = await processArticles(req.file);
-      articlePath = articleProcessResponse.file_path;
-      articleId = articleProcessResponse.article_id;
-      let articleMessage: ProcessingStep = {
-        step: "article",
-        status: ProcessingStatus.IN_PROGRESS,
-        file_path: articlePath,
-        article_id: articleId
-      }
-      sendUpdate(new_pod_id, articleMessage);
+        // Validate request
+        let start_time = Date.now();
+        // validate the input and check if the user has a pod in progress
+        let initMessage: ProcessingStep = await validateInput(req, res, new_pod_id);
+        current_pod_creators.push(req.body.user_id as string);
+
+        if (initMessage.status === ProcessingStatus.ERROR) {
+            throw new Error(initMessage.message);
+        }
+        // Process and upload article
+        const articleProcessResponse = await processArticles(req.file);
+        let articlePath = articleProcessResponse.file_path;
+        let articleId = articleProcessResponse.article_id;
+
+        // Create screenplay
+        const scriptResponse = await createScript(articlePath, articleId, newPod, user_id, req.envMode);
+        if (scriptResponse.status === ProcessingStatus.ERROR) {
+            throw new Error(`Script creation failed: ${scriptResponse.message}`);
+        }
+        console.log('scriptResponse.message: ' + scriptResponse.message)
+        let scriptData: Script = scriptResponse.script;
+        let theme: Music_Choice = scriptResponse.theme;
+
+        // Create podcast
+        const podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res, req.envMode, theme);
+        if (podResponse.status === ProcessingStatus.ERROR) {
+            throw new Error(`Pod creation failed: ${podResponse.message}`);
+        }
+        // save to s3 and update mongo
+        await saveCleanupPod(newPod, articlePath, new_pod_id, user_id, articleId, scriptData, podResponse, req, start_time);
+        res.status(200).send('Pod creation successful');
+        return true;
     } catch (error) {
-      return onPodError(newPod, user_id, {
-        status: ProcessingStatus.ERROR,
-        step: "article",
-        message: `Article processing failed: ${error.message}`
-      }, res, req);
+        await onPodError(newPod, user_id, {
+            status: ProcessingStatus.ERROR,
+            step: "cleanup",
+            message: "Internal server error",
+            error: error.message
+        }, req);
+        res.status(500).send(error.message);
+        return false;
     }
+}
 
-    // Create screenplay
-    let scriptData: Script;
-    let theme: Music_Choice;
-    try {
-      const scriptResponse = await createScript(articlePath, articleId, newPod, user_id, req.envMode);
-      if (scriptResponse.status === ProcessingStatus.ERROR) {
-        return onPodError(newPod, user_id, {
-          status: ProcessingStatus.ERROR,
-          step: "script",
-          message: `Script creation failed: ${scriptResponse.message}`,
-          theme: scriptResponse.theme
-        }, res, req);
-      }
-      console.log('scriptResponse.message: ' + scriptResponse.message)
-      scriptData = scriptResponse.script;
-      theme = scriptResponse.theme;
-    } catch (error) {
-      return onPodError(newPod, user_id, {
-        status: ProcessingStatus.ERROR,
-        step: "script",
-        message: `Script creation failed: ${error.message}`
-      }, res, req);
-    }
-
-    // Create podcast
-    const podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res, req.envMode, theme);
-    if (podResponse.status === ProcessingStatus.ERROR) {
-      return onPodError(newPod, user_id, {
-        status: ProcessingStatus.ERROR,
-        step: "pod",
-        message: `Pod creation failed: ${podResponse.message}`
-      }, res, req);
-    }
-    sendUpdate(new_pod_id, podResponse);
-    try {
+/**
+ * Save and cleanup the pod
+ */
+async function saveCleanupPod(newPod: Partial<Pod>, articlePath: string, new_pod_id: ObjectId, user_id: ObjectId, articleId: string, scriptData: Script, podResponse: ProcessingStep, req: Request, start_time: number) {
+    await uploadAudioToS3(`${newPod._id.toString()}.wav`);
+    await updateMongoData('pods', {
+        _id: new_pod_id,
+        audio_key: `pod-audio/${newPod._id.toString()}.wav`,
+        status: PodStatus.PENDING
+    }, req.envMode);
     // Cleanup - Save to S3
     if (articlePath) {
-      await uploadArticleToS3(articleId, articlePath, req.body.user_id);
-      newPod.article_key = `articles/${articleId}.txt`;
-      await uploadCleanedArticleToS3(articleId, `${STORAGE_PATH}/clean-${articleId}.txt`, req.body.user_id);
-      newPod.clean_article_key = `cleaned_articles/${articleId}.txt`;
+        await uploadArticleToS3(articleId, articlePath, user_id);
+        newPod.article_key = `articles/${articleId}.txt`;
+        await uploadCleanedArticleToS3(articleId, `${STORAGE_PATH}/clean-${articleId}.txt`, user_id);
+        newPod.clean_article_key = `cleaned_articles/${articleId}.txt`;
     }
     if (scriptData) {
-      let local_path = path.join(TEMP_DATA_PATH, 'scripts', scriptData.filename);
-      await uploadScriptToS3(scriptData.filename, local_path, req.body.user_id);
-      newPod.script_key = `scripts/${scriptData.filename}`;
+        let local_path = path.join(TEMP_DATA_PATH, 'scripts', scriptData.filename);
+        await uploadScriptToS3(scriptData.filename, local_path, user_id);
+        newPod.script_key = `scripts/${scriptData.filename}`;
     }
     newPod.status = PodStatus.READY;
     if (podResponse.filename) {
-      newPod.audio_key = `pod-audio/${podResponse.filename}`;
+        newPod.audio_key = `pod-audio/${podResponse.filename}`;
     }
+    let time_taken = (Date.now() - start_time) / 1000;
+    console.log("time taken: " + time_taken + " seconds")
+    newPod.processing_time = time_taken;
     await updateMongoData('pods', newPod, req.envMode);
-
-    sendUpdate(new_pod_id, {
-      status: ProcessingStatus.COMPLETED,
-      step: "powerdown"
-    });
     sendOneSignalNotification({
-      externalUserId: user_id.toString(),
-      message: 'Your podcast is ready!',
-      title: 'Podcast Ready',
+        externalUserId: user_id.toString(),
+        message: 'Your podcast is ready!',
+        title: 'Podcast Ready',
     });
     current_pod_creators = current_pod_creators.filter(id => id.toString() !== user_id.toString());
     console.log("finished with pod creation for pod: " + new_pod_id.toString())
-    console.log("time taken: " + (Date.now() - start_time) / 1000 + " seconds")
-    res.end();
-  } catch (error) {
-    // Only send error response if headers haven't been sent
-    if (!res.headersSent) {
-      onPodError(newPod, user_id, {
-        status: ProcessingStatus.ERROR,
-        step: "cleanup",
-        message: "Internal server error",
-        error: error.message
-      }, res, req);
-    } else {
-      onPodError(newPod, user_id, {
-        status: ProcessingStatus.ERROR,
-        step: "cleanup",
-        message: error.message
-      }, res, req);
-    }
-  }
+    return true;
 }
 
 
-function onPodError(pod: Partial<Pod>, user_id: ObjectId, message: ProcessingStep, res: Response, req: Request) {
-  pod.status = PodStatus.ERROR;
-  console.log('Reach onPodError')
-  console.log(message)
-  if (pod.created_at != undefined) {
-    updateMongoData('pods', pod, req.envMode);
-    updateMongoArrayDoc('users', user_id, 'pods', pod._id, req.envMode);
-    current_pod_creators = current_pod_creators.filter(id => id.toString() !== user_id.toString());
-  }
-  sendUpdate(pod._id, message);
-  res.end();
+/**
+ * If processing fails, update the pod status to error, ensure consistency, and send an error message to the client
+ */
+async function onPodError(pod: Partial<Pod>, user_id: ObjectId, message: ProcessingStep, req: Request) {
+    pod.status = PodStatus.ERROR;
+    if (pod.created_at != undefined) {
+        await updateMongoData('pods', pod, req.envMode);
+        await updateMongoArrayDoc('users', user_id, 'pods', pod._id, req.envMode);
+        current_pod_creators = current_pod_creators.filter(id => id.toString() !== user_id.toString());
+    }
+    sendUpdate(pod._id, message);
 }
