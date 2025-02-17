@@ -3,13 +3,13 @@ import { BaseScriptSchema, BaseScriptType, PromptLLM, RawPrompts } from "@shared
 import { chopIntoNTokens, countTokens } from "@pod/process_script.js";
 import { openaiClient } from "@pod/init.js";
 import fs from "fs";
-import { getFileFromS3 } from "@pod/pass_files.js";
+import { getFileFromS3 } from "@pod/s3_files.js";
 import { ChatModel } from "openai/resources";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { ChatCompletionMessageParam } from "openai/resources";
 import { TiktokenModel } from "tiktoken";
-import { themeChooser } from "@pod/process_track.js";
+import { themeChooser } from "@pod/audio_chooser.js";
 import { base_instructions } from "@pod/pod_main.js";
 
 const formats = {
@@ -31,13 +31,13 @@ const formats = {
 export async function promptLLMChunks(article: string, instructions: PromptLLM) {
     let tokens = countTokens(article, instructions.GPTModel.version as ChatModel, instructions.type);
     let { chunk_size, chunk_overlap, minutes } = determineChunkSize(tokens, instructions);
-    console.log(`chunk_size: ${chunk_size}`);
-    console.log(`chunk_overlap: ${chunk_overlap}`);
-    console.log(`minutes: ${minutes}`);
+    // console.log(`chunk_size: ${chunk_size}`);
+    // console.log(`chunk_overlap: ${chunk_overlap}`);
+    // console.log(`minutes: ${minutes}`);
     let article_by_chunks: string[] = [];
     let summary = await summarizer(article);
     let theme = await themeChooser(summary);
-    console.log(`theme: ${theme.genre}, ${theme.mood}`);
+    // console.log(`theme: ${theme.genre}, ${theme.mood}`);
     // console.log(`summary: ${summary}`);
     // step 1: split the article into chunks
     article_by_chunks = await chopIntoNTokens(article, chunk_size, instructions.GPTModel.version as TiktokenModel, chunk_overlap);
@@ -47,8 +47,8 @@ export async function promptLLMChunks(article: string, instructions: PromptLLM) 
     let format_name: string = "podcast";
     let init_instructions = instructions.raw_instructions;
     let wpm = 150;
-    const wordCount = article.trim().split(/\s+/).length;
-    console.log(`wordCount: ${wordCount}`);
+    // const wordCount = article.trim().split(/\s+/).length;
+    // console.log(`wordCount: ${wordCount}`);
     let additionalInstructions = `\n Please ensure the podcast script has enough content to fill around ${minutes} minutes considering the average talking speed of ${wpm} words per minute. This means that the total amount of dialogue should be about ${minutes * wpm} words long.`;
     init_instructions += additionalInstructions;
     let chunking_instructions = `This podcast is split into ${article_by_chunks.length} parts. Please write the script for the part number you are given. The parts of the script will be joined together seamlessly, so do not reintroduce guests or welcome the listener back, instead pick up from where the last part left off.`;
@@ -99,7 +99,7 @@ export async function promptLLMChunks(article: string, instructions: PromptLLM) 
     };
 
     return {
-        status: ProcessingStatus.IN_PROGRESS,
+        status: ProcessingStatus.SUCCESS,
         step: "podcast chunking",
         message: "Prompt completed",
         data: merged_script,
@@ -117,57 +117,24 @@ export async function promptLLMChunks(article: string, instructions: PromptLLM) 
  * @returns 
  */
 function determineChunkSize(tokens: number, instructions: PromptLLM): { chunk_size: number, chunk_overlap: number, minutes: number } {
-
-    if (tokens > 0 && tokens < 5000) {
-        // 1 chunk, 1*5 mins so ~5 mins
-        return {
-            chunk_size: tokens,
-            chunk_overlap: 0,
-            minutes: 5
-        }
-    } else if (tokens >= 5000 && tokens < 10000) {
-        // 2 chunks, 2*5 mins so ~10 mins
-        return {
-            chunk_size: Math.ceil(tokens / 2),
-            chunk_overlap: Math.ceil(tokens * 0.1),
-            minutes: 10
-        }
-    } else if (tokens >= 10000 && tokens < 20000) {
-        // 3 chunks, 3*5 mins so ~15 mins
-        return {
-            chunk_size: Math.ceil(tokens / 3),
-            chunk_overlap: Math.ceil(tokens * 0.05),
-            minutes: 15
-        }
-    } else if (tokens >= 20000 && tokens < 30000) {
-        // 4 chunks, 4*5 mins so ~20 mins
-        return {
-            chunk_size: Math.ceil(tokens / 4),
-            chunk_overlap: Math.ceil(tokens * 0.04),
-            minutes: 20
-        }
-    } else if (tokens >= 30000 && tokens < 40000) {
-        // 5 chunks, 5*5 mins so ~25 mins
-        return {
-            chunk_size: Math.ceil(tokens / 5),
-            chunk_overlap: Math.ceil(tokens * 0.03),
-            minutes: 25
-        }
-    } else if (tokens >= 40000 && tokens < 50000) {
-        // 6 chunks, 6*5 mins so ~30 mins
-        return {
-            chunk_size: Math.ceil(tokens / 6),
-            chunk_overlap: Math.ceil(tokens * 0.02),
-            minutes: 30
-        }
-    } else if (tokens >= 50000) {
-        // 7 chunks, 7*5 mins so ~35 mins
-        return {
-            chunk_size: Math.ceil(tokens / 7),
-            chunk_overlap: Math.ceil(tokens * 0.02),
-            minutes: 35
-        }
+    if (tokens <= 0) {
+        throw new Error("Token count must be positive");
     }
+
+    // Calculate number of chunks (1 chunk per 5000 tokens, min 1, max 7)
+    const numChunks = Math.min(7, Math.max(1, Math.ceil(tokens / 5000)));
+    
+    // Calculate minutes (5 mins per chunk)
+    const minutes = numChunks * 5;
+    
+    // Calculate overlap percentage (starts at 10% for 2 chunks, decreases by 2% per additional chunk)
+    const overlapPercentage = Math.max(0.02, 0.12 - (numChunks - 1) * 0.02);
+    
+    return {
+        chunk_size: Math.ceil(tokens / numChunks),
+        chunk_overlap: numChunks > 1 ? Math.ceil(tokens * overlapPercentage) : 0,
+        minutes: minutes
+    };
 }
 
 
@@ -199,7 +166,7 @@ export async function getTitle(articleContent: string): Promise<ProcessingStep> 
 
     let title = completion.choices[0].message.parsed.title;
     return {
-        status: ProcessingStatus.IN_PROGRESS,
+        status: ProcessingStatus.SUCCESS,
         step: "title",
         message: "Prompt completed",
         data: title,
@@ -220,7 +187,7 @@ export async function getAuthor(articleContent: string): Promise<ProcessingStep>
 
     let author = completion.choices[0].message.parsed.author;
     return {
-        status: ProcessingStatus.IN_PROGRESS,
+        status: ProcessingStatus.SUCCESS,
         step: "author",
         message: "Prompt completed",
         data: author,

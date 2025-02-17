@@ -40,9 +40,6 @@ export async function getFileFromS3(fileName: string ): Promise<string> {
   }
 };
 
-
-
-
 /**
  * Function to upload a file to an S3 bucket using the @aws-sdk/client-s3 package.
  * 
