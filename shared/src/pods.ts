@@ -10,6 +10,7 @@ export interface Pod {
     article_key?: string;
     script_key?: string;
     clean_article_key?: string;
+    processing_time?: number;
 }
 
 export enum PodStatus {

@@ -1,5 +1,5 @@
 import fs from "fs";
-import * as aws from "@pod/pass_files.js";
+import * as aws from "@pod/s3_files.js";
 import { encoding_for_model, Tiktoken, TiktokenModel } from "tiktoken";
 import { ChatModel } from "openai/resources/index";
 import { ProcessingStatus, ProcessingStep } from "@shared/processing.js";
@@ -20,7 +20,7 @@ import { InstructionType } from "@shared/script.js";
 import { cleanText, cleanTextFile } from "@pod/cleaner.js";
 import { readFile, writeFile } from "fs/promises";
 import { promptLLMChunks } from "@pod/process_prompt.js";
-import { Music_Choice } from "@pod/process_track.js";
+import { Music_Choice } from "@pod/audio_chooser.js";
 
 export async function scriptwriterChunks(article: string, instructions: PromptLLM, typeOfArticle: string): Promise<ProcessingStep> {
   console.log("Start of ScriptwriterChunks")
@@ -37,7 +37,7 @@ export async function scriptwriterChunks(article: string, instructions: PromptLL
       kind: line.kind
     }));
     return {
-      status: ProcessingStatus.IN_PROGRESS,
+      status: ProcessingStatus.SUCCESS,
       step: "script",
       message: "Script created",
       script: validatedLines,
@@ -57,11 +57,7 @@ export async function createScript(local_file_path: string, articleId: string, n
   try {
     // Validate file extension
     if (!local_file_path.match(/\.(txt)$/i)) {
-      return {
-        status: ProcessingStatus.ERROR,
-        step: "script",
-        message: "Unsupported file format"
-      };
+      throw new Error("Unsupported file format");
     }
 
     let articleContent: string;
@@ -74,22 +70,17 @@ export async function createScript(local_file_path: string, articleId: string, n
       console.log('using original article version')
       articleContent = await readFile(local_file_path, 'utf8');
       if (!articleContent) {
-        return {
-          status: ProcessingStatus.ERROR,
-          step: "script",
-          message: "File is empty"
-        };
+        throw new Error("File is empty");
       }
     }
-
     await writeFile(`${STORAGE_PATH}/clean-${articleId}.txt`, articleContent);
     // Process each step and check for errors
     const titleStep = await getTitle(articleContent);
-    if (titleStep.status === ProcessingStatus.ERROR) return titleStep;
+    if (titleStep.status === ProcessingStatus.ERROR) throw new Error(titleStep.message);
     let title = titleStep.data || "Untitled";
     console.log(titleStep)
     const authorStep = await getAuthor(articleContent);
-    if (authorStep.status === ProcessingStatus.ERROR) return authorStep;
+    if (authorStep.status === ProcessingStatus.ERROR) throw new Error(authorStep.message);
     console.log(authorStep)
     let author = authorStep.data || "Unknown Author";
     // // determine if the article is a discussion or a worksheet
@@ -107,14 +98,9 @@ export async function createScript(local_file_path: string, articleId: string, n
     if (tokens < 100000) {
       scriptStep = await scriptwriterChunks(articleContent, instructions_podcast, typeOfArticle);
     } else {
-      return {
-        status: ProcessingStatus.ERROR,
-        step: "script",
-        message: "Article is too long"
-      };
+      throw new Error("Article is too long");
     }
-    
-    if (scriptStep.status === ProcessingStatus.ERROR) return scriptStep;
+    if (scriptStep.status === ProcessingStatus.ERROR) throw new Error(scriptStep.message);
     let script_file_path = `${uuidv4().toString()}.json`;
     const newScript = new Script(scriptStep.script, title, [author], script_file_path);
     await saveScript(newScript, script_file_path);
@@ -124,7 +110,7 @@ export async function createScript(local_file_path: string, articleId: string, n
     await createMongoData('pods', newPod, mode);
     await updateMongoArrayDoc('users', user_id, 'pods', newPod._id, mode);
     return {
-      status: ProcessingStatus.IN_PROGRESS,
+      status: ProcessingStatus.SUCCESS,
       step: "script",
       message: "Script created",
       script: newScript,

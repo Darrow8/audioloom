@@ -7,106 +7,126 @@ import ffmpeg from 'fluent-ffmpeg';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
 import { LineKind } from "@shared/line.js";
+import { ProcessingStep, ProcessingStatus } from "@shared/processing.js";
 
 /**
  * parallelMerge
  * 
- * Merge audio clips in parallel
+ * Merge audio clips in parallel and verify the result
  */
-export async function parallelMerge(runningTime: number, cur_clips: Clip[], filename: string, script: Script): Promise<number> {
+export async function parallelMerge(
+    runningTime: number, 
+    cur_clips: Clip[], 
+    filename: string, 
+    script: Script
+): Promise<ProcessingStep> {
     const original = path.join(TEMP_DATA_PATH, 'result', `${filename}.wav`);
     const temp = path.join(TEMP_DATA_PATH, 'result', `${filename}-temp.wav`);
-    // Perform merge process
-    runningTime = await parallelMergeProcess(runningTime, cur_clips, original, temp, script);
-
-    // Batch file operations
+    
     try {
+        // Initialize ffmpeg command
+        const command = ffmpeg();
+        let input_count = 0;
+        let global_volume = 1;
+        let filter_steps = [];
+
+        // Include the existing audio file if it exists and runningTime > 0
+        if (runningTime > 0) {
+            command.input(original);
+            filter_steps.push(`[${input_count}:a]volume=${global_volume}[c${input_count}]`);
+            input_count++;
+        }
+
+        // Process all clips in a single pass
+        for (let i = 0; i < cur_clips.length; i++) {
+            const clip = cur_clips[i];
+            command.input(clip.audio.url);
+            
+            if (clip.line.kind === LineKind.CHARACTER) {
+                if (clip.audio.start == -1) {
+                    clip.audio.start = runningTime;
+                }
+                filter_steps.push(`[${input_count}:a]atrim=duration=${clip.audio.duration}[t${input_count}]`);
+                filter_steps.push(`[t${input_count}]adelay=${clip.audio.start * 1000}|${clip.audio.start * 1000}[d${input_count}]`);
+                filter_steps.push(`[d${input_count}]volume=${global_volume}[c${input_count}]`);
+                
+                runningTime = Number((runningTime + clip.audio.duration).toFixed(2));
+            } else if (clip.line.kind === LineKind.MUSIC) {
+                let nearest_char_duration = getNearestAfterCharDuration(i, cur_clips);
+                let music_filter = getMusicFilter(clip, global_volume, runningTime, nearest_char_duration, script);
+                
+                filter_steps.push(`[${input_count}:a]atrim=duration=${music_filter.duration}[t${input_count}]`);
+                filter_steps.push(`[t${input_count}]adelay=${music_filter.start}|${music_filter.start}[d${input_count}]`);
+                filter_steps.push(`[d${input_count}]volume=${music_filter.volume}${music_filter.fade.length > 0 ? ',' + music_filter.fade : ''}[c${input_count}]`);
+            }
+            input_count++;
+        }
+
+        // Add the final mix step
+        const filterInputs = [...Array(input_count).keys()].map(i => `[c${i}]`).join('');
+        filter_steps.push(`${filterInputs}amix=inputs=${input_count}:duration=longest:dropout_transition=0:normalize=0[outa]`);
+
+        // Join all filter steps with semicolons
+        const filterComplex = filter_steps.join(';');
+
+        // Set output options
+        command.complexFilter(filterComplex)
+            .outputOptions('-map [outa]')
+            .audioCodec('pcm_s16le')
+            .audioChannels(2)
+            .audioFrequency(44100)
+            .output(temp);
+
+        // Execute ffmpeg command
+        await new Promise<void>((resolve, reject) => {
+            command
+                .on('start', (cmd) => {
+                    console.log(`Started: ${cmd}`);
+                })
+                .on('progress', (progress) => {
+                    console.log(`Progress: ${progress.timemark}`);
+                })
+                .on('end', () => {
+                    console.log(`Finished processing file ${temp}`);
+                    resolve();
+                })
+                .on('error', (err) => {
+                    console.error('Error:', err);
+                    reject(err);
+                })
+                .run();
+        });
+
+        // Batch file operations
         const originalExists = fs.existsSync(original);
         if (originalExists) {
-            await fsPromises.unlink(original)
+            await fsPromises.unlink(original);
         }
-        await fsPromises.rename(temp, original)
+        await fsPromises.rename(temp, original);
+
+        // Verify file exists and is valid
+        if (!fs.existsSync(original)) {
+            throw new Error(`Result file not found: ${original}`);
+        }
+        const fileStats = await fsPromises.stat(original);
+        if (fileStats.size === 0) {
+            throw new Error('Generated file is empty');
+        }
+
+        return {
+            status: ProcessingStatus.SUCCESS,
+            step: "podcast",
+            duration: runningTime,
+            message: "Merged audio chunk successfully"
+        } as ProcessingStep;
+
     } catch (error) {
-        console.error('Error in batch file operations:', error);
+        return {
+            status: ProcessingStatus.ERROR,
+            step: "podcast",
+            message: `Failed to merge audio: ${error.message}`
+        } as ProcessingStep;
     }
-
-    return runningTime;
-}
-
-async function parallelMergeProcess(runningTime: number, cur_clips: Clip[], input: string, output: string, script: Script) {
-    const command = ffmpeg();
-    let input_count = 0;
-    let global_volume = 1;
-    let filter_steps = [];
-
-    // Include the existing audio file if it exists and runningTime > 0
-    if (runningTime > 0) {
-        command.input(input);
-        // For existing audio, just pass through with volume adjustment
-        filter_steps.push(`[${input_count}:a]volume=${global_volume}[c${input_count}]`);
-        input_count++;
-    }
-
-    // Process all clips in a single pass
-    for (let i = 0; i < cur_clips.length; i++) {
-        const clip = cur_clips[i];
-        command.input(clip.audio.url);
-        
-        if (clip.line.kind === LineKind.CHARACTER) {
-            if (clip.audio.start == -1) {
-                clip.audio.start = runningTime;
-            }
-            // Chain the filters in correct order: trim -> delay -> volume
-            filter_steps.push(`[${input_count}:a]atrim=duration=${clip.audio.duration}[t${input_count}]`);
-            filter_steps.push(`[t${input_count}]adelay=${clip.audio.start * 1000}|${clip.audio.start * 1000}[d${input_count}]`);
-            filter_steps.push(`[d${input_count}]volume=${global_volume}[c${input_count}]`);
-            
-            runningTime = Number((runningTime + clip.audio.duration).toFixed(2));
-        } else if (clip.line.kind === LineKind.MUSIC) {
-            let nearest_char_duration = getNearestAfterCharDuration(i, cur_clips);
-            let music_filter = getMusicFilter(clip, global_volume, runningTime, nearest_char_duration, script);
-            
-            // Chain the filters in correct order for music
-            filter_steps.push(`[${input_count}:a]atrim=duration=${music_filter.duration}[t${input_count}]`);
-            filter_steps.push(`[t${input_count}]adelay=${music_filter.start}|${music_filter.start}[d${input_count}]`);
-            filter_steps.push(`[d${input_count}]volume=${music_filter.volume}${music_filter.fade.length > 0 ? ',' + music_filter.fade : ''}[c${input_count}]`);
-        }
-        input_count++;
-    }
-
-    // Add the final mix step
-    const filterInputs = [...Array(input_count).keys()].map(i => `[c${i}]`).join('');
-    filter_steps.push(`${filterInputs}amix=inputs=${input_count}:duration=longest:dropout_transition=0:normalize=0[outa]`);
-
-    // Join all filter steps with semicolons
-    const filterComplex = filter_steps.join(';');
-
-    // Set output options
-    command.complexFilter(filterComplex)
-        .outputOptions('-map [outa]')
-        .audioCodec('pcm_s16le')
-        .audioChannels(2)
-        .audioFrequency(44100)
-        .output(output);
-
-    return new Promise<number>((resolve, reject) => {
-        command
-            .on('start', (cmd) => {
-                console.log(`Started: ${cmd}`);
-            })
-            .on('progress', (progress) => {
-                console.log(`Progress: ${progress.timemark}`);
-            })
-            .on('end', () => {
-                console.log(`Finished processing file ${output}`);
-                resolve(runningTime);
-            })
-            .on('error', (err) => {
-                console.error('Error:', err);
-                reject(err);
-            })
-            .run();
-    });
 }
 
 /**
@@ -156,7 +176,6 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
     const aud_type = (mclip.line as MusicLine).type;
     if (aud_type === MusicType.BMusic) {
         let next_line = script.lines.find((line) => line.order == mclip.line.order + 1);
-        
         // Different caps based on whether next line exists and is a character line
         if (next_line) {
             const isCharacterLine = 'character' in next_line;
