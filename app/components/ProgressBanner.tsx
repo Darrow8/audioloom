@@ -7,7 +7,7 @@ export const ProgressBanner: React.FC<{time: number}> = ({
     return (
         <View style={styles.banner}>
             <ActivityIndicator size="small" color="white" style={styles.spinner} />
-            <Text style={styles.bannerText}>Please Wait, Processing Your Files...</Text>
+            <Text style={styles.bannerText}>Processing Your Files, this will take a few minutes...</Text>
         </View>
     );
 };
