@@ -56,6 +56,7 @@ const UploadButton: React.FC<{
           pod_title: fileAsset.name,
           uploader_id: userId,
         });
+        requestNotificationPermission()
         await connectToPodGen(fileAsset, userId, newPodId, (update: ProcessingStep) => {
           console.log('update', update)
           if (update.status === ProcessingStatus.COMPLETED) {
@@ -70,10 +71,9 @@ const UploadButton: React.FC<{
             setShowProcessingBanner(false);
             showToast('Error uploading file, please try again');
           }
-        })
+        }) 
       }
       startPodGenerator()
-      requestNotificationPermission()
     }, [fileAsset])
 
 

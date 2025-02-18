@@ -20,9 +20,35 @@ export const logoutOneSignal = () => {
     OneSignal.logout();
 }
 
-export const loginOneSignal = (user: User) => {
+export const loginOneSignal = async (user: User) => {
+    
     OneSignal.login(user._id.toString());
     console.log("user.email", user.email);
     OneSignal.User.addEmail(user.email);
 
 }
+
+const checkNotificationPermission = async () => {
+    try {
+      // Get device state
+      const permissionStatus = await OneSignal.Notifications.getPermissionAsync();
+      const pushSubscription = await OneSignal.User.pushSubscription;
+  
+      const status = {
+        hasPermission: permissionStatus,
+        isSubscribed: pushSubscription.optIn,
+        pushToken: await pushSubscription.getTokenAsync(),
+        userId: await OneSignal.User.getExternalId()
+      };
+  
+      console.log('Notification Permission:', status.hasPermission);
+      console.log('Is Subscribed:', status.isSubscribed);
+      console.log('User ID:', status.userId);
+      console.log('Push Token:', status.pushToken);
+  
+      return status;
+    } catch (error) {
+      console.error('Error checking notification permission:', error);
+      throw error;
+    }
+  };
