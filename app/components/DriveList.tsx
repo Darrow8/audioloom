@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View, StyleSheet, SafeAreaView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
@@ -9,6 +9,8 @@ export interface DriveFile {
     mimeType: string;
     name: string;
     resourceKey?: string;
+    size: number;
+    modifiedTime?: string;
 }
 
 export interface DriveFileList {
@@ -21,22 +23,30 @@ export interface DriveFileList {
 interface DriveListProps {
     files: DriveFile[];
     onFilePress: (file: DriveFile) => void;
-    onClose: () => void;
+    onLoadMore: () => void;
+    isLoadingMore?: boolean;
 }
 
-const DriveList: React.FC<DriveListProps> = ({ files, onFilePress, onClose }) => {
+const DriveList: React.FC<DriveListProps> = ({ files, onFilePress, onLoadMore, isLoadingMore = false }) => {
     const renderItem = ({ item }: { item: DriveFile }) => (
         <TouchableOpacity onPress={() => onFilePress(item)}>
             <View style={styles.fileItem}>
-                <Feather 
-                    name={item.mimeType.includes('folder') ? 'folder' : 'file-text'} 
-                    size={24} 
-                    color={Colors.light.tint} 
+                <Feather
+                    name={item.mimeType.includes('folder') ? 'folder' : 'file-text'}
+                    size={24}
+                    color={Colors.light.tint}
                     style={styles.icon}
                 />
                 <View style={styles.fileInfo}>
                     <Text style={styles.fileName}>{item.name}</Text>
-                    <Text style={styles.fileType}>{item.mimeType}</Text>
+                    <View style={styles.fileMetaContainer}>
+                        {item.modifiedTime && (
+                            <Text style={styles.fileDate}>
+                                {new Date(item.modifiedTime).toLocaleDateString()}
+                            </Text>
+                        )}
+                        {/* <Text style={styles.fileType}> • {item.mimeType}</Text> */}
+                    </View>
                 </View>
                 <Feather name="chevron-right" size={24} color={Colors.light.icon} />
             </View>
@@ -44,28 +54,30 @@ const DriveList: React.FC<DriveListProps> = ({ files, onFilePress, onClose }) =>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Google Drive Files</Text>
-                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                    <Feather name="x" size={24} color={Colors.light.text} />
-                </TouchableOpacity>
-            </View>
+            <View>
             <FlatList
                 data={files}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContainer}
+                onEndReached={onLoadMore}
+                onEndReachedThreshold={0.5}
+                ListEmptyComponent={() => (
+                    <Text style={styles.emptyText}>No files found</Text>
+                )}
+                ListFooterComponent={() => (
+                    isLoadingMore ? (
+                        <View style={styles.loadingFooter}>
+                            <Text style={styles.loadingText}>Loading more files...</Text>
+                        </View>
+                    ) : null
+                )}
             />
-        </SafeAreaView>
+            </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: Colors.light.background,
-    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -106,10 +118,32 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: Colors.light.text,
     },
+    fileMetaContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 4,
+    },
     fileType: {
         fontSize: 12,
         color: Colors.light.icon,
-        marginTop: 4,
+    },
+    fileDate: {
+        fontSize: 12,
+        color: Colors.light.icon,
+        marginLeft: 4,
+    },
+    emptyText: {
+        textAlign: 'center',
+        padding: 20,
+        color: Colors.light.text,
+    },
+    loadingFooter: {
+        padding: 16,
+        alignItems: 'center',
+    },
+    loadingText: {
+        fontSize: 14,
+        color: Colors.light.icon,
     },
 });
 

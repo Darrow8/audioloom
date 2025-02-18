@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ActionSheetIOS, StyleSheet, TouchableOpacity, View, Button, Text, Modal, ActivityIndicator } from 'react-native';
+import { ActionSheetIOS, StyleSheet, TouchableOpacity, View, Button, Text, Modal, ActivityIndicator, SafeAreaView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DriveList from './DriveList';
+import DriveList, { DriveFile } from './DriveList';
 import { connectToPodGen } from '../scripts/s3';
 import { ProcessingStatus, ProcessingStep } from '@shared/processing';
 import 'react-native-get-random-values';
@@ -13,16 +13,17 @@ import { Colors } from '../constants/Colors';
 import { trackEvent } from '@/scripts/mixpanel';
 import { useToast } from '@/state/ToastContext';
 import { requestNotificationPermission } from '@/scripts/onesignal';
+import { GoogleDrivePicker } from '@/components/GoogleDrivePicker';
 
 const UploadButton: React.FC<{
   userId: ObjectId,
-  showProcessingBanner: boolean, 
+  showProcessingBanner: boolean,
   setShowProcessingBanner: (show: boolean) => void,
 }>
   = ({ userId, showProcessingBanner, setShowProcessingBanner }) => {
     const { showToast } = useToast();
     const { fileAsset, isLoading, promptIOSPicker } = useDocumentPicker();
-
+    const [showGoogleDriveModal, setShowGoogleDriveModal] = useState(false);
     const handleUploadPress = () => {
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -33,11 +34,26 @@ const UploadButton: React.FC<{
           if (buttonIndex === 1) {
             promptIOSPicker();
           } else if (buttonIndex === 2) {
-            // TODO: Implement Google Drive picker
-            showToast('Google Drive integration coming soon');
+            setShowGoogleDriveModal(true);
           }
         }
       );
+    };
+
+    const handleGoogleDriveFilePick = (file: DriveFile) => {
+      try {
+        // Create a file-like object that matches your fileAsset structure
+        const googleDriveFileAsset = {
+          name: file.name,
+          size: file.size,
+          // uri: `data:${file.mimeType};base64,${file.content}`,
+          mimeType: file.mimeType,
+        };
+      } catch (error) {
+        console.error('Error processing Google Drive file:', error);
+        // showToast('Error processing file from Google Drive');
+        // setShowProcessingBanner(false);
+      }
     };
 
     useEffect(() => {
@@ -71,9 +87,11 @@ const UploadButton: React.FC<{
             setShowProcessingBanner(false);
             showToast('Error uploading file, please try again');
           }
-        }) 
+        })
       }
-      startPodGenerator()
+      console.log('fileAsset', fileAsset)
+      console.log('isLoading', isLoading)
+      // startPodGenerator()
     }, [fileAsset])
 
 
@@ -81,9 +99,9 @@ const UploadButton: React.FC<{
       <>
         {showProcessingBanner == false && (
           <View style={styles.container}>
-            <TouchableOpacity 
-              style={styles.button} 
-              onPress={handleUploadPress} 
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleUploadPress}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -94,11 +112,54 @@ const UploadButton: React.FC<{
             </TouchableOpacity>
           </View>
         )}
+
+        <Modal
+          visible={showGoogleDriveModal}
+          animationType="slide"
+          onRequestClose={() => setShowGoogleDriveModal(false)}
+        >
+          <View style={styles.modalContainer}>
+            <SafeAreaView >
+              <View style={styles.header}>
+                <Text style={styles.headerTitle}>Google Drive Files</Text>
+                <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowGoogleDriveModal(false)}
+            >
+              <Feather name="x" size={24} color="black" />
+            </TouchableOpacity>
+              </View>
+              <GoogleDrivePicker
+                onFilePick={handleGoogleDriveFilePick}
+                allowedMimeTypes={['audio/mpeg', 'audio/mp4', 'audio/wav']}
+                maxFileSize={500 * 1024 * 1024} // 500MB
+              />
+            </SafeAreaView>
+
+          </View>
+        </Modal>
       </>
     );
   };
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.border,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.light.text,
+  },
+  modalCloseButton: {
+    padding: 4,
+  },
   container: {
     position: 'absolute',
     bottom: 50,
@@ -121,6 +182,15 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     opacity: 1,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+    padding: 20,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    padding: 10,
   },
 });
 
