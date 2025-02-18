@@ -21,7 +21,7 @@ import { StatusBar } from 'react-native';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { initOneSignal, logoutOneSignal, requestNotificationPermission } from '@/scripts/onesignal';
 import { PlaybackProvider } from '@/state/PlaybackContext';
-import { StripeProvider } from '@stripe/stripe-react-native';
+// import { StripeProvider } from '@stripe/stripe-react-native';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* ignore error */
@@ -180,7 +180,7 @@ export default function RootLayout() {
 
   return (
     <Auth0Provider domain={env.AUTH0_DOMAIN} clientId={env.AUTH0_CLIENT_ID}>
-      <StripeProvider publishableKey="YOUR_PUBLISHABLE_KEY">
+      {/* <StripeProvider publishableKey="YOUR_PUBLISHABLE_KEY"> */}
         <PlaybackProvider>
           <ActionSheetProvider>
             <StateProvider>
@@ -191,7 +191,7 @@ export default function RootLayout() {
             </StateProvider>
           </ActionSheetProvider>
         </PlaybackProvider>
-      </StripeProvider>
+      {/* </StripeProvider> */}
     </Auth0Provider>
   );
 }

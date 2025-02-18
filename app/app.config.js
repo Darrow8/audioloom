@@ -26,7 +26,7 @@ export default {
     splash: {
       // for updating, to clear simulator cache run: xcrun simctl erase all
       backgroundColor: "#fff",
-      image: "./assets/images/shrinked_icon.png",
+      image: "./assets/images/audioloom_icon.png",
     },
     plugins: [
       [
@@ -70,7 +70,8 @@ export default {
         "expo-splash-screen",
         {
           backgroundColor: "#fff",
-          image: "./assets/images/shrinked_icon.png",
+          image: "./assets/images/audioloom_icon.png",
+          
         },
       ],
       [
@@ -81,6 +82,9 @@ export default {
           organization: "na-43x",
         },
       ],
+      [
+        "expo-secure-store"
+      ]
     ],
     experiments: {
       typedRoutes: true,
