@@ -24,10 +24,9 @@ export default {
       }
     },
     splash: {
-      backgroundColor: "#000000",
-      image: "./assets/images/walk2.png",
-      // resizeMode: "contain",
-      // imageWidth: 200,
+      // for updating, to clear simulator cache run: xcrun simctl erase all
+      backgroundColor: "#fff",
+      image: "./assets/images/shrinked_icon.png",
     },
     plugins: [
       [
@@ -70,10 +69,8 @@ export default {
       [
         "expo-splash-screen",
         {
-          backgroundColor: "#000000",
-          image: "./assets/images/walk2.png",
-          // resizeMode: "contain",
-          // imageWidth: 200,
+          backgroundColor: "#fff",
+          image: "./assets/images/shrinked_icon.png",
         },
       ],
       [
