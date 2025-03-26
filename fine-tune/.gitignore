@@ -1,0 +1,5 @@
+# Ignore credentials.json anywhere in the project
+**/credentials.json
+
+# Also ignore token.json which is used for OAuth
+**/token.json 
