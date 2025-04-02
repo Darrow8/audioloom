@@ -186,15 +186,16 @@ export async function processLine(line: Line, script: Script, characters: Charac
             'Failed to process character line'
         );
     } else if (line.kind == LineKind.MUSIC) {
-        return await processWithRetry(
-            async () => {
-                const music_processed = await processMusicLine(line as MusicLine, script, theme_tracks);
-                return createClip(music_processed, line as MusicLine);
-            },
-            'Failed to process music line',
-            3,
-            true
-        );
+        return null;
+        // return await processWithRetry(
+        //     async () => {
+        //         const music_processed = await processMusicLine(line as MusicLine, script, theme_tracks);
+        //         return createClip(music_processed, line as MusicLine);
+        //     },
+        //     'Failed to process music line',
+        //     3,
+        //     true
+        // );
     } else {
         throw `error, found line with bad kind: ${line}`;
     }

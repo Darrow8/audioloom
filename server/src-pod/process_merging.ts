@@ -27,13 +27,15 @@ export async function parallelMerge(
         // Initialize ffmpeg command
         const command = ffmpeg();
         let input_count = 0;
-        let global_volume = 1;
+        // Define separate volumes for character and music
+        const CHARACTER_VOLUME = 1.0;
+        const MUSIC_VOLUME = 0.25;
         let filter_steps = [];
 
         // Include the existing audio file if it exists and runningTime > 0
         if (runningTime > 0) {
             command.input(original);
-            filter_steps.push(`[${input_count}:a]volume=${global_volume}[c${input_count}]`);
+            filter_steps.push(`[${input_count}:a]volume=${CHARACTER_VOLUME}[c${input_count}]`);
             input_count++;
         }
 
@@ -48,16 +50,18 @@ export async function parallelMerge(
                 }
                 filter_steps.push(`[${input_count}:a]atrim=duration=${clip.audio.duration}[t${input_count}]`);
                 filter_steps.push(`[t${input_count}]adelay=${clip.audio.start * 1000}|${clip.audio.start * 1000}[d${input_count}]`);
-                filter_steps.push(`[d${input_count}]volume=${global_volume}[c${input_count}]`);
+                filter_steps.push(`[d${input_count}]volume=${CHARACTER_VOLUME}[c${input_count}]`);
                 
                 runningTime = Number((runningTime + clip.audio.duration).toFixed(2));
             } else if (clip.line.kind === LineKind.MUSIC) {
                 let nearest_char_duration = getNearestAfterCharDuration(i, cur_clips);
-                let music_filter = getMusicFilter(clip, global_volume, runningTime, nearest_char_duration, script);
+                let music_filter = getMusicFilter(clip, CHARACTER_VOLUME, runningTime, nearest_char_duration, script);
                 
                 filter_steps.push(`[${input_count}:a]atrim=duration=${music_filter.duration}[t${input_count}]`);
                 filter_steps.push(`[t${input_count}]adelay=${music_filter.start}|${music_filter.start}[d${input_count}]`);
-                filter_steps.push(`[d${input_count}]volume=${music_filter.volume}${music_filter.fade.length > 0 ? ',' + music_filter.fade : ''}[c${input_count}]`);
+                //filter_steps.push(`[d${input_count}]volume=${MUSIC_VOLUME}${music_filter.fade.length > 0 ? ',' + music_filter.fade : ''}[c${input_count}]`);
+                filter_steps.push(`[d${input_count}]loudnorm=I=-24:TP=-2:LRA=7[n${input_count}]`);
+                filter_steps.push(`[n${input_count}]volume=${MUSIC_VOLUME}${music_filter.fade.length > 0 ? ',' + music_filter.fade : ''}[c${input_count}]`);
             }
             input_count++;
         }
@@ -187,7 +191,7 @@ function getMusicFilter(mclip: Clip, char_volume: number, runningTime: number, n
     }
 
     return {
-        volume: MUSIC_VOLUME, // "30dB"
+        volume: MUSIC_VOLUME,
         duration: durationMs / MS_TO_SEC,
         start: Math.max(0, runningTime * MS_TO_SEC),
         fade: getFadeInAndOutDuration(durationMs),

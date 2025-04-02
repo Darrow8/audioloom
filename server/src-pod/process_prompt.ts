@@ -1,5 +1,5 @@
 import { ProcessingStatus, ProcessingStep } from "@shared/processing.js";
-import { BaseScriptSchema, BaseScriptType, PromptLLM, RawPrompts } from "@shared/script.js";
+import { ArticleMetadata, BaseScriptSchema, BaseScriptType, PromptLLM, RawPrompts } from "@shared/script.js";
 import { chopIntoNTokens, countTokens } from "@pod/process_script.js";
 import { openaiClient } from "@pod/init.js";
 import fs from "fs";
@@ -28,27 +28,37 @@ const formats = {
 /**
  * We will prompt the LLM in chunks of 1000 tokens
  */
-export async function promptLLMChunks(article: string, instructions: PromptLLM) {
+export async function promptLLMChunks(article: string, instructions: PromptLLM, metadata: ArticleMetadata) : Promise<ProcessingStep> {
     let tokens = countTokens(article, instructions.GPTModel.version as ChatModel, instructions.type);
     let { chunk_size, chunk_overlap, minutes } = determineChunkSize(tokens, instructions);
-    // console.log(`chunk_size: ${chunk_size}`);
-    // console.log(`chunk_overlap: ${chunk_overlap}`);
-    // console.log(`minutes: ${minutes}`);
+    if (process.env.VERBOSE) {
+        console.log(`\n=== Processing Article Chunks ===`);
+        console.log(`Total tokens: ${tokens}`);
+        console.log(`chunk_size: ${chunk_size}`);
+        console.log(`chunk_overlap: ${chunk_overlap}`);
+        console.log(`minutes: ${minutes}`);
+    }
     let article_by_chunks: string[] = [];
-    let summary = await summarizer(article);
-    let theme = await themeChooser(summary);
-    // console.log(`theme: ${theme.genre}, ${theme.mood}`);
-    // console.log(`summary: ${summary}`);
+    let summary = metadata.summary; //await summarizer(article);
+    let theme = "N/A"; //await themeChooser(summary);
+    // if (process.env.VERBOSE) {
+    //     console.log(`theme: ${theme.genre}, ${theme.mood}`);
+    //     console.log(`summary: ${summary}`);
+    // }
     // step 1: split the article into chunks
     article_by_chunks = await chopIntoNTokens(article, chunk_size, instructions.GPTModel.version as TiktokenModel, chunk_overlap);
+    // After chunking
+    if (process.env.VERBOSE) {
+        console.log(`\n=== Article Chunking Results ===`);
+        console.log(`Number of chunks: ${article_by_chunks.length}`);
+        console.log(`Average chunk size: ${article_by_chunks.reduce((sum, chunk) => sum + chunk.length, 0) / article_by_chunks.length} characters`);
+    }
     // step 2: prompt the LLM in chunks
     let full_script: BaseScriptType[] = [];
     let format: z.ZodType = formats.podcast;
     let format_name: string = "podcast";
     let init_instructions = instructions.raw_instructions;
     let wpm = 150;
-    // const wordCount = article.trim().split(/\s+/).length;
-    // console.log(`wordCount: ${wordCount}`);
     let additionalInstructions = `\n Please ensure the podcast script has enough content to fill around ${minutes} minutes considering the average talking speed of ${wpm} words per minute. This means that the total amount of dialogue should be about ${minutes * wpm} words long.`;
     init_instructions += additionalInstructions;
     let chunking_instructions = `This podcast is split into ${article_by_chunks.length} parts. Please write the script for the part number you are given. The parts of the script will be joined together seamlessly, so do not reintroduce guests or welcome the listener back, instead pick up from where the last part left off.`;
@@ -56,6 +66,10 @@ export async function promptLLMChunks(article: string, instructions: PromptLLM) 
     init_instructions += `\n The summary of the article is: ${summary}`;
     let messages: ChatCompletionMessageParam[] = [{ role: "system", content: init_instructions }];
     for (let i = 0; i < article_by_chunks.length; i++) {
+        if (process.env.VERBOSE) {
+            console.log(`\n=== Processing Chunk ${i + 1}/${article_by_chunks.length} ===`);
+            console.log(`Chunk size: ${article_by_chunks[i].length} characters`);
+        }
         let chunk = article_by_chunks[i];
         let supplemental_instructions = "";
         if (article_by_chunks.length > 1) {
@@ -72,11 +86,21 @@ export async function promptLLMChunks(article: string, instructions: PromptLLM) 
             messages.push({ role: "user", content: `${supplemental_instructions} START\n${chunk}\nEND.` });
 
         }
+        if (process.env.VERBOSE) {
+            console.log('\n=== ChatGPT API Request ===');
+            console.log('Messages:', JSON.stringify(messages, null, 2));
+        }
         let response = await openaiClient.beta.chat.completions.parse({
             model: instructions.GPTModel.version as ChatModel,
             messages: messages,
             response_format: zodResponseFormat(format, format_name),
         });
+
+        if (process.env.VERBOSE) {
+            console.log('\n=== ChatGPT API Response ===');
+            console.log('Response:', JSON.stringify(response.choices[0].message, null, 2));
+        }
+
         let parsedResponse = BaseScriptSchema.parse(response.choices[0].message.parsed);
 
         let assistant_message = parsedResponse.lines.map((line) => {
@@ -92,11 +116,23 @@ export async function promptLLMChunks(article: string, instructions: PromptLLM) 
         }).join("\n");
         messages.push({ role: "assistant", content: `Already written part ${i + 1} of the podcast: PART_${i + 1}_START\n${assistant_message}\nPART_${i + 1}_END` });
         full_script.push(parsedResponse);
+        if (process.env.VERBOSE) {
+            console.log(`\n=== Chunk ${i + 1} Response Analysis ===`);
+            console.log(`Number of script lines: ${parsedResponse.lines.length}`);
+            console.log(`Response type: ${format_name}`);
+        }
     }
     // step 3: merge the chunks
     let merged_script: BaseScriptType = {
         lines: full_script.flatMap(script => script.lines)
     };
+
+    // After merging chunks
+    if (process.env.VERBOSE) {
+        console.log(`\n=== Final Script Statistics ===`);
+        console.log(`Total script lines: ${merged_script.lines.length}`);
+        console.log(`Processing completed successfully`);
+    }
 
     return {
         status: ProcessingStatus.SUCCESS,
@@ -117,6 +153,12 @@ export async function promptLLMChunks(article: string, instructions: PromptLLM) 
  * @returns 
  */
 function determineChunkSize(tokens: number, instructions: PromptLLM): { chunk_size: number, chunk_overlap: number, minutes: number } {
+    if (process.env.VERBOSE) {
+        console.log(`\n=== Chunk Size Calculation ===`);
+        console.log(`Input tokens: ${tokens}`);
+        console.log(`Model: ${instructions.GPTModel.version}`);
+    }
+
     if (tokens <= 0) {
         throw new Error("Token count must be positive");
     }
@@ -130,6 +172,11 @@ function determineChunkSize(tokens: number, instructions: PromptLLM): { chunk_si
     // Calculate overlap percentage (starts at 10% for 2 chunks, decreases by 2% per additional chunk)
     const overlapPercentage = Math.max(0.02, 0.12 - (numChunks - 1) * 0.02);
     
+    if (process.env.VERBOSE) {
+        console.log(`Calculated chunks: ${numChunks}`);
+        console.log(`Overlap percentage: ${overlapPercentage * 100}%`);
+    }
+
     return {
         chunk_size: Math.ceil(tokens / numChunks),
         chunk_overlap: numChunks > 1 ? Math.ceil(tokens * overlapPercentage) : 0,
@@ -138,84 +185,46 @@ function determineChunkSize(tokens: number, instructions: PromptLLM): { chunk_si
 }
 
 
-export async function summarizer(article: string) {
-    let summary_instructions = `Summarize the article into a short paragraph.`;
-    const completion = await openaiClient.beta.chat.completions.parse({
-        model: "gpt-4o-mini",
-        messages: [
-            { role: "system", content: summary_instructions },
-            { role: "user", content: article }
-        ],
-    });
-
-    let summary = completion.choices[0].message.content;
-    return summary;
-}
-
-// get title
-export async function getTitle(articleContent: string): Promise<ProcessingStep> {
-    let instructions = base_instructions.title;
-    const completion = await openaiClient.beta.chat.completions.parse({
-        model: instructions.GPTModel.version as ChatModel,
-        messages: [
-            { role: "system", content: instructions.raw_instructions },
-            { role: "user", content: articleContent }
-        ],
-        response_format: zodResponseFormat(formats.title, "title")
-    });
-
-    let title = completion.choices[0].message.parsed.title;
-    return {
-        status: ProcessingStatus.SUCCESS,
-        step: "title",
-        message: "Prompt completed",
-        data: title,
-    } as ProcessingStep;
-}
-
-// get author
-export async function getAuthor(articleContent: string): Promise<ProcessingStep> {
-    let instructions = base_instructions.author;
-    const completion = await openaiClient.beta.chat.completions.parse({
-        model: instructions.GPTModel.version as ChatModel,
-        messages: [
-            { role: "system", content: instructions.raw_instructions },
-            { role: "user", content: articleContent }
-        ],
-        response_format: zodResponseFormat(formats.author, "author")
-    });
-
-    let author = completion.choices[0].message.parsed.author;
-    return {
-        status: ProcessingStatus.SUCCESS,
-        step: "author",
-        message: "Prompt completed",
-        data: author,
-    } as ProcessingStep;
-}
-
-export async function determineTypeOfArticle(article: string) {
-    let type_instructions = `Your job is to determine the type of document a user has uploaded for podcast creation.
-    If the document makes an argument or focuses on a specific topic that is suitable for a discussion podcast, return "discussion".
-    If the document is a worksheet or quiz that is suitable for a Q&A podcast, return "worksheet".
-    Return only one of the following: "discussion" or "worksheet".`;
+export async function getMetadata(article: string): Promise<ArticleMetadata> {
+    let type_instructions = `You will receive a document that contains an informative article. \nThe document starts at 'DOCUMENT_START' and ends at 'DOCUMENT_END'. \nYou have 4 tasks. \n\nCreate a short and exciting title for the article. Make the title less than 6 words.\nFind the author or authors of the article. If you cannot determine the author, leave the field empty.\nSummarize the article into a short paragraph.\nDetermine the type of document a user has uploaded for podcast creation. If the document makes an argument or focuses on a specific topic that is suitable for a discussion podcast, return \"discussion\". If the document is a worksheet or quiz that is suitable for a Q&A podcast, return \"worksheet\".\n\nReturn data in this form: \n{\n\t\"article_type\": \"<discussion or worksheet>\",\n\t\"authors\": [<names of authors as an array of strings, leave empty if author is unknown>],\n\t\"summary\": \"<paragraph summary of article>\",\n\t\"title\" \"<title for article>\"\n}\n`;
 
     const typeFormat = z.object({
-        type: z.enum(["discussion", "worksheet"])
-    });
+        article_type: z.enum(["discussion", "worksheet"]),
+        authors: z.array(z.string()),
+        summary: z.string(),
+        title: z.string()
+    }).transform((data): ArticleMetadata => ({
+        article_type: data.article_type,
+        authors: data.authors,
+        summary: data.summary,
+        title: data.title
+    }));
+
+    if (process.env.VERBOSE) {
+        console.log('\n=== Determine Type API Request ===');
+        console.log('Messages:', JSON.stringify([
+            { role: "system", content: type_instructions },
+            { role: "user", content: article }
+        ], null, 2));
+    }
 
     const completion = await openaiClient.beta.chat.completions.parse({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
             { role: "system", content: type_instructions },
             { role: "user", content: article }
         ],
-        response_format: zodResponseFormat(typeFormat, "type")
+        response_format: zodResponseFormat(typeFormat, "metadata")
     });
     
-    let type = completion.choices[0].message.parsed.type;
-    return type;
+    if (process.env.VERBOSE) {
+        console.log('\n=== Determine Type API Response ===');
+        console.log('Response:', JSON.stringify(completion.choices[0].message, null, 2));
+    }
+
+    return completion.choices[0].message.parsed;
 }
+
 export function saveLocalFile(fileName: string, content: string) {
     fs.writeFileSync(`${fileName}`, content);
 }

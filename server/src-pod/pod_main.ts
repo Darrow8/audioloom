@@ -69,30 +69,30 @@ export async function podRoutes() {
     app.get('/pod', authCheck, (req: JWTRequest, res: Response) => {
         res.send('Hello from /pod!');
     });
-    app.get('/pod/test', authCheck, async (req: JWTRequest, res: Response) => {
-        // Set proper headers for SSE
-        console.log('test')
-        res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Cache-Control', 'no-cache');
-        res.setHeader('Connection', 'keep-alive');
-        res.setHeader('Access-Control-Allow-Origin', '*');
+    // app.get('/pod/test', authCheck, async (req: JWTRequest, res: Response) => {
+    //     // Set proper headers for SSE
+    //     console.log('test')
+    //     res.setHeader('Content-Type', 'text/event-stream');
+    //     res.setHeader('Cache-Control', 'no-cache');
+    //     res.setHeader('Connection', 'keep-alive');
+    //     res.setHeader('Access-Control-Allow-Origin', '*');
 
-        // Send initial connection message
-        console.log('sending initial connection message')
-        res.write(`data: ${JSON.stringify({ status: 'connected' })}\n\n`);
+    //     // Send initial connection message
+    //     console.log('sending initial connection message')
+    //     res.write(`data: ${JSON.stringify({ status: 'connected' })}\n\n`);
 
-        // Keep connection alive
-        const intervalId = setInterval(() => {
-            console.log('sending heartbeat')
-            res.write(`data: ${JSON.stringify({ status: 'heartbeat' })}\n\n`);
-        }, 1000);
+    //     // Keep connection alive
+    //     // const intervalId = setInterval(() => {
+    //     //     console.log('sending heartbeat')
+    //     //     res.write(`data: ${JSON.stringify({ status: 'heartbeat' })}\n\n`);
+    //     // }, 1000);
 
-        // Clean up on client disconnect
-        req.on('close', () => {
-            clearInterval(intervalId);
-            console.log('client disconnected')
-        });
-    });
+    //     // Clean up on client disconnect
+    //     // req.on('close', () => {
+    //     //     clearInterval(intervalId);
+    //     //     console.log('client disconnected')
+    //     // });
+    // });
 
     app.post('/pod/trigger_creation', upload.single('file'), authCheck, async (req: JWTRequest, res: Response) => {
         try {
@@ -180,6 +180,7 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
         current_pod_creators.push(req.body.user_id as string);
 
         if (initMessage.status === ProcessingStatus.ERROR) {
+            console.log("caught error in validateInput")
             throw new Error(initMessage.message);
         }
         // Process and upload article
@@ -195,11 +196,16 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
         console.log('scriptResponse.message: ' + scriptResponse.message)
         let scriptData: Script = scriptResponse.script;
         let theme: Music_Choice = scriptResponse.theme;
-
+        let podResponse: ProcessingStep;
         // Create podcast
-        const podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res, req.envMode, theme);
-        if (podResponse.status === ProcessingStatus.ERROR) {
-            throw new Error(`Pod creation failed: ${podResponse.message}`);
+        if (process.env.SKIP_AUDIO_GENERATION == "false") {
+            podResponse = await createPodInParallel(scriptData, newPod._id.toString(), res, req.envMode, theme);
+            if (podResponse.status === ProcessingStatus.ERROR) {
+                throw new Error(`Pod creation failed: ${podResponse.message}`);
+            }
+        }else{
+            res.status(200).send('Script creation successful');
+            return true;
         }
         // save to s3 and update mongo
         await saveCleanupPod(newPod, articlePath, new_pod_id, user_id, articleId, scriptData, podResponse, req, start_time);
@@ -221,12 +227,16 @@ async function triggerPodCreation(req: JWTRequest, res: Response) {
  * Save and cleanup the pod
  */
 async function saveCleanupPod(newPod: Partial<Pod>, articlePath: string, new_pod_id: ObjectId, user_id: ObjectId, articleId: string, scriptData: Script, podResponse: ProcessingStep, req: Request, start_time: number) {
-    await uploadAudioToS3(`${newPod._id.toString()}.wav`);
-    await updateMongoData('pods', {
-        _id: new_pod_id,
-        audio_key: `pod-audio/${newPod._id.toString()}.wav`,
-        status: PodStatus.PENDING
-    }, req.envMode);
+    // skip audio generation if the SKIP_AUDIO_GENERATION environment variable is set
+    if (process.env.SKIP_AUDIO_GENERATION == "false") {
+        await uploadAudioToS3(`${newPod._id.toString()}.wav`);
+        await updateMongoData('pods', {
+            _id: new_pod_id,
+            audio_key: `pod-audio/${newPod._id.toString()}.wav`,
+            status: PodStatus.PENDING
+        }, req.envMode);
+    }
+    
     // Cleanup - Save to S3
     if (articlePath) {
         await uploadArticleToS3(articleId, articlePath, user_id);
@@ -243,15 +253,19 @@ async function saveCleanupPod(newPod: Partial<Pod>, articlePath: string, new_pod
     if (podResponse.filename) {
         newPod.audio_key = `pod-audio/${podResponse.filename}`;
     }
-    let time_taken = (Date.now() - start_time) / 1000;
-    console.log("time taken: " + time_taken + " seconds")
-    newPod.processing_time = time_taken;
-    await updateMongoData('pods', newPod, req.envMode);
-    sendOneSignalNotification({
-        externalUserId: user_id.toString(),
-        message: 'Your podcast is ready!',
-        title: 'Podcast Ready',
-    });
+    if (process.env.SKIP_AUDIO_GENERATION == "false") {
+        let time_taken = (Date.now() - start_time) / 1000;
+        console.log("time taken: " + time_taken + " seconds")
+        newPod.processing_time = time_taken;
+        await updateMongoData('pods', newPod, req.envMode);
+
+        sendOneSignalNotification({
+            externalUserId: user_id.toString(),
+            message: 'Your podcast is ready!',
+            title: 'Podcast Ready',
+        });
+    }
+    // remove the user from the list of current pod creators
     current_pod_creators = current_pod_creators.filter(id => id.toString() !== user_id.toString());
     console.log("finished with pod creation for pod: " + new_pod_id.toString())
     return true;
@@ -263,10 +277,14 @@ async function saveCleanupPod(newPod: Partial<Pod>, articlePath: string, new_pod
  */
 async function onPodError(pod: Partial<Pod>, user_id: ObjectId, message: ProcessingStep, req: Request) {
     pod.status = PodStatus.ERROR;
+    current_pod_creators = current_pod_creators.filter(id => id.toString() !== user_id.toString());
+    console.log("current_pod_creators: " + current_pod_creators)
     if (pod.created_at != undefined) {
         await updateMongoData('pods', pod, req.envMode);
         await updateMongoArrayDoc('users', user_id, 'pods', pod._id, req.envMode);
-        current_pod_creators = current_pod_creators.filter(id => id.toString() !== user_id.toString());
+
     }
+    console.log("pod error: " + message.message)
+    console.log('pod error finished')
     sendUpdate(pod._id, message);
 }
